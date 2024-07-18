@@ -5,6 +5,9 @@
 # Ignore all .env files recursively
 **/*.env
 
+# Not ignore ref.env files
+!**/ref*.env
+
 .idea/
 
 # User-specific stuff
