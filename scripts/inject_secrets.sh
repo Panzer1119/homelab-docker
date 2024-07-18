@@ -5,6 +5,7 @@ process_files() {
     local file="$1"
     local force="$2"
     local skip_existing="$3"
+    local dry_run="$4"
 
     # Determine the output filename
     if [ "$(basename "${file}")" == "ref.env" ]; then
@@ -17,26 +18,31 @@ process_files() {
     if [ -f "${output_file}" ] && [ "${skip_existing}" == "true" ]; then
         echo "Skipping existing file: ${output_file}"
     else
-        echo "Processing ${file} to ${output_file}..."
-        if [ "${force}" == "true" ]; then
-            op inject -f -i "${file}" -o "${output_file}"
+        if [ "${dry_run}" == "true" ]; then
+            echo "Dry run: Would process ${file} to ${output_file}"
         else
-            op inject -i "${file}" -o "${output_file}"
+            echo "Processing ${file} to ${output_file}..."
+            if [ "${force}" == "true" ]; then
+                op inject -f -i "${file}" -o "${output_file}"
+            else
+                op inject -i "${file}" -o "${output_file}"
+            fi
         fi
     fi
 }
 
 # Check if directory is provided
 if [ -z "$1" ]; then
-    echo "Usage: $0 [-f] [-s] <directory>"
+    echo "Usage: $0 [-f] [-s] [-n] <directory>"
     exit 1
 fi
 
 # Parse options
 force=false
 skip_existing=false
+dry_run=false
 
-while getopts ":fs" opt; do
+while getopts ":fsn" opt; do
     case ${opt} in
         f)
             force=true
@@ -44,9 +50,12 @@ while getopts ":fs" opt; do
         s)
             skip_existing=true
             ;;
+        n)
+            dry_run=true
+            ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
-            echo "Usage: $0 [-f] [-s] <directory>"
+            echo "Usage: $0 [-f] [-s] [-n] <directory>"
             exit 1
             ;;
     esac
@@ -64,7 +73,7 @@ fi
 
 # Find and process the files
 find "${SEARCH_DIR}" -type f -name 'ref*.env' | while read -r file; do
-    process_files "${file}" "${force}" "${skip_existing}"
+    process_files "${file}" "${force}" "${skip_existing}" "${dry_run}"
 done
 
 echo "All matching files processed."
