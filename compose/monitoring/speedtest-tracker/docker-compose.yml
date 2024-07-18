@@ -1,4 +1,17 @@
-#TODO Volumes
+#TODO What about zfs auto-snapshots? How do I manage them, how do i set different policies for different volumes?
+#- /docker/config/speedtest-tracker:/config
+#- /docker/cache/speedtest-tracker/redis:/data
+#- /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
+volumes:
+  speedtest-tracker_config:
+    name: speedtest-tracker/config
+    driver: zfs
+  redis_data:
+    name: speedtest-tracker/redis_data
+    driver: zfs
+  postgres_data:
+    name: speedtest-tracker/postgres_data
+    driver: zfs
 
 services:
   speedtest-tracker:
@@ -9,7 +22,7 @@ services:
     env_file:
       - speedtest-tracker.env
     volumes:
-      - /docker/config/speedtest-tracker:/config
+      - speedtest-tracker_config:/config
     restart: unless-stopped
     depends_on:
       - db
@@ -32,7 +45,7 @@ services:
     #      - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}
     volumes:
-      - /docker/cache/speedtest-tracker/redis:/data
+      - redis_data:/data
 
   db:
     image: postgres:15
@@ -42,4 +55,4 @@ services:
     #    ports:
     #      - 5434:5432
     volumes:
-      - /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
