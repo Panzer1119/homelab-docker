@@ -23,9 +23,9 @@ process_files() {
         else
             echo "Processing ${file} to ${output_file}..."
             if [ "${force}" == "true" ]; then
-                op inject -f -i "${file}" -o "${output_file}"
+                op inject -f -i "${file}" -o "${output_file}" > /dev/null
             else
-                op inject -i "${file}" -o "${output_file}"
+                op inject -i "${file}" -o "${output_file}" > /dev/null
             fi
         fi
     fi
