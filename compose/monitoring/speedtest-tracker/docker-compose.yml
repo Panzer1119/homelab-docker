@@ -1,0 +1,74 @@
+#version: '3.3'
+services:
+  speedtest-tracker:
+    # v0.11.20 # until 2024-06-03
+    # v0.11.22 # until 2024-06-03
+    # v0.12.2 # until 2024-06-03
+    # v0.13.4 # until 2024-06-03
+    # v0.14.1 # until 2024-06-03
+    # v0.14.7 # until 2024-06-03
+    # v0.15.5 # until 2024-06-03
+    # v0.16.6 # until 2024-06-04
+    # v0.17.3 # until 2024-06-04
+    # v0.18.7 # until 2024-06-04
+    #image: 'ghcr.io/alexjustesen/speedtest-tracker:v0.18.7' # until 2024-06-04 # https://github.com/alexjustesen/speedtest-tracker/issues/1117
+    # 0.18.7 (LinuxServer.io) # until 2024-06-04
+    # 0.19.0 # until 2024-06-08
+    # 0.20.3 # until 2024-06-13
+    # 0.20.6 # until 2024-07-18
+    image: lscr.io/linuxserver/speedtest-tracker:0.20.7
+    container_name: speedtest-tracker
+    ports:
+      - 8765:80
+    #            - '8443:443'
+    env_file:
+      - .env
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=speedtest_tracker
+      - DB_USERNAME=<REDACTED>
+      - DB_PASSWORD=<REDACTED>
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=<REDACTED>
+    volumes:
+      - /docker/config/speedtest-tracker:/config
+    #            - '/path/to/directory/web:/etc/ssl/web'
+    restart: unless-stopped
+    depends_on:
+      - db
+      - cache
+    healthcheck:
+      test: curl -fSs <REDACTED>/api/healthcheck || exit 1
+      interval: 10s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+  cache:
+    image: redis:6.2-alpine
+    restart: unless-stopped
+    #      expose:
+    #        - '6379'
+    #      ports:
+    #        - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass
+      <REDACTED>
+    volumes:
+      - /docker/cache/speedtest-tracker/redis:/data
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_DB=speedtest_tracker
+      - POSTGRES_USER=<REDACTED>
+      - POSTGRES_PASSWORD=<REDACTED>
+    #        ports:
+    #            - 5434:5432
+    volumes:
+      - /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
+networks: {}
