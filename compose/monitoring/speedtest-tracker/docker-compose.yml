@@ -3,14 +3,14 @@
 #- /docker/cache/speedtest-tracker/redis:/data
 #- /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
 volumes:
-  speedtest-tracker_config:
+  speedtest-tracker:
     name: speedtest-tracker/config
     driver: zfs
-  redis_data:
-    name: speedtest-tracker/redis_data
+  cache:
+    name: speedtest-tracker/cache
     driver: zfs
-  postgres_data:
-    name: speedtest-tracker/postgres_data
+  db:
+    name: speedtest-tracker/data
     driver: zfs
 
 services:
@@ -22,7 +22,7 @@ services:
     env_file:
       - speedtest-tracker.env
     volumes:
-      - speedtest-tracker_config:/config
+      - speedtest-tracker:/config
     restart: unless-stopped
     depends_on:
       - db
@@ -45,7 +45,7 @@ services:
     #      - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}
     volumes:
-      - redis_data:/data
+      - cache:/data
 
   db:
     image: postgres:15
@@ -55,4 +55,4 @@ services:
     #    ports:
     #      - 5434:5432
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
