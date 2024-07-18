@@ -1,3 +1,3 @@
 [submodule "compose/monitoring/graylog"]
 	path = compose/monitoring/graylog
-	url = git@github.com:Panzer1119/docker-compose-graylog.git
+	url = https://github.com/Panzer1119/docker-compose-graylog.git
