@@ -21,10 +21,10 @@ services:
   cache:
     image: redis:6.2-alpine
     restart: unless-stopped
-    #      expose:
-    #        - '6379'
-    #      ports:
-    #        - '6379:6379'
+    #    expose:
+    #      - '6379'
+    #    ports:
+    #      - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass
       <REDACTED>
     volumes:
@@ -36,8 +36,8 @@ services:
       - POSTGRES_DB=speedtest_tracker
       - POSTGRES_USER=<REDACTED>
       - POSTGRES_PASSWORD=<REDACTED>
-    #        ports:
-    #            - 5434:5432
+    #    ports:
+    #      - 5434:5432
     volumes:
       - /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
 networks: {}
