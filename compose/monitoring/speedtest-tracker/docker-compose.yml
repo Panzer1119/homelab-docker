@@ -22,20 +22,7 @@ services:
       - 8765:80
     #            - '8443:443'
     env_file:
-      - .env
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - DB_CONNECTION=pgsql
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_DATABASE=speedtest_tracker
-      - DB_USERNAME=<REDACTED>
-      - DB_PASSWORD=<REDACTED>
-      - CACHE_DRIVER=redis
-      - REDIS_HOST=cache
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=<REDACTED>
+      - speedtest-tracker.env
     volumes:
       - /docker/config/speedtest-tracker:/config
     #            - '/path/to/directory/web:/etc/ssl/web'
