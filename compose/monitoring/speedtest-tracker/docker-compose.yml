@@ -21,12 +21,14 @@ services:
 
   cache:
     image: redis:6.2-alpine
+    env_file:
+      - cache.env
     restart: unless-stopped
     #    expose:
     #      - '6379'
     #    ports:
     #      - '6379:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass <REDACTED>
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
     volumes:
       - /docker/cache/speedtest-tracker/redis:/data
 
