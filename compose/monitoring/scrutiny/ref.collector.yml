@@ -1,0 +1,8 @@
+version: 1
+
+# If you want to set the hostname of the collector, uncomment the following lines and set the hostname
+#host:
+#  id: "HOSTNAME"
+
+api:
+  endpoint: "{{ op://Docker/Scrutiny/Collector/Endpoint }}"

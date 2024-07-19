@@ -5,6 +5,7 @@ This contains Docker compose projects for monitoring services.
 ## Projects
 
 - [Graylog](./graylog/README.md)
+- [Scrutiny](./scrutiny/README.md)
 - [InfluxDB](./influxdb/README.md) #TODO
 - [Grafana](./grafana/README.md) #TODO
 - [Tautulli](./tautulli/README.md) #TODO

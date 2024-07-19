@@ -10,6 +10,7 @@
 
 # Ignore injected ref files
 compose/common/docker-compose.yml
+compose/monitoring/scrutiny/collector.yml
 
 .idea/
 

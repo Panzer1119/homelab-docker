@@ -1,0 +1,21 @@
+volumes:
+  scrutiny-web:
+    name: scrutiny/config
+    driver: zfs
+
+services:
+  web:
+    image: ghcr.io/analogj/scrutiny:master-web
+    container_name: scrutiny-web
+    hostname: scrutiny-web
+    env_file:
+      - scrutiny-web.env
+    volumes:
+      - scrutiny-web:/opt/scrutiny/config
+    network_mode: bridge
+    ports:
+      - 8076:8080
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
