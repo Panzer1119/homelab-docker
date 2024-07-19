@@ -1,0 +1,11 @@
+services:
+  logging-gelf:
+    logging:
+      driver: "gelf"
+      options:
+        # TCP only supports uncompressed and non-chunked payloads
+        gelf-address: "udp://{{ op://Docker/Common/Logging-GELF/Address }}"
+        # Compression can lead to excessive CPU usage
+        gelf-compression-type: "none"
+        # Default tag is the first 12 characters of the container ID
+        tag: '{{ "{{.FullID}}" }}'
