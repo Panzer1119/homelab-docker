@@ -72,7 +72,7 @@ if [ ! -d "${SEARCH_DIR}" ]; then
 fi
 
 # Find and process the files
-find "${SEARCH_DIR}" -type f -name 'ref*.env' | while read -r file; do
+find "${SEARCH_DIR}" -type f -name 'ref.*' | while read -r file; do
     process_files "${file}" "${force}" "${skip_existing}" "${dry_run}"
 done
 

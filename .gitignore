@@ -8,6 +8,9 @@
 # Not ignore ref.env files
 !**/ref*.env
 
+# Ignore injected ref files
+compose/common/docker-compose.yml
+
 .idea/
 
 # User-specific stuff
