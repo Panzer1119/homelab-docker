@@ -2,6 +2,8 @@
 #- /docker/config/speedtest-tracker:/config
 #- /docker/cache/speedtest-tracker/redis:/data
 #- /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
+#TODO What about adding the config/cache/data type at the start of the name, then it sort itself out?
+#  e.g. config/speedtest-tracker:/config or cache/speedtest-tracker/redis:/data or data/speedtest-tracker/postgres:/var/lib/postgresql/data
 volumes:
   speedtest-tracker:
     name: speedtest-tracker/config
