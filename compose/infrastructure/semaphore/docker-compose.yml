@@ -22,7 +22,6 @@ services:
   semaphore:
     image: semaphoreui/semaphore:v2.10.22
     container_name: semaphore
-    user: "${UID}:${GID}"
     env_file:
       - semaphore.env
     ports:
