@@ -5,7 +5,7 @@ volumes:
 
 services:
   web:
-    image: ghcr.io/analogj/scrutiny:master-web
+    image: ghcr.io/analogj/scrutiny:v0.8.1-web
     container_name: scrutiny-web
     hostname: scrutiny-web
     env_file:
