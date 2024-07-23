@@ -1,0 +1,39 @@
+---
+volumes:
+  semaphore:
+    name: config/semaphore
+    driver: zfs
+  db:
+    name: data/semaphore
+    driver: zfs
+
+services:
+  postgres:
+    image: postgres:15
+    env_file:
+      - db.env
+    volumes:
+      - db:/var/lib/postgresql/data
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  semaphore:
+    image: semaphoreui/semaphore:v2.10.22
+    container_name: semaphore
+    user: "${UID}:${GID}"
+    env_file:
+      - semaphore.env
+    ports:
+      - 3000:3000
+    volumes:
+      - semaphore:/etc/semaphore:rw
+      - ./inventory/:/inventory:ro #TODO What to do with this?
+      - ./authorized-keys/:/authorized-keys:ro #TODO What to do with this?
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
