@@ -1,18 +1,12 @@
-#TODO What about zfs auto-snapshots? How do I manage them, how do i set different policies for different volumes?
-#- /docker/config/speedtest-tracker:/config
-#- /docker/cache/speedtest-tracker/redis:/data
-#- /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
-#TODO What about adding the config/cache/data type at the start of the name, then it sort itself out?
-#  e.g. config/speedtest-tracker:/config or cache/speedtest-tracker/redis:/data or data/speedtest-tracker/postgres:/var/lib/postgresql/data
 volumes:
   speedtest-tracker:
-    name: speedtest-tracker/config
+    name: config/speedtest-tracker
     driver: zfs
   cache:
-    name: speedtest-tracker/cache
+    name: cache/speedtest-tracker
     driver: zfs
   db:
-    name: speedtest-tracker/data
+    name: data/speedtest-tracker
     driver: zfs
 
 services:
