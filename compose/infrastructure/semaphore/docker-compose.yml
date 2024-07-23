@@ -29,8 +29,6 @@ services:
       - 3000:3000
     volumes:
       - semaphore:/etc/semaphore:rw
-      - ./inventory/:/inventory:ro #TODO What to do with this?
-      - ./authorized-keys/:/authorized-keys:ro #TODO What to do with this?
     depends_on:
       - postgres
     restart: unless-stopped
