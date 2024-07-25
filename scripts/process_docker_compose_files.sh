@@ -77,6 +77,11 @@ process_docker_compose() {
     # Convert the label array to a dictionary
     labels=$(echo "${labels}" | jq -r '. | map(split("=")) | map({(.[0]): .[1]}) | add')
 
+    # If the labels are an empty dictionary, empty, or null, skip
+    if [ "${labels}" == "{}" ] || [ -z "${labels}" ] || [ "${labels}" == "null" ]; then
+      continue
+    fi
+
     # Check if volume has the specific label "de.panzer1119.docker.volume.cifs.share"
     share_name=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.share"]')
 
