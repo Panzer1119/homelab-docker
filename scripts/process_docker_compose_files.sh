@@ -25,27 +25,14 @@ fi
 # Parse command line arguments
 while getopts "d:a:u:p:qn" opt; do
   case ${opt} in
-    d )
-      directory=$OPTARG
-      ;;
-    a )
-      address=$OPTARG
-      ;;
-    u )
-      username=$OPTARG
-      ;;
-    p )
-      password=$OPTARG
-      ;;
-    q )
-      QUIET=1
-      ;;
-    n )
-      DRY_RUN=1
-      ;;
-    \? )
-      usage
-      ;;
+    d) directory="${OPTARG}" ;;
+    a) address="${OPTARG}" ;;
+    u) username="${OPTARG}" ;;
+    p) password="${OPTARG}" ;;
+    q) QUIET=1 ;;
+    n) DRY_RUN=1 ;;
+    \?) echo "Invalid option: -${OPTARG}" >&2
+        usage ;;
   esac
 done
 
