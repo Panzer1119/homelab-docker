@@ -70,11 +70,11 @@ fi
 
 # Execute Docker command
 if [[ ${QUIET} -eq 0 ]]; then
-  echo "Creating Docker volume..."
+  echo "Creating Docker CIFS volume '${VOLUME_NAME}' pointing to '${ADDRESS}/${SHARE_NAME}'..."
   echo "${DOCKER_CMD}"
 fi
 eval "${DOCKER_CMD}"
 
 if [[ ${QUIET} -eq 0 ]]; then
-  echo "Docker volume '${VOLUME_NAME}' created successfully."
+  echo "Docker CIFS volume '${VOLUME_NAME}' created successfully."
 fi
