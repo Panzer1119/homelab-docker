@@ -9,7 +9,7 @@ DELETE=0
 
 # Function to display usage
 usage() {
-  echo "Usage: ${0} -d <directory> -a <address> -u <username> -p <password> [-q]"
+  echo "Usage: ${0} -d <directory> -a <address> -u <username> -p <password> [-q] [-n] [-D]"
   echo "  -d <directory>: Directory to recursively search for docker-compose.yml files"
   echo "  -a <address>: Address of the CIFS/SMB server"
   echo "  -u <username>: Username for authentication"
@@ -47,8 +47,12 @@ while getopts "d:a:u:p:qnD" opt; do
   esac
 done
 
-# Ensure all required arguments are provided
-if [ -z "${directory}" ] || [ -z "${address}" ] || [ -z "${username}" ] || [ -z "${password}" ]; then
+# Ensure directory is provided if delete mode is enabled
+if [[ "${DELETE}" -eq 1 ]] && [[ -z "${directory}" ]]; then
+  usage
+fi
+# Ensure all required arguments are provided if delete mode is not enabled
+if [[ "${DELETE}" -eq 0 ]] && [[ -z "${directory}" || -z "${address}" || -z "${username}" || -z "${password}" ]]; then
   usage
 fi
 
