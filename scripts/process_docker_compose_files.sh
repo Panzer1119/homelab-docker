@@ -16,6 +16,12 @@ usage() {
   exit 1
 }
 
+# Check if jq is installed
+if ! command -v jq &> /dev/null; then
+  echo "jq could not be found. Please install jq to run this script."
+  exit 1
+fi
+
 # Check if yq is installed
 if ! command -v yq &> /dev/null; then
   echo "yq could not be found. Please install yq to run this script."
