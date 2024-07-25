@@ -47,6 +47,16 @@ if [ -z "${DIRECTORY}" ]; then
   usage
 fi
 
+# Function to check if a value is empty or null
+check_value() {
+  local value="${1}"
+  local name="${2}"
+  if [ -z "${value}" ] || [ "${value}" == "null" ]; then
+    echo "Error: ${name} is required for volume '${volume_name}' in '${file}'"
+    exit 1
+  fi
+}
+
 # Function to process docker-compose.yml files
 process_docker_compose() {
   local file=$1
@@ -111,34 +121,24 @@ process_docker_compose() {
     cifs_username=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.username"]')
     cifs_password=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.password"]')
 
-    # If all cifs values are empty or null, skip
-    if [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ] || [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ] || [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ] || [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; then
+    # Skip if any required CIFS detail is missing
+    for var in cifs_host cifs_share cifs_username cifs_password; do
+      [ -z "${!var}" ] || [ "${!var}" == "null" ] && continue 2
+    done
+
+    # If all CIFS values are empty or null, skip
+    if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
+       { [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; } &&
+       { [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ]; } &&
+       { [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; }; then
       continue
     fi
 
-    # If the cifs host is null or empty, throw an error
-    if [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; then
-      echo "Error: Share host is required for volume '${volume_name}' in '${file}'"
-      exit 1
-    fi
-
-    # If the cifs share is null or empty, throw an error
-    if [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; then
-      echo "Error: Share name is required for volume '${volume_name}' in '${file}'"
-      exit 1
-    fi
-
-    # If the cifs username is null or empty, throw an error
-    if [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ]; then
-      echo "Error: Username is required for volume '${volume_name}' in '${file}'"
-      exit 1
-    fi
-
-    # If the cifs password is null or empty, throw an error
-    if [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; then
-      echo "Error: Password is required for volume '${volume_name}' in '${file}'"
-      exit 1
-    fi
+    # Check each required CIFS value
+    check_value "${cifs_host}" "Share host"
+    check_value "${cifs_share}" "Share name"
+    check_value "${cifs_username}" "Username"
+    check_value "${cifs_password}" "Password"
 
     # Use op to retrieve values if needed
     for var in cifs_host cifs_share cifs_username cifs_password; do
