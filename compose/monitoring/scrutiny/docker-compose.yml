@@ -1,6 +1,6 @@
 volumes:
   scrutiny-web:
-    name: scrutiny/config
+    name: config/scrutiny
     driver: zfs
 
 services:
