@@ -16,7 +16,7 @@ usage() {
   echo "  -p <password>: Password for authentication"
   echo "  -q: Optional. Quiet mode"
   echo "  -n: Optional. Dry run"
-  echo "  -D: Optional. Delete the CIFS volumes"
+  echo "  -D: Optional. Delete the CIFS volumes (only requires -d)"
   exit 1
 }
 
