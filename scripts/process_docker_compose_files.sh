@@ -88,32 +88,6 @@ process_docker_compose() {
     # Get the volume name
     volume_name=$(yq -r ".volumes.${volume_key}.name" "${file}")
 
-    # If quiet mode is not enabled, display the volume name and share name
-    [ "${QUIET}" -eq 0 ] && echo "Found CIFS volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
-
-    # If delete mode is enabled, delete the volume
-    if [ "${DELETE}" -eq 1 ]; then
-      # Check if the volume exists
-      if ! docker volume inspect "${volume_name}" &> /dev/null; then
-        # If quiet mode is not enabled, display a message
-        [ "${QUIET}" -eq 0 ] && echo "Volume '${volume_name}' does not exist. Skipping deletion..."
-        continue
-      fi
-      # If quiet mode is not enabled, display a message
-      [ "${QUIET}" -eq 0 ] && echo "Deleting volume '${volume_name}'..."
-      # If dry run is enabled, display a message
-      if [ "${DRY_RUN}" -eq 1 ]; then
-        [ "${QUIET}" -eq 0 ] && echo "Would delete volume '${volume_name}'..."
-        continue
-      fi
-      # Delete the volume
-      if ! docker volume rm "${volume_name}"; then
-        echo "Error: Failed to delete volume '${volume_name}'"
-        exit 1
-      fi
-      continue
-    fi
-
     # Convert the label array to a dictionary
     labels=$(echo "${labels}" | jq -r '. | map(split("=")) | map({(.[0]): .[1]}) | add')
 
@@ -151,6 +125,32 @@ process_docker_compose() {
     for var in cifs_host cifs_share cifs_username cifs_password; do
       [[ "${!var}" == *"op://"* ]] && eval "${var}=$(op read "${!var}")"
     done
+
+    # If quiet mode is not enabled, display the volume name and share name
+    [ "${QUIET}" -eq 0 ] && echo "Found CIFS volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
+
+    # If delete mode is enabled, delete the volume
+    if [ "${DELETE}" -eq 1 ]; then
+      # Check if the volume exists
+      if ! docker volume inspect "${volume_name}" &> /dev/null; then
+        # If quiet mode is not enabled, display a message
+        [ "${QUIET}" -eq 0 ] && echo "Volume '${volume_name}' does not exist. Skipping deletion..."
+        continue
+      fi
+      # If quiet mode is not enabled, display a message
+      [ "${QUIET}" -eq 0 ] && echo "Deleting volume '${volume_name}'..."
+      # If dry run is enabled, display a message
+      if [ "${DRY_RUN}" -eq 1 ]; then
+        [ "${QUIET}" -eq 0 ] && echo "Would delete volume '${volume_name}'..."
+        continue
+      fi
+      # Delete the volume
+      if ! docker volume rm "${volume_name}"; then
+        echo "Error: Failed to delete volume '${volume_name}'"
+        exit 1
+      fi
+      continue
+    fi
 
     # Build the command to create the CIFS volume
     local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${cifs_host}" "-s" "${cifs_share}" "-u" "${cifs_username}" "-p" "${cifs_password}" "-e")
