@@ -120,6 +120,12 @@ process_docker_compose() {
 
     # If delete mode is enabled, delete the volume
     if [[ "${DELETE}" -eq 1 ]]; then
+      # Check if the volume exists
+      if ! docker volume inspect "${volume_name}" &> /dev/null; then
+        echo "Volume '${volume_name}' does not exist. Skipping deletion..."
+        continue
+      fi
+      # Delete the volume
       echo "Deleting volume '${volume_name}'..."
       if ! docker volume rm "${volume_name}"; then
         echo "Error: Failed to delete volume '${volume_name}'"
