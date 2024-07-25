@@ -129,7 +129,7 @@ process_docker_compose() {
       [ -z "${cifs_key}" ] || [ "${cifs_key}" == "null" ] && continue
 
       # Create a dictionary with the volume name as the key and another dictionary with the cifs key as the key and the volume label value as the value
-      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"${cifs_key}\": \"${volume_label_value}\"}")
+      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"cifs_${cifs_key}\": \"${volume_label_value}\"}")
     done
 
     # Iterate over the volume dictionaries keys
@@ -137,10 +137,10 @@ process_docker_compose() {
       local cifs_host cifs_share cifs_username cifs_password
 
       # Get the cifs host, share, username, and password from the volume dictionaries
-      cifs_host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].host")
-      cifs_share=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].share")
-      cifs_username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].username")
-      cifs_password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].password")
+      cifs_host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_host")
+      cifs_share=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_share")
+      cifs_username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_username")
+      cifs_password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_password")
 
       # If all CIFS values are empty or null, skip
       if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
