@@ -3,9 +3,10 @@
 ENV_FILENAME="create_volumes_monitoring.env"
 CREATE_VOLUME_SCRIPT_FILENAME="create_docker_cifs_volume.sh"
 
-ENV_FILE="${PWD}/${ENV_FILENAME}"
-REF_ENV_FILE="${PWD}/ref.${ENV_FILENAME}"
-CREATE_VOLUME_SCRIPT_FILE="${PWD}/${CREATE_VOLUME_SCRIPT_FILENAME}"
+SCRIPTS_DIR=$(dirname "${0}")
+ENV_FILE="${SCRIPTS_DIR}/${ENV_FILENAME}"
+REF_ENV_FILE="${SCRIPTS_DIR}/ref.${ENV_FILENAME}"
+CREATE_VOLUME_SCRIPT_FILE="${SCRIPTS_DIR}/${CREATE_VOLUME_SCRIPT_FILENAME}"
 
 # Check if create_volumes_monitoring.env exists
 if [[ ! -f "${ENV_FILE}" ]]; then
