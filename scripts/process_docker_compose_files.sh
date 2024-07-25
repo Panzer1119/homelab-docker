@@ -10,11 +10,8 @@ DELETE=0
 
 # Function to display usage
 usage() {
-  echo "Usage: ${0} -d <directory> -a <address> -u <username> -p <password> [-q] [-n] [-D]"
+  echo "Usage: ${0} -d <directory> [-q] [-n] [-D]"
   echo "  -d <directory>: Directory to recursively search for docker-compose.yml files"
-  echo "  -a <address>: Address of the CIFS/SMB server"
-  echo "  -u <username>: Username for authentication"
-  echo "  -p <password>: Password for authentication"
   echo "  -q: Optional. Quiet mode"
   echo "  -n: Optional. Dry run"
   echo "  -D: Optional. Delete the CIFS volumes (only requires -d)"
@@ -34,12 +31,8 @@ if ! command -v yq &> /dev/null; then
 fi
 
 # Parse command line arguments
-while getopts "d:a:u:p:qnD" opt; do
+while getopts "qnD" opt; do
   case ${opt} in
-    d) directory="${OPTARG}" ;;
-    a) address="${OPTARG}" ;;
-    u) username="${OPTARG}" ;;
-    p) password="${OPTARG}" ;;
     q) QUIET=1 ;;
     n) DRY_RUN=1 ;;
     D) DELETE=1 ;;
@@ -48,12 +41,8 @@ while getopts "d:a:u:p:qnD" opt; do
   esac
 done
 
-# Ensure directory is provided if delete mode is enabled
-if [[ "${DELETE}" -eq 1 ]] && [[ -z "${directory}" ]]; then
-  usage
-fi
-# Ensure all required arguments are provided if delete mode is not enabled
-if [[ "${DELETE}" -eq 0 ]] && [[ -z "${directory}" || -z "${address}" || -z "${username}" || -z "${password}" ]]; then
+# Ensure directory is provided
+if [ -z "${directory}" ]; then
   usage
 fi
 
@@ -83,6 +72,11 @@ process_docker_compose() {
   # Iterate over the volume keys
   for volume_key in ${volume_keys}; do
     local labels
+    local volume_name
+    local cifs_host
+    local cifs_share
+    local cifs_username
+    local cifs_password
 
     # Get the label array for the volume
     labels=$(yq ".volumes.${volume_key}.labels" "${file}")
@@ -92,31 +86,12 @@ process_docker_compose() {
       continue
     fi
 
-    local volume_name
-    local share_name
-
     # Get the volume name
     volume_name=$(yq -r ".volumes.${volume_key}.name" "${file}")
 
-    # Convert the label array to a dictionary
-    labels=$(echo "${labels}" | jq -r '. | map(split("=")) | map({(.[0]): .[1]}) | add')
-
-    # If the labels are an empty dictionary, empty, or null, skip
-    if [ "${labels}" == "{}" ] || [ -z "${labels}" ] || [ "${labels}" == "null" ]; then
-      continue
-    fi
-
-    # Check if volume has the specific label "de.panzer1119.docker.volume.cifs.share"
-    share_name=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.share"]')
-
-    # If the share name is null or empty, skip
-    if [ -z "${share_name}" ] || [ "${share_name}" == "null" ]; then
-      continue
-    fi
-
     # If quiet mode is not enabled, display the volume name and share name
     if [[ "${QUIET}" -eq 0 ]]; then
-      echo "Found volume '${volume_name}' with share name '${share_name}' in '${file}'"
+      echo "Found volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
     fi
 
     # If delete mode is enabled, delete the volume
@@ -135,8 +110,71 @@ process_docker_compose() {
       continue
     fi
 
+    # Convert the label array to a dictionary
+    labels=$(echo "${labels}" | jq -r '. | map(split("=")) | map({(.[0]): .[1]}) | add')
+
+    # If the labels are an empty dictionary, empty, or null, skip
+    if [ "${labels}" == "{}" ] || [ -z "${labels}" ] || [ "${labels}" == "null" ]; then
+      continue
+    fi
+
+    # Get the CIFS host, share, username, and password
+    cifs_host=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.host"]')
+    cifs_share=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.share"]')
+    cifs_username=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.username"]')
+    cifs_password=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.password"]')
+
+    # If all cifs values are empty or null, skip
+    if [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ] || [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ] || [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ] || [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; then
+      continue
+    fi
+
+    # If the cifs host is null or empty, throw an error
+    if [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; then
+      echo "Error: Share host is required for volume '${volume_name}' in '${file}'"
+      exit 1
+    fi
+
+    # If the cifs share is null or empty, throw an error
+    if [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; then
+      echo "Error: Share name is required for volume '${volume_name}' in '${file}'"
+      exit 1
+    fi
+
+    # If the cifs username is null or empty, throw an error
+    if [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ]; then
+      echo "Error: Username is required for volume '${volume_name}' in '${file}'"
+      exit 1
+    fi
+
+    # If the cifs password is null or empty, throw an error
+    if [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; then
+      echo "Error: Password is required for volume '${volume_name}' in '${file}'"
+      exit 1
+    fi
+
+    # If cifs host contains op:// anywhere in the string, use op to retrieve the value
+    if [[ "${cifs_host}" == *"op://"* ]]; then
+      cifs_host=$(op read "${cifs_host}")
+    fi
+
+    # If cifs share contains op:// anywhere in the string, use op to retrieve the value
+    if [[ "${cifs_share}" == *"op://"* ]]; then
+      cifs_share=$(op read "${cifs_share}")
+    fi
+
+    # If cifs username contains op:// anywhere in the string, use op to retrieve the value
+    if [[ "${cifs_username}" == *"op://"* ]]; then
+      cifs_username=$(op read "${cifs_username}")
+    fi
+
+    # If cifs password contains op:// anywhere in the string, use op to retrieve the value
+    if [[ "${cifs_password}" == *"op://"* ]]; then
+      cifs_password=$(op read "${cifs_password}")
+    fi
+
     # Build the command to create the CIFS volume
-    local command="bash \"${CREATE_CIFS_VOLUME_SCRIPT_FILE}\" -n \"${volume_name}\" -a \"${address}\" -s \"${share_name}\" -u \"${username}\" -p \"${password}\" -e"
+    local command="bash \"${CREATE_CIFS_VOLUME_SCRIPT_FILE}\" -n \"${volume_name}\" -a \"${cifs_host}\" -s \"${cifs_share}\" -u \"${cifs_username}\" -p \"${cifs_password}\" -e"
 
     # If quiet mode is enabled, suppress output
     if [[ "${QUIET}" -eq 1 ]]; then
