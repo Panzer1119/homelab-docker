@@ -3,6 +3,8 @@
 CREATE_CIFS_VOLUME_SCRIPT_FILENAME="create_docker_cifs_volume.sh"
 
 CREATE_CIFS_VOLUME_SCRIPT_FILE="${PWD}/${CREATE_CIFS_VOLUME_SCRIPT_FILENAME}"
+QUIET=0
+DRY_RUN=0
 
 # Function to display usage
 usage() {
@@ -50,14 +52,28 @@ fi
 # Function to process docker-compose.yml files
 process_docker_compose() {
   local file=$1
+  local volumes
   local volume_keys
   local volume_key
 
-  # Extract top-level volume elements with external enabled
-  volume_keys=$(yq '.volumes | to_entries | map(select(.value.external == true)) | .[].key' "${file}")
+  # Extract top-level volumes element
+  volumes=$(yq '.volumes' "${file}")
+
+  # If the volumes element is empty or null, skip
+  if [ -z "${volumes}" ] || [ "${volumes}" == "null" ]; then
+    return
+  fi
+
+  # Extract top-level volume elements with external enabled (ignore stderr)
+  volume_keys=$(yq '.volumes | to_entries | map(select(.value.external)) | map(.key) | .[]' "${file}" 2>/dev/null)
+
+  # If no volume keys are found or the volume keys array is empty, skip
+  if [ -z "${volume_keys}" ] || [ "${volume_keys}" == "[]" ]; then
+    return
+  fi
 
   # Iterate over the volume keys
-  for volume_key in volume_keys; do
+  for volume_key in ${volume_keys}; do
     local labels
 
     # Get the label array for the volume
@@ -91,21 +107,21 @@ process_docker_compose() {
     fi
 
     # If quiet mode is not enabled, display the volume name and share name
-    if [ -z "${QUIET}" ]; then
+    if [[ "${QUIET}" -eq 0 ]]; then
       echo "Found volume '${volume_name}' with share name '${share_name}' in '${file}'"
     fi
 
     local command="bash \"${CREATE_CIFS_VOLUME_SCRIPT_FILE}\" -n \"${volume_name}\" -a \"${address}\" -s \"${share_name}\" -u \"${username}\" -p \"${password}\" -e"
 
     # If quiet mode is enabled, suppress output
-    if [ -n "${QUIET}" ]; then
+    if [[ "${QUIET}" -eq 1 ]]; then
       command="${command} -q"
     fi
 
     # If dry run is enabled, display the command
-    if [ -n "${DRY_RUN}" ]; then
+    if [[ "${DRY_RUN}" -eq 1 ]]; then
       # If quiet mode is not enabled, display the command
-      if [ -z "${QUIET}" ]; then
+      if [[ "${QUIET}" -eq 0 ]]; then
         echo "${command}"
       fi
       continue
