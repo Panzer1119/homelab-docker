@@ -136,5 +136,10 @@ process_docker_compose() {
 
 export -f process_docker_compose
 
-# Find and process all docker-compose.yml files
-find "${directory}" -type f -name "*docker-compose.yml" -exec bash -c 'process_docker_compose "$0"' {} \;
+# Find all docker-compose.yml files
+files=$(find "${directory}" -type f -name "*docker-compose.yml")
+
+# Process each docker-compose.yml file
+for file in ${files}; do
+  process_docker_compose "${file}"
+done
