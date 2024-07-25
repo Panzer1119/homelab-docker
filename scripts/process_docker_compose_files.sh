@@ -102,11 +102,6 @@ process_docker_compose() {
     cifs_username=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.username"]')
     cifs_password=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.password"]')
 
-    # Skip if any required CIFS detail is missing
-    for var in cifs_host cifs_share cifs_username cifs_password; do
-      [ -z "${!var}" ] || [ "${!var}" == "null" ] && continue 2
-    done
-
     # If all CIFS values are empty or null, skip
     if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
        { [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; } &&
