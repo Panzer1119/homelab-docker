@@ -59,36 +59,32 @@ check_value() {
 
 # Function to process docker-compose.yml files
 process_docker_compose() {
-  local file=$1
-  local volumes
-  local volume_keys
+  local file="${1}"
+  local services service_keys
 
-  # Extract top-level volumes element
-  volumes=$(yq '.volumes' "${file}")
+  # Extract top-level services element
+  services=$(yq '.services' "${file}")
 
-  # If the volumes element is empty or null, skip
-  [ -z "${volumes}" ] || [ "${volumes}" == "null" ] && return
+  # If the services element is empty or null, skip
+  [ -z "${services}" ] || [ "${services}" == "null" ] && return
 
-  # Extract top-level volume elements with external enabled (ignore stderr)
-  volume_keys=$(yq '.volumes | to_entries | map(select(.value.external)) | map(.key) | .[]' "${file}" 2>/dev/null)
+  # Extract top-level service elements with labels defined (ignore stderr)
+  service_keys=$(yq '.services | to_entries | map(select(.value.labels)) | map(.key) | .[]' "${file}" 2>/dev/null)
 
-  # If no volume keys are found or the volume keys array is empty, skip
-  [ -z "${volume_keys}" ] || [ "${volume_keys}" == "[]" ] && return
+  # If no service keys are found or the service keys array is empty, skip
+  [ -z "${service_keys}" ] || [ "${service_keys}" == "[]" ] && return
 
-  # Iterate over the volume keys
-  for volume_key in ${volume_keys}; do
-    local labels volume_name cifs_host cifs_share cifs_username cifs_password
+  # Iterate over the service keys
+  for service_key in ${service_keys}; do
+    local labels volume_labels volume_dictionaries
 
-    # Get the label array for the volume
-    labels=$(yq ".volumes.${volume_key}.labels" "${file}")
+    # Get the labels array for the service
+    labels=$(yq ".services.${service_key}.labels" "${file}")
 
     # If the labels are an empty array, empty, or null, skip
     [ "${labels}" == "[]" ] || [ -z "${labels}" ] || [ "${labels}" == "null" ] && continue
 
-    # Get the volume name
-    volume_name=$(yq -r ".volumes.${volume_key}.name" "${file}")
-
-    # Convert the label array to a dictionary
+    # Convert the labels array to a dictionary
     labels=$(echo "${labels}" | jq -r '. | map(split("=")) | map({(.[0]): .[1]}) | add')
 
     # If the labels are an empty dictionary, empty, or null, skip
@@ -96,73 +92,113 @@ process_docker_compose() {
       continue
     fi
 
-    # Extract CIFS details from labels
-    cifs_host=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.host"]')
-    cifs_share=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.share"]')
-    cifs_username=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.username"]')
-    cifs_password=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.password"]')
+    # Filter all labels starting with "de.panzer1119.docker.volume."
+    volume_labels=$(echo "${labels}" | jq -r 'to_entries | map(select(.key | startswith("de.panzer1119.docker.volume."))) | from_entries')
 
-    # If all CIFS values are empty or null, skip
-    if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
-       { [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; } &&
-       { [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ]; } &&
-       { [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; }; then
-      continue
-    fi
-
-    # Check each required CIFS value
-    check_value "${cifs_host}" "Share host"
-    check_value "${cifs_share}" "Share name"
-    check_value "${cifs_username}" "Username"
-    check_value "${cifs_password}" "Password"
-
-    # Use op to retrieve values if needed
-    for var in cifs_host cifs_share cifs_username cifs_password; do
-      [[ "${!var}" == *"op://"* ]] && eval "${var}=$(op read "${!var}")"
+    # Iterate over the volume labels and replace the values with the secrets
+    for key in $(echo "${volume_labels}" | jq -r 'keys[]'); do
+      value=$(echo "${volume_labels}" | jq -r ".[\"${key}\"]")
+      if [[ "${value}" == "op://"* ]]; then
+        volume_labels=$(echo "${volume_labels}" | jq -r ".[\"${key}\"] |= \"$(op read "${value}")\"")
+      fi
     done
 
-    # If quiet mode is not enabled, display the volume name and share name
-    [ "${QUIET}" -eq 0 ] && echo "Found CIFS volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
+    # Create an empty dictionary for the volume dictionaries
+    volume_dictionaries="{}"
 
-    # If delete mode is enabled, delete the volume
-    if [ "${DELETE}" -eq 1 ]; then
-      # Check if the volume exists
-      if ! docker volume inspect "${volume_name}" &> /dev/null; then
+    # Iterate over the volume label keys
+    for volume_label_key in $(echo "${volume_labels}" | jq -r 'keys[]'); do
+      local volume_label_value volume_name cifs_key
+
+      # Get the volume label value
+      volume_label_value=$(echo "${volume_labels}" | jq -r ".[\"${volume_label_key}\"]")
+
+      # If the volume label value is empty or null, skip
+      [ -z "${volume_label_value}" ] || [ "${volume_label_value}" == "null" ] && continue
+
+      # Extract the volume name from the volume label key (the first part after "de.panzer1119.docker.volume.")
+      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.cifs.(host|share|username|password)$/\1/')
+
+      # If the volume name is empty or null, skip
+      [ -z "${volume_name}" ] || [ "${volume_name}" == "null" ] && continue
+
+      # Extract the cifs key from the volume label key (the second part after "de.panzer1119.docker.volume.")
+      cifs_key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.cifs.(host|share|username|password)$/\2/')
+
+      # If the cifs key is empty or null, skip
+      [ -z "${cifs_key}" ] || [ "${cifs_key}" == "null" ] && continue
+
+      # Create a dictionary with the volume name as the key and another dictionary with the cifs key as the key and the volume label value as the value
+      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"${cifs_key}\": \"${volume_label_value}\"}")
+    done
+
+    # Iterate over the volume dictionaries keys
+    for volume_name in $(echo "${volume_dictionaries}" | jq -r 'keys[]'); do
+      local cifs_host cifs_share cifs_username cifs_password
+
+      # Get the cifs host, share, username, and password from the volume dictionaries
+      cifs_host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].host")
+      cifs_share=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].share")
+      cifs_username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].username")
+      cifs_password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].password")
+
+      # If all CIFS values are empty or null, skip
+      if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
+         { [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; } &&
+         { [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ]; } &&
+         { [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; }; then
+        continue
+      fi
+
+      # Check each required CIFS value
+      check_value "${cifs_host}" "Share host"
+      check_value "${cifs_share}" "Share name"
+      check_value "${cifs_username}" "Username"
+      check_value "${cifs_password}" "Password"
+
+      # If quiet mode is not enabled, display the volume name and share name
+      [ "${QUIET}" -eq 0 ] && echo "Found CIFS volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
+
+      # If delete mode is enabled, delete the volume
+      if [ "${DELETE}" -eq 1 ]; then
+        # Check if the volume exists
+        if ! docker volume inspect "${volume_name}" &> /dev/null; then
+          # If quiet mode is not enabled, display a message
+          [ "${QUIET}" -eq 0 ] && echo "Volume '${volume_name}' does not exist. Skipping deletion..."
+          continue
+        fi
         # If quiet mode is not enabled, display a message
-        [ "${QUIET}" -eq 0 ] && echo "Volume '${volume_name}' does not exist. Skipping deletion..."
+        [ "${QUIET}" -eq 0 ] && echo "Deleting volume '${volume_name}'..."
+        # If dry run is enabled, display a message
+        if [ "${DRY_RUN}" -eq 1 ]; then
+          [ "${QUIET}" -eq 0 ] && echo "Would delete volume '${volume_name}'..."
+          continue
+        fi
+        # Delete the volume
+        if ! docker volume rm "${volume_name}"; then
+          echo "Error: Failed to delete volume '${volume_name}'"
+          exit 1
+        fi
         continue
       fi
-      # If quiet mode is not enabled, display a message
-      [ "${QUIET}" -eq 0 ] && echo "Deleting volume '${volume_name}'..."
-      # If dry run is enabled, display a message
+
+      # Build the command to create the CIFS volume
+      local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${cifs_host}" "-s" "${cifs_share}" "-u" "${cifs_username}" "-p" "${cifs_password}" "-e")
+
+      # Add quiet option if enabled
+      [ "${QUIET}" -eq 1 ] && command+=("-q")
+
+      # If dry run is enabled, display the command
       if [ "${DRY_RUN}" -eq 1 ]; then
-        [ "${QUIET}" -eq 0 ] && echo "Would delete volume '${volume_name}'..."
+        [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
         continue
       fi
-      # Delete the volume
-      if ! docker volume rm "${volume_name}"; then
-        echo "Error: Failed to delete volume '${volume_name}'"
+
+      # Create the CIFS volume
+      if ! "${command[@]}"; then
         exit 1
       fi
-      continue
-    fi
-
-    # Build the command to create the CIFS volume
-    local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${cifs_host}" "-s" "${cifs_share}" "-u" "${cifs_username}" "-p" "${cifs_password}" "-e")
-
-    # Add quiet option if enabled
-    [ "${QUIET}" -eq 1 ] && command+=("-q")
-
-    # If dry run is enabled, display the command
-    if [ "${DRY_RUN}" -eq 1 ]; then
-      [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
-      continue
-    fi
-
-    # Create the CIFS volume
-    if ! "${command[@]}"; then
-      exit 1
-    fi
+    done
   done
 }
 
