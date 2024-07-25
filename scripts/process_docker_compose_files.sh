@@ -5,6 +5,7 @@ CREATE_CIFS_VOLUME_SCRIPT_FILENAME="create_docker_cifs_volume.sh"
 CREATE_CIFS_VOLUME_SCRIPT_FILE="${PWD}/${CREATE_CIFS_VOLUME_SCRIPT_FILENAME}"
 QUIET=0
 DRY_RUN=0
+DELETE=0
 
 # Function to display usage
 usage() {
@@ -15,6 +16,7 @@ usage() {
   echo "  -p <password>: Password for authentication"
   echo "  -q: Optional. Quiet mode"
   echo "  -n: Optional. Dry run"
+  echo "  -D: Optional. Delete the CIFS volumes"
   exit 1
 }
 
@@ -31,7 +33,7 @@ if ! command -v yq &> /dev/null; then
 fi
 
 # Parse command line arguments
-while getopts "d:a:u:p:qn" opt; do
+while getopts "d:a:u:p:qnD" opt; do
   case ${opt} in
     d) directory="${OPTARG}" ;;
     a) address="${OPTARG}" ;;
@@ -39,6 +41,7 @@ while getopts "d:a:u:p:qn" opt; do
     p) password="${OPTARG}" ;;
     q) QUIET=1 ;;
     n) DRY_RUN=1 ;;
+    D) DELETE=1 ;;
     \?) echo "Invalid option: -${OPTARG}" >&2
         usage ;;
   esac
@@ -111,6 +114,17 @@ process_docker_compose() {
       echo "Found volume '${volume_name}' with share name '${share_name}' in '${file}'"
     fi
 
+    # If delete mode is enabled, delete the volume
+    if [[ "${DELETE}" -eq 1 ]]; then
+      echo "Deleting volume '${volume_name}'..."
+      if ! docker volume rm "${volume_name}"; then
+        echo "Error: Failed to delete volume '${volume_name}'"
+        exit 1
+      fi
+      continue
+    fi
+
+    # Build the command to create the CIFS volume
     local command="bash \"${CREATE_CIFS_VOLUME_SCRIPT_FILE}\" -n \"${volume_name}\" -a \"${address}\" -s \"${share_name}\" -u \"${username}\" -p \"${password}\" -e"
 
     # If quiet mode is enabled, suppress output
