@@ -4,35 +4,36 @@ CREATE_CIFS_VOLUME_SCRIPT_FILENAME="create_docker_cifs_volume.sh"
 
 SCRIPTS_DIR=$(dirname "${0}")
 CREATE_CIFS_VOLUME_SCRIPT_FILE="${SCRIPTS_DIR}/${CREATE_CIFS_VOLUME_SCRIPT_FILENAME}"
+
+DIRECTORY=""
 QUIET=0
 DRY_RUN=0
 DELETE=0
 
 # Function to display usage
 usage() {
-  echo "Usage: ${0} -d <directory> [-q] [-n] [-D]"
-  echo "  -d <directory>: Directory to recursively search for docker-compose.yml files"
-  echo "  -q: Optional. Quiet mode"
-  echo "  -n: Optional. Dry run"
-  echo "  -D: Optional. Delete the CIFS volumes (only requires -d)"
+  cat << EOF
+Usage: ${0} -d <directory> [-q] [-n] [-D]
+  -d <directory>: Directory to recursively search for docker-compose.yml files
+  -q: Optional. Quiet mode
+  -n: Optional. Dry run
+  -D: Optional. Delete the CIFS volumes (only requires -d)
+EOF
   exit 1
 }
 
-# Check if jq is installed
-if ! command -v jq &> /dev/null; then
-  echo "jq could not be found. Please install jq to run this script."
-  exit 1
-fi
-
-# Check if yq is installed
-if ! command -v yq &> /dev/null; then
-  echo "yq could not be found. Please install yq to run this script."
-  exit 1
-fi
+# Check for required commands
+for cmd in jq yq; do
+  if ! command -v "${cmd}" &> /dev/null; then
+    echo "Error: ${cmd} is not installed. Please install ${cmd} to run this script."
+    exit 1
+  fi
+done
 
 # Parse command line arguments
-while getopts "qnD" opt; do
+while getopts "d:qnD" opt; do
   case ${opt} in
+    d) DIRECTORY=${OPTARG} ;;
     q) QUIET=1 ;;
     n) DRY_RUN=1 ;;
     D) DELETE=1 ;;
@@ -42,7 +43,7 @@ while getopts "qnD" opt; do
 done
 
 # Ensure directory is provided
-if [ -z "${directory}" ]; then
+if [ -z "${DIRECTORY}" ]; then
   usage
 fi
 
@@ -51,51 +52,37 @@ process_docker_compose() {
   local file=$1
   local volumes
   local volume_keys
-  local volume_key
 
   # Extract top-level volumes element
   volumes=$(yq '.volumes' "${file}")
 
   # If the volumes element is empty or null, skip
-  if [ -z "${volumes}" ] || [ "${volumes}" == "null" ]; then
-    return
-  fi
+  [ -z "${volumes}" ] || [ "${volumes}" == "null" ] && return
 
   # Extract top-level volume elements with external enabled (ignore stderr)
   volume_keys=$(yq '.volumes | to_entries | map(select(.value.external)) | map(.key) | .[]' "${file}" 2>/dev/null)
 
   # If no volume keys are found or the volume keys array is empty, skip
-  if [ -z "${volume_keys}" ] || [ "${volume_keys}" == "[]" ]; then
-    return
-  fi
+  [ -z "${volume_keys}" ] || [ "${volume_keys}" == "[]" ] && return
 
   # Iterate over the volume keys
   for volume_key in ${volume_keys}; do
-    local labels
-    local volume_name
-    local cifs_host
-    local cifs_share
-    local cifs_username
-    local cifs_password
+    local labels volume_name cifs_host cifs_share cifs_username cifs_password
 
     # Get the label array for the volume
     labels=$(yq ".volumes.${volume_key}.labels" "${file}")
 
     # If the labels are an empty array, empty, or null, skip
-    if [ "${labels}" == "[]" ] || [ -z "${labels}" ] || [ "${labels}" == "null" ]; then
-      continue
-    fi
+    [ "${labels}" == "[]" ] || [ -z "${labels}" ] || [ "${labels}" == "null" ] && continue
 
     # Get the volume name
     volume_name=$(yq -r ".volumes.${volume_key}.name" "${file}")
 
     # If quiet mode is not enabled, display the volume name and share name
-    if [[ "${QUIET}" -eq 0 ]]; then
-      echo "Found volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
-    fi
+    [ "${QUIET}" -eq 0 ] && echo "Found CIFS volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
 
     # If delete mode is enabled, delete the volume
-    if [[ "${DELETE}" -eq 1 ]]; then
+    if [ "${DELETE}" -eq 1 ]; then
       # Check if the volume exists
       if ! docker volume inspect "${volume_name}" &> /dev/null; then
         echo "Volume '${volume_name}' does not exist. Skipping deletion..."
@@ -118,7 +105,7 @@ process_docker_compose() {
       continue
     fi
 
-    # Get the CIFS host, share, username, and password
+    # Extract CIFS details from labels
     cifs_host=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.host"]')
     cifs_share=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.share"]')
     cifs_username=$(echo "${labels}" | jq -r '.["de.panzer1119.docker.volume.cifs.username"]')
@@ -153,45 +140,25 @@ process_docker_compose() {
       exit 1
     fi
 
-    # If cifs host contains op:// anywhere in the string, use op to retrieve the value
-    if [[ "${cifs_host}" == *"op://"* ]]; then
-      cifs_host=$(op read "${cifs_host}")
-    fi
-
-    # If cifs share contains op:// anywhere in the string, use op to retrieve the value
-    if [[ "${cifs_share}" == *"op://"* ]]; then
-      cifs_share=$(op read "${cifs_share}")
-    fi
-
-    # If cifs username contains op:// anywhere in the string, use op to retrieve the value
-    if [[ "${cifs_username}" == *"op://"* ]]; then
-      cifs_username=$(op read "${cifs_username}")
-    fi
-
-    # If cifs password contains op:// anywhere in the string, use op to retrieve the value
-    if [[ "${cifs_password}" == *"op://"* ]]; then
-      cifs_password=$(op read "${cifs_password}")
-    fi
+    # Use op to retrieve values if needed
+    for var in cifs_host cifs_share cifs_username cifs_password; do
+      [[ "${!var}" == *"op://"* ]] && eval "${var}=$(op read "${!var}")"
+    done
 
     # Build the command to create the CIFS volume
-    local command="bash \"${CREATE_CIFS_VOLUME_SCRIPT_FILE}\" -n \"${volume_name}\" -a \"${cifs_host}\" -s \"${cifs_share}\" -u \"${cifs_username}\" -p \"${cifs_password}\" -e"
+    local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${cifs_host}" "-s" "${cifs_share}" "-u" "${cifs_username}" "-p" "${cifs_password}" "-e")
 
-    # If quiet mode is enabled, suppress output
-    if [[ "${QUIET}" -eq 1 ]]; then
-      command="${command} -q"
-    fi
+    # Add quiet option if enabled
+    [ "${QUIET}" -eq 1 ] && command+=("-q")
 
     # If dry run is enabled, display the command
-    if [[ "${DRY_RUN}" -eq 1 ]]; then
-      # If quiet mode is not enabled, display the command
-      if [[ "${QUIET}" -eq 0 ]]; then
-        echo "${command}"
-      fi
+    if [ "${DRY_RUN}" -eq 1 ]; then
+      [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
       continue
     fi
 
     # Create the CIFS volume
-    if ! eval "${command}"; then
+    if ! "${command[@]}"; then
       exit 1
     fi
   done
@@ -200,7 +167,7 @@ process_docker_compose() {
 export -f process_docker_compose
 
 # Find all docker-compose.yml files
-files=$(find "${directory}" -type f -name "*docker-compose.yml")
+files=$(find "${DIRECTORY}" -type f -name "*docker-compose.yml")
 
 # Process each docker-compose.yml file
 for file in ${files}; do
