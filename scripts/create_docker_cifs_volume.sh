@@ -76,7 +76,12 @@ fi
 
 # If quiet is disabled, display the message
 if [[ ${QUIET} -eq 0 ]]; then
-  echo "Creating Docker CIFS volume '${VOLUME_NAME}' pointing to '${ADDRESS}/${SHARE_NAME}'..."
+  # If dry run is enabled, display the message
+  if [[ ${DRY_RUN} -eq 1 ]]; then
+    echo "Would create Docker CIFS volume '${VOLUME_NAME}' pointing to '${ADDRESS}/${SHARE_NAME}'"
+  else
+    echo "Creating Docker CIFS volume '${VOLUME_NAME}' pointing to '${ADDRESS}/${SHARE_NAME}'..."
+  fi
 fi
 
 # If verbose is enabled, display the docker command
