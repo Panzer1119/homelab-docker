@@ -22,8 +22,8 @@ DEFAULT_SSHFS_PORT=22
 # Function to display usage
 usage() {
   cat << EOF
-Usage: ${0} -d <directory> [-v] [-q] [-n] [-D]
-  -d <directory>: Directory to recursively search for docker-compose.yml files
+Usage: ${0} [-v] [-q] [-n] [-D] <directory>
+  <directory>: Directory to recursively search for docker-compose.yml files
   -v: Optional. Verbose mode
   -q: Optional. Quiet mode
   -n: Optional. Dry run
@@ -41,9 +41,8 @@ for cmd in jq yq op; do
 done
 
 # Parse command line arguments
-while getopts "d:vqnD" opt; do
+while getopts "vqnD" opt; do
   case ${opt} in
-    d) DIRECTORY=${OPTARG} ;;
     v) VERBOSE=1 ;;
     q) QUIET=1 ;;
     n) DRY_RUN=1 ;;
@@ -52,10 +51,20 @@ while getopts "d:vqnD" opt; do
         usage ;;
   esac
 done
+shift $((OPTIND -1))
+
+# Directory to search
+DIRECTORY="$1"
 
 # Ensure directory is provided
 if [ -z "${DIRECTORY}" ]; then
   usage
+fi
+
+# Validate directory
+if [ ! -d "${DIRECTORY}" ]; then
+    echo "Directory not found: ${DIRECTORY}"
+    exit 1
 fi
 
 load_defaults() {
