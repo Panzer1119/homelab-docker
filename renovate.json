@@ -19,7 +19,7 @@
   ],
   "major": {
     "dependencyDashboardApproval": true,
-    "automerge": false,
+    "automerge": false
   },
   "minor": {
     "automerge": false
