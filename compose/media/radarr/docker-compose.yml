@@ -49,7 +49,6 @@ x-environment: &default-environment
 
 x-volumes:
   - &volume-cache-usenet cache-usenet:/data/usenet
-  - &volume-data /data:/data
 #  - &volume-sh8-torrents sh8-torrents:/data/torrents/sh8
 
 services:
@@ -63,7 +62,6 @@ services:
       - movies:/data/media/radarr
       - trash:/data/trash/radarr
       - *volume-cache-usenet
-      - *volume-data
 #      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.radarr-movies.cifs.share=op://Docker/Radarr/CIFS/Share_Movies"
@@ -91,7 +89,6 @@ services:
       - movies-4k:/data/media/radarr-4k
       - trash-4k:/data/trash/radarr-4k
       - *volume-cache-usenet
-      - *volume-data
 #      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_4K"
@@ -114,7 +111,6 @@ services:
       - movies-anime:/data/media/radarr-anime
       - trash-anime:/data/trash/radarr-anime
       - *volume-cache-usenet
-      - *volume-data
 #      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_Anime"
