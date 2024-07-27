@@ -20,7 +20,7 @@ services:
       service: logging-gelf
 
   semaphore:
-    image: semaphoreui/semaphore:v2.10.21@sha256:7c8a3306b0bd065cfa0ba25f1834763a0d37444d98e27f885b63eaf44bd4ac5a
+    image: semaphoreui/semaphore:v2.10.22@sha256:2a2df841e4b6b33e82f87101e942ab6008207bd3b8e936bc9a48e2eea3671498
     container_name: semaphore
     env_file:
       - semaphore.env
