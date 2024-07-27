@@ -71,42 +71,42 @@ create_cifs_volume() {
   local volume_name="${1}"
   local volume_dictionaries="${2}"
 
-  local cifs_host cifs_share cifs_username cifs_password
+  local host share username password
 
-  # Get the cifs host, share, username, and password from the volume dictionaries
-  cifs_host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_host")
-  cifs_share=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_share")
-  cifs_username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_username")
-  cifs_password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_password")
+  # Get the host, share, username, and password from the volume dictionaries
+  host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].host")
+  share=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].share")
+  username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].username")
+  password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].password")
 
-  # If the cifs host is empty or null, use the default host
-  [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ] && cifs_host="${DEFAULT_CIFS_HOST}"
+  # If the host is empty or null, use the default host
+  [ -z "${host}" ] || [ "${host}" == "null" ] && host="${DEFAULT_CIFS_HOST}"
 
-  # If the cifs username is empty or null, use the default username
-  [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ] && cifs_username="${DEFAULT_CIFS_USERNAME}"
+  # If the username is empty or null, use the default username
+  [ -z "${username}" ] || [ "${username}" == "null" ] && username="${DEFAULT_CIFS_USERNAME}"
 
-  # If the cifs password is empty or null, use the default password
-  [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ] && cifs_password="${DEFAULT_CIFS_PASSWORD}"
+  # If the password is empty or null, use the default password
+  [ -z "${password}" ] || [ "${password}" == "null" ] && password="${DEFAULT_CIFS_PASSWORD}"
 
-  # If all CIFS values are empty or null, skip
-  if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
-     { [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; } &&
-     { [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ]; } &&
-     { [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; }; then
+  # If all values are empty or null, skip
+  if { [ -z "${host}" ] || [ "${host}" == "null" ]; } &&
+     { [ -z "${share}" ] || [ "${share}" == "null" ]; } &&
+     { [ -z "${username}" ] || [ "${username}" == "null" ]; } &&
+     { [ -z "${password}" ] || [ "${password}" == "null" ]; }; then
     return
   fi
 
   # Check each required CIFS value
-  check_value "${cifs_host}" "Share host"
-  check_value "${cifs_share}" "Share name"
-  check_value "${cifs_username}" "Username"
-  check_value "${cifs_password}" "Password"
+  check_value "${host}" "CIFS Share host"
+  check_value "${share}" "CIFS Share name"
+  check_value "${username}" "CIFS Username"
+  check_value "${password}" "CIFS Password"
 
   # If quiet mode is not enabled, display the volume name and share name
-  [ "${QUIET}" -eq 0 ] && echo "Found CIFS volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
+  [ "${QUIET}" -eq 0 ] && echo "Found CIFS volume '${volume_name}' with share name '${share}' in '${file}'"
 
   # Build the command to create the CIFS volume
-  local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${cifs_host}" "-s" "${cifs_share}" "-u" "${cifs_username}" "-p" "${cifs_password}" "-e")
+  local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${host}" "-s" "${share}" "-u" "${username}" "-p" "${password}" "-e")
 
   # Add quiet option if enabled
   [ "${QUIET}" -eq 1 ] && command+=("-q")
