@@ -15,7 +15,7 @@ volumes:
 
 services:
   tautulli:
-    image: lscr.io/linuxserver/tautulli:v2.14.3
+    image: lscr.io/linuxserver/tautulli:2.14.3
     container_name: tautulli
     hostname: tautulli
     environment:
