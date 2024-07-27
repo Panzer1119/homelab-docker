@@ -3,6 +3,10 @@ volumes:
   config:
     name: config/sabnzbd
     driver: zfs
+  #TODO data usenet sabnzbd volume?
+  #data:
+    #name: cache/sabnzbd
+    #driver: zfs 
 
 services:
   sabnzbd:
@@ -19,6 +23,7 @@ services:
       - config:/config
       - /etc/localtime:/etc/localtime:ro
       - /data/usenet:/data/usenet
+      #- data:/data/usenet
     network_mode: bridge
     ports:
       - "8688:8080"
