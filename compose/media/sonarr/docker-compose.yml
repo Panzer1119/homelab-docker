@@ -9,11 +9,6 @@ volumes:
   config-anime:
     name: config/sonarr-anime
     driver: zfs
-  #TODO Is this correct? (Maybe make it external and a named docker volume (on zfs) and also use it on sabnzbd?)
-  data:
-    type: bind
-    src: /data
-    dest: /data
   tv:
     name: sonarr-tv
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
@@ -59,7 +54,6 @@ services:
     environment: *default-environment
     volumes:
       - config:/config
-      - data:/data
       - tv:/data/media/sonarr
       - trash:/data/trash/sonarr
     labels:
@@ -86,7 +80,6 @@ services:
     environment: *default-environment
     volumes:
       - config-4k:/config
-      - data:/data
       - tv-4k:/data/media/sonarr-4k
       - trash-4k:/data/trash/sonarr-4k
     labels:
@@ -113,7 +106,6 @@ services:
     environment: *default-environment
     volumes:
       - config-anime:/config
-      - data:/data
       - tv-anime:/data/media/sonarr-anime
       - trash-anime:/data/trash/sonarr-anime
     labels:
