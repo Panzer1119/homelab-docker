@@ -9,16 +9,16 @@ volumes:
   config-anime:
     name: config/sonarr-anime
     driver: zfs
-  tv:
-    name: sonarr-tv
+  data:
+    name: sonarr
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
-  tv-4k:
-    name: sonarr-tv-4k
+  data-4k:
+    name: sonarr-4k
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
-  tv-anime:
-    name: sonarr-tv-anime
+  data-anime:
+    name: sonarr-anime
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   trash:
@@ -54,7 +54,7 @@ services:
     environment: *default-environment
     volumes:
       - config:/config
-      - tv:/data/media/sonarr
+      - data:/data/media/sonarr
       - trash:/data/trash/sonarr
     labels:
       - "de.panzer1119.docker.volume.sonarr.cifs.share=op://Docker/Sonarr/CIFS/Share"
@@ -74,7 +74,7 @@ services:
     environment: *default-environment
     volumes:
       - config-4k:/config
-      - tv-4k:/data/media/sonarr-4k
+      - data-4k:/data/media/sonarr-4k
       - trash-4k:/data/trash/sonarr-4k
     labels:
       - "de.panzer1119.docker.volume.sonarr-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_4K"
@@ -94,7 +94,7 @@ services:
     environment: *default-environment
     volumes:
       - config-anime:/config
-      - tv-anime:/data/media/sonarr-anime
+      - data-anime:/data/media/sonarr-anime
       - trash-anime:/data/trash/sonarr-anime
     labels:
       - "de.panzer1119.docker.volume.sonarr-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Anime"
