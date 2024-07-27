@@ -1,5 +1,8 @@
 ---
 volumes:
+  cache-usenet:
+    name: cache/usenet
+    external: true
   config:
     name: config/radarr
     driver: zfs
@@ -9,11 +12,6 @@ volumes:
   config-anime:
     name: data/radarr-anime
     driver: zfs
-  #TODO Is this correct? 
-  data:
-    type: bind
-    src: /data
-    dest: /data
   movies:
     name: radarr-movies
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
@@ -45,6 +43,10 @@ x-environment: &default-environment
   - TZ=Europe/Berlin
   - UMASK_SET=022
 
+x-volumes:
+  - &volume-cache-usenet cache-usenet:/data/usenet
+  - &volume-data /data:/data
+
 services:
   radarr:
     image: ghcr.io/linuxserver/radarr:5.8.3@sha256:2a02b311cefb344cd0caf74a443b9d6318daf15bda5280a3bc732381db983dc3
@@ -53,9 +55,10 @@ services:
     environment: *default-environment
     volumes:
       - config:/config
-      - data:/data
       - movies:/data/media/radarr
       - trash:/data/trash/radarr
+      - *volume-cache-usenet
+      - *volume-data
     labels:
       - "de.panzer1119.docker.volume.radarr-movies.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.radarr-movies.cifs.share=op://Docker/Radarr/CIFS/Share_Movies"
@@ -80,9 +83,10 @@ services:
     environment: *default-environment
     volumes:
       - config-4k:/config
-      - data:/data
       - movies-4k:/data/media/radarr-4k
       - trash-4k:/data/trash/radarr-4k
+      - *volume-cache-usenet
+      - *volume-data
     labels:
       - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_4K"
@@ -107,9 +111,10 @@ services:
     environment: *default-environment
     volumes:
       - config-anime:/config
-      - data:/data
       - movies-anime:/data/media/radarr-anime
       - trash-anime:/data/trash/radarr-anime
+      - *volume-cache-usenet
+      - *volume-data
     labels:
       - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_Anime"
