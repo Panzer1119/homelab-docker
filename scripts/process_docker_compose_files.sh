@@ -127,6 +127,9 @@ create_cifs_volume() {
   # Add verbose option if enabled
   [ "${VERBOSE}" -eq 1 ] && command+=("-v")
 
+  # Add dry run option if enabled
+  [ "${DRY_RUN}" -eq 1 ] && command+=("-N")
+
   # Add quiet option if enabled
   [ "${QUIET}" -eq 1 ] && command+=("-q")
 
@@ -135,10 +138,10 @@ create_cifs_volume() {
     echo "${command[*]}"
   fi
 
-  # If dry run is enabled, return
-  if [ "${DRY_RUN}" -eq 1 ]; then
-    return
-  fi
+#  # If dry run is enabled, return
+#  if [ "${DRY_RUN}" -eq 1 ]; then
+#    return
+#  fi
 
   # Create the CIFS volume
   if ! "${command[@]}"; then
@@ -187,6 +190,9 @@ create_sshfs_volume() {
   # Add verbose option if enabled
   [ "${VERBOSE}" -eq 1 ] && command+=("-v")
 
+  # Add dry run option if enabled
+  [ "${DRY_RUN}" -eq 1 ] && command+=("-N")
+
   # Add quiet option if enabled
   [ "${QUIET}" -eq 1 ] && command+=("-q")
 
@@ -195,10 +201,10 @@ create_sshfs_volume() {
     echo "${command[*]}"
   fi
 
-  # If dry run is enabled, return
-  if [ "${DRY_RUN}" -eq 1 ]; then
-    return
-  fi
+#  # If dry run is enabled, return
+#  if [ "${DRY_RUN}" -eq 1 ]; then
+#    return
+#  fi
 
   # Create the SSHFS volume
   if ! "${command[@]}"; then
