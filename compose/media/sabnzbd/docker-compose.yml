@@ -38,16 +38,8 @@ services:
       - nzb-backups:/nzb-backups
       - /etc/localtime:/etc/localtime:ro
     labels:
-      # sabnzbd-backups
-      - "de.panzer1119.docker.volume.sabnzbd-backups.cifs.host=op://Docker/SABnzbd/CIFS/Host"
       - "de.panzer1119.docker.volume.sabnzbd-backups.cifs.share=op://Docker/SABnzbd/CIFS/Share_Backups"
-      - "de.panzer1119.docker.volume.sabnzbd-backups.cifs.username=op://Docker/SABnzbd/CIFS/Username"
-      - "de.panzer1119.docker.volume.sabnzbd-backups.cifs.password=op://Docker/SABnzbd/CIFS/Password"
-      # sabnzbd-nzb-backups
-      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.host=op://Docker/SABnzbd/CIFS/Host"
       - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.share=op://Docker/SABnzbd/CIFS/Share_NZB_Backups"
-      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.username=op://Docker/SABnzbd/CIFS/Username"
-      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.password=op://Docker/SABnzbd/CIFS/Password"
     network_mode: bridge
     ports:
       - "8688:8080"
