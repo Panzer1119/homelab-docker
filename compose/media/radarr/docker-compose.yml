@@ -60,14 +60,8 @@ services:
       - *volume-cache-usenet
       - *volume-data
     labels:
-      - "de.panzer1119.docker.volume.radarr-movies.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.radarr-movies.cifs.share=op://Docker/Radarr/CIFS/Share_Movies"
-      - "de.panzer1119.docker.volume.radarr-movies.cifs.username=op://Docker/Radarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.radarr-movies.cifs.password=op://Docker/Radarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.radarr-trash.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.radarr-trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash"
-      - "de.panzer1119.docker.volume.radarr-trash.cifs.username=op://Docker/Radarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.radarr-trash.cifs.password=op://Docker/Radarr/CIFS/Password"
     network_mode: bridge
     ports:
       - "7878:7878"
@@ -88,14 +82,8 @@ services:
       - *volume-cache-usenet
       - *volume-data
     labels:
-      - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_4K"
-      - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.username=op://Docker/Radarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.password=op://Docker/Radarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_4K"
-      - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.username=op://Docker/Radarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.password=op://Docker/Radarr/CIFS/Password"
     network_mode: bridge
     ports:
       - "7474:7878"
@@ -116,14 +104,8 @@ services:
       - *volume-cache-usenet
       - *volume-data
     labels:
-      - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_Anime"
-      - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.username=op://Docker/Radarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.password=op://Docker/Radarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_Anime"
-      - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.username=op://Docker/Radarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.password=op://Docker/Radarr/CIFS/Password"
     network_mode: bridge
     ports:
       - "7171:7878"
