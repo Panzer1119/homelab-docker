@@ -10,9 +10,9 @@ QUIET=0
 DRY_RUN=0
 DELETE=0
 
-DEFAULT_HOST=""
-DEFAULT_USERNAME=""
-DEFAULT_PASSWORD=""
+DEFAULT_CIFS_HOST=""
+DEFAULT_CIFS_USERNAME=""
+DEFAULT_CIFS_PASSWORD=""
 
 # Function to display usage
 usage() {
@@ -52,9 +52,9 @@ if [ -z "${DIRECTORY}" ]; then
 fi
 
 load_defaults() {
-  DEFAULT_HOST=$(op read "op://Docker/Default/CIFS/Host")
-  DEFAULT_USERNAME=$(op read "op://Docker/Default/CIFS/Username")
-  DEFAULT_PASSWORD=$(op read "op://Docker/Default/CIFS/Password")
+  DEFAULT_CIFS_HOST=$(op read "op://Docker/Default/CIFS/Host")
+  DEFAULT_CIFS_USERNAME=$(op read "op://Docker/Default/CIFS/Username")
+  DEFAULT_CIFS_PASSWORD=$(op read "op://Docker/Default/CIFS/Password")
 }
 
 # Function to check if a value is empty or null
@@ -153,13 +153,13 @@ process_docker_compose() {
       cifs_password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_password")
 
       # If the cifs host is empty or null, use the default host
-      [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ] && cifs_host="${DEFAULT_HOST}"
+      [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ] && cifs_host="${DEFAULT_CIFS_HOST}"
 
       # If the cifs username is empty or null, use the default username
-      [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ] && cifs_username="${DEFAULT_USERNAME}"
+      [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ] && cifs_username="${DEFAULT_CIFS_USERNAME}"
 
       # If the cifs password is empty or null, use the default password
-      [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ] && cifs_password="${DEFAULT_PASSWORD}"
+      [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ] && cifs_password="${DEFAULT_CIFS_PASSWORD}"
 
       # If all CIFS values are empty or null, skip
       if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
