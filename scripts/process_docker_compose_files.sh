@@ -16,6 +16,8 @@ DEFAULT_CIFS_HOST=""
 DEFAULT_CIFS_USERNAME=""
 DEFAULT_CIFS_PASSWORD=""
 
+DEFAULT_SSHFS_PORT=22
+
 # Function to display usage
 usage() {
   cat << EOF
@@ -129,16 +131,21 @@ create_sshfs_volume() {
   local volume_name="${1}"
   local volume_dictionaries="${2}"
 
-  local host path username password
+  local host port path username password
 
   # Get the host, path, username, and password from the volume dictionaries
   host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].host")
+  port=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].port")
   path=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].path")
   username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].username")
   password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].password")
 
+  # If the port is empty or null, use the default ssh port
+  [ -z "${port}" ] || [ "${port}" == "null" ] && port="${DEFAULT_SSHFS_PORT}"
+
   # If all values are empty or null, skip
   if { [ -z "${host}" ] || [ "${host}" == "null" ]; } &&
+     { [ -z "${port}" ] || [ "${port}" == "null" ]; } &&
      { [ -z "${path}" ] || [ "${path}" == "null" ]; } &&
      { [ -z "${username}" ] || [ "${username}" == "null" ]; } &&
      { [ -z "${password}" ] || [ "${password}" == "null" ]; }; then
@@ -147,6 +154,7 @@ create_sshfs_volume() {
 
   # Check each required SSHFS value
   check_value "${host}" "SSHFS Host"
+  check_value "${port}" "SSHFS Port"
   check_value "${path}" "SSHFS Path"
   check_value "${username}" "SSHFS Username"
   check_value "${password}" "SSHFS Password"
@@ -155,7 +163,7 @@ create_sshfs_volume() {
   [ "${QUIET}" -eq 0 ] && echo "Found SSHFS volume '${volume_name}' with path '${path}' in '${file}'"
 
   # Build the command to create the SSHFS volume
-  local command=("bash" "${CREATE_SSHFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${host}" "-s" "${path}" "-u" "${username}" "-p" "${password}" "-e")
+  local command=("bash" "${CREATE_SSHFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${host}" "-p" "${port}" "-s" "${path}" "-u" "${username}" "-P" "${password}" "-e")
 
   # Add quiet option if enabled
   [ "${QUIET}" -eq 1 ] && command+=("-q")
@@ -232,19 +240,19 @@ process_docker_compose() {
       [ -z "${volume_label_value}" ] || [ "${volume_label_value}" == "null" ] && continue
 
       # Extract the volume name from the volume label key (the first part after "de.panzer1119.docker.volume.")
-      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|share|username|password)$/\1/')
+      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|port|share|username|password)$/\1/')
 
       # If the volume name is empty or null, skip
       [ -z "${volume_name}" ] || [ "${volume_name}" == "null" ] && continue
 
       # Extract the driver from the volume label key (the second part after "de.panzer1119.docker.volume.")
-      volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|share|username|password)$/\2/')
+      volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|port|share|username|password)$/\2/')
 
       # Create a dictionary with the volume name as the key and another dictionary with the key driver
       volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"driver\": \"${volume_driver}\"}")
 
       # Extract the key from the volume label key (the second part after "de.panzer1119.docker.volume.")
-      key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|share|username|password)$/\3/')
+      key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|port|share|username|password)$/\3/')
 
       # If the key is empty or null, skip
       [ -z "${key}" ] || [ "${key}" == "null" ] && continue
