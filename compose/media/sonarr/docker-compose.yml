@@ -1,0 +1,81 @@
+---
+volumes:
+  config:
+    name: config/sonarr
+    driver: zfs
+  config-4k:
+    name: data/sonarr-4k
+    driver: zfs
+  config-anime:
+    name: data/sonarr-anime
+    driver: zfs
+
+x-environment: &default-environment
+  - PGID=1000
+  - PUID=1000
+  - TZ=Europe/Berlin
+  - UMASK_SET=022
+
+x-volumes:
+  - &volume-data /data:/data
+  - &volume-downloads /data/empty:/downloads
+  - &volume-trash /data/empty:/trash
+  - &volume-tv /data/empty:/tv
+
+services:
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr:4.0.8
+    container_name: sonarr
+    hostname: sonarr
+    environment: *default-environment
+    volumes:
+      - *volume-data
+      - *volume-downloads
+      - *volume-trash
+      - *volume-tv:/tv
+      - config:/config
+    network_mode: bridge
+    ports:
+      - "8989:8989"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  sonarr-4k:
+    image: ghcr.io/linuxserver/sonarr:4.0.8
+    container_name: sonarr-4k
+    hostname: sonarr-4k
+    environment: *default-environment
+    volumes:
+      - *volume-data
+      - *volume-downloads
+      - *volume-trash
+      - *volume-tv:/tv
+      - config-4k:/config
+    network_mode: bridge
+    ports:
+      - "4949:8989"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  sonarr-anime:
+    image: ghcr.io/linuxserver/sonarr:4.0.8
+    container_name: sonarr-anime
+    hostname: sonarr-anime
+    environment: *default-environment
+    volumes:
+      - *volume-data
+      - *volume-downloads
+      - *volume-trash
+      - *volume-tv:/tv
+      - config-anime:/config
+    network_mode: bridge
+    ports:
+      - "1919:8989"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
