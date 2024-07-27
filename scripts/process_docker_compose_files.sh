@@ -67,6 +67,62 @@ check_value() {
   fi
 }
 
+create_cifs_volume() {
+  local volume_name="${1}"
+  local volume_dictionaries="${2}"
+
+  local cifs_host cifs_share cifs_username cifs_password
+
+  # Get the cifs host, share, username, and password from the volume dictionaries
+  cifs_host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_host")
+  cifs_share=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_share")
+  cifs_username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_username")
+  cifs_password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_password")
+
+  # If the cifs host is empty or null, use the default host
+  [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ] && cifs_host="${DEFAULT_CIFS_HOST}"
+
+  # If the cifs username is empty or null, use the default username
+  [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ] && cifs_username="${DEFAULT_CIFS_USERNAME}"
+
+  # If the cifs password is empty or null, use the default password
+  [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ] && cifs_password="${DEFAULT_CIFS_PASSWORD}"
+
+  # If all CIFS values are empty or null, skip
+  if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
+     { [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; } &&
+     { [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ]; } &&
+     { [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; }; then
+    return
+  fi
+
+  # Check each required CIFS value
+  check_value "${cifs_host}" "Share host"
+  check_value "${cifs_share}" "Share name"
+  check_value "${cifs_username}" "Username"
+  check_value "${cifs_password}" "Password"
+
+  # If quiet mode is not enabled, display the volume name and share name
+  [ "${QUIET}" -eq 0 ] && echo "Found CIFS volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
+
+  # Build the command to create the CIFS volume
+  local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${cifs_host}" "-s" "${cifs_share}" "-u" "${cifs_username}" "-p" "${cifs_password}" "-e")
+
+  # Add quiet option if enabled
+  [ "${QUIET}" -eq 1 ] && command+=("-q")
+
+  # If dry run is enabled, display the command
+  if [ "${DRY_RUN}" -eq 1 ]; then
+    [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
+    return
+  fi
+
+  # Create the CIFS volume
+  if ! "${command[@]}"; then
+    exit 1
+  fi
+}
+
 # Function to process docker-compose.yml files
 process_docker_compose() {
   local file="${1}"
@@ -144,42 +200,10 @@ process_docker_compose() {
 
     # Iterate over the volume dictionaries keys
     for volume_name in $(echo "${volume_dictionaries}" | jq -r 'keys[]'); do
-      local cifs_host cifs_share cifs_username cifs_password
-
-      # Get the cifs host, share, username, and password from the volume dictionaries
-      cifs_host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_host")
-      cifs_share=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_share")
-      cifs_username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_username")
-      cifs_password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_password")
-
-      # If the cifs host is empty or null, use the default host
-      [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ] && cifs_host="${DEFAULT_CIFS_HOST}"
-
-      # If the cifs username is empty or null, use the default username
-      [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ] && cifs_username="${DEFAULT_CIFS_USERNAME}"
-
-      # If the cifs password is empty or null, use the default password
-      [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ] && cifs_password="${DEFAULT_CIFS_PASSWORD}"
-
-      # If all CIFS values are empty or null, skip
-      if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
-         { [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; } &&
-         { [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ]; } &&
-         { [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ]; }; then
-        continue
-      fi
-
-      # Check each required CIFS value
-      check_value "${cifs_host}" "Share host"
-      check_value "${cifs_share}" "Share name"
-      check_value "${cifs_username}" "Username"
-      check_value "${cifs_password}" "Password"
-
-      # If quiet mode is not enabled, display the volume name and share name
-      [ "${QUIET}" -eq 0 ] && echo "Found CIFS volume '${volume_name}' with share name '${cifs_share}' in '${file}'"
-
       # If delete mode is enabled, delete the volume
       if [ "${DELETE}" -eq 1 ]; then
+        # If quiet mode is not enabled, display the volume name
+        [ "${QUIET}" -eq 0 ] && echo "Found volume '${volume_name}' in '${file}'"
         # Check if the volume exists
         if ! docker volume inspect "${volume_name}" &> /dev/null; then
           # If quiet mode is not enabled, display a message
@@ -202,22 +226,8 @@ process_docker_compose() {
         continue
       fi
 
-      # Build the command to create the CIFS volume
-      local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${cifs_host}" "-s" "${cifs_share}" "-u" "${cifs_username}" "-p" "${cifs_password}" "-e")
-
-      # Add quiet option if enabled
-      [ "${QUIET}" -eq 1 ] && command+=("-q")
-
-      # If dry run is enabled, display the command
-      if [ "${DRY_RUN}" -eq 1 ]; then
-        [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
-        continue
-      fi
-
       # Create the CIFS volume
-      if ! "${command[@]}"; then
-        exit 1
-      fi
+      create_cifs_volume "${volume_name}" "${volume_dictionaries}"
     done
   done
 }
