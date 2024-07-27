@@ -64,7 +64,7 @@ services:
       - *volume-cache-usenet
 #      - *volume-sh8-torrents
     labels:
-      - "de.panzer1119.docker.volume.radarr-movies.cifs.share=op://Docker/Radarr/CIFS/Share_Movies"
+      - "de.panzer1119.docker.volume.radarr-movies.cifs.share=op://Docker/Radarr/CIFS/Share"
       - "de.panzer1119.docker.volume.radarr-trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash"
        #FIXME The docker volume plugin vieux/sshfs is deprecated and dangerous
 #      - "de.panzer1119.docker.volume.sh8-torrents.sshfs.host=op://Docker/SH8/Host"
@@ -91,7 +91,7 @@ services:
       - *volume-cache-usenet
 #      - *volume-sh8-torrents
     labels:
-      - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_4K"
+      - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.share=op://Docker/Radarr/CIFS/Share_4K"
       - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_4K"
     network_mode: bridge
     ports:
@@ -113,7 +113,7 @@ services:
       - *volume-cache-usenet
 #      - *volume-sh8-torrents
     labels:
-      - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_Anime"
+      - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Anime"
       - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_Anime"
     network_mode: bridge
     ports:
