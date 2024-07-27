@@ -304,12 +304,12 @@ process_docker_compose() {
         # Check if the volume exists
         if ! docker volume inspect "${volume_name}" &> /dev/null; then
           # If quiet mode is not enabled, display a message
-          [ "${QUIET}" -eq 0 ] && echo "Volume '${volume_name}' does not exist. Skipping deletion..."
+          [ "${QUIET}" -eq 0 ] && echo "Skipping volume '${volume_name}' as it does not exist"
           continue
         fi
         # If dry run is enabled, display a message
         if [ "${DRY_RUN}" -eq 1 ]; then
-          [ "${QUIET}" -eq 0 ] && echo "Would delete volume '${volume_name}'..."
+          [ "${QUIET}" -eq 0 ] && echo "Would delete volume '${volume_name}'"
           continue
         else
           # If quiet mode is not enabled, display a message
