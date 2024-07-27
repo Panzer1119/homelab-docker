@@ -1,5 +1,8 @@
 ---
 volumes:
+  cache-usenet:
+    name: cache/usenet
+    external: true
   config:
     name: config/sonarr
     driver: zfs
@@ -41,10 +44,7 @@ x-environment: &default-environment
   - UMASK_SET=022
 
 x-volumes:
-  - &volume-data /data:/data
-  - &volume-downloads /data/empty:/downloads
-  - &volume-trash /data/empty:/trash
-  - &volume-tv /data/empty:/tv
+  - &volume-cache-usenet cache-usenet:/data/usenet
 
 services:
   sonarr:
@@ -56,6 +56,7 @@ services:
       - config:/config
       - data:/data/media/sonarr
       - trash:/data/trash/sonarr
+      - *volume-cache-usenet
     labels:
       - "de.panzer1119.docker.volume.sonarr.cifs.share=op://Docker/Sonarr/CIFS/Share"
       - "de.panzer1119.docker.volume.sonarr-trash.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash"
@@ -76,6 +77,7 @@ services:
       - config-4k:/config
       - data-4k:/data/media/sonarr-4k
       - trash-4k:/data/trash/sonarr-4k
+      - *volume-cache-usenet
     labels:
       - "de.panzer1119.docker.volume.sonarr-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_4K"
       - "de.panzer1119.docker.volume.sonarr-trash-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_4K"
@@ -96,6 +98,7 @@ services:
       - config-anime:/config
       - data-anime:/data/media/sonarr-anime
       - trash-anime:/data/trash/sonarr-anime
+      - *volume-cache-usenet
     labels:
       - "de.panzer1119.docker.volume.sonarr-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Anime"
       - "de.panzer1119.docker.volume.sonarr-trash-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_Anime"
