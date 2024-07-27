@@ -1,9 +1,11 @@
 #!/bin/bash
 
 CREATE_CIFS_VOLUME_SCRIPT_FILENAME="create_docker_cifs_volume.sh"
+CREATE_SSHFS_VOLUME_SCRIPT_FILENAME="create_docker_sshfs_volume.sh"
 
 SCRIPTS_DIR=$(dirname "${0}")
 CREATE_CIFS_VOLUME_SCRIPT_FILE="${SCRIPTS_DIR}/${CREATE_CIFS_VOLUME_SCRIPT_FILENAME}"
+CREATE_SSHFS_VOLUME_SCRIPT_FILE="${SCRIPTS_DIR}/${CREATE_SSHFS_VOLUME_SCRIPT_FILENAME}"
 
 DIRECTORY=""
 QUIET=0
@@ -118,6 +120,53 @@ create_cifs_volume() {
   fi
 
   # Create the CIFS volume
+  if ! "${command[@]}"; then
+    exit 1
+  fi
+}
+
+create_sshfs_volume() {
+  local volume_name="${1}"
+  local volume_dictionaries="${2}"
+
+  local host path username password
+
+  # Get the host, path, username, and password from the volume dictionaries
+  host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].host")
+  path=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].path")
+  username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].username")
+  password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].password")
+
+  # If all values are empty or null, skip
+  if { [ -z "${host}" ] || [ "${host}" == "null" ]; } &&
+     { [ -z "${path}" ] || [ "${path}" == "null" ]; } &&
+     { [ -z "${username}" ] || [ "${username}" == "null" ]; } &&
+     { [ -z "${password}" ] || [ "${password}" == "null" ]; }; then
+    return
+  fi
+
+  # Check each required SSHFS value
+  check_value "${host}" "SSHFS Host"
+  check_value "${path}" "SSHFS Path"
+  check_value "${username}" "SSHFS Username"
+  check_value "${password}" "SSHFS Password"
+
+  # If quiet mode is not enabled, display the volume name and path
+  [ "${QUIET}" -eq 0 ] && echo "Found SSHFS volume '${volume_name}' with path '${path}' in '${file}'"
+
+  # Build the command to create the SSHFS volume
+  local command=("bash" "${CREATE_SSHFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${host}" "-s" "${path}" "-u" "${username}" "-p" "${password}" "-e")
+
+  # Add quiet option if enabled
+  [ "${QUIET}" -eq 1 ] && command+=("-q")
+
+  # If dry run is enabled, display the command
+  if [ "${DRY_RUN}" -eq 1 ]; then
+    [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
+    return
+  fi
+
+  # Create the SSHFS volume
   if ! "${command[@]}"; then
     exit 1
   fi
@@ -243,7 +292,7 @@ process_docker_compose() {
           create_cifs_volume "${volume_name}" "${volume_dictionaries}"
           ;;
         sshfs)
-          echo "SSHFS driver not supported yet"
+          create_sshfs_volume "${volume_name}" "${volume_dictionaries}"
           ;;
         *)
           echo "Error: Unsupported driver '${driver}' for volume '${volume_name}' in '${file}'"
