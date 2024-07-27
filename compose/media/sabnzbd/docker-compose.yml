@@ -14,6 +14,7 @@ volumes:
     name: sabnzbd-backups
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
+  #TODO Move current backups to this volume
   nzb-backups:
     name: sabnzbd-nzb-backups
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
@@ -35,6 +36,7 @@ services:
       - config:/config
       - cache-usenet:/data/usenet
       - backups:/backups
+      #TODO Configure automatic backups?
       - nzb-backups:/nzb-backups
       - /etc/localtime:/etc/localtime:ro
     labels:
