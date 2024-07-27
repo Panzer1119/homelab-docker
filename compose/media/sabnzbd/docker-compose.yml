@@ -3,10 +3,13 @@ volumes:
   config:
     name: config/sabnzbd
     driver: zfs
-  #TODO data usenet sabnzbd volume?
-  #data:
-    #name: cache/sabnzbd
-    #driver: zfs 
+  data:
+    name: cache/sabnzbd
+    driver: zfs
+    driver_opts:
+      compression: lz4
+      quota: 256G
+      recordsize: 1M
 
 services:
   sabnzbd:
@@ -21,9 +24,8 @@ services:
       #- SAB_NOTIFICATION_PARAMETERS="" # Since v4.0.2
     volumes:
       - config:/config
+      - data:/data/usenet
       - /etc/localtime:/etc/localtime:ro
-      - /data/usenet:/data/usenet
-      #- data:/data/usenet
     network_mode: bridge
     ports:
       - "8688:8080"
