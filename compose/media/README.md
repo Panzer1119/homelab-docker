@@ -9,4 +9,4 @@ This contains Docker compose projects for media services.
 - [Radarr](./radarr/README.md)
 - [Readarr](./readarr/README.md) #TODO
 - [Sonarr](./sonarr/README.md)
-- [SABnzbd](./sabnzbd/README.md) #TODO
+- [SABnzbd](./sabnzbd/README.md)
