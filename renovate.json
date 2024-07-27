@@ -8,6 +8,9 @@
     ":rebaseStalePrs",
     "group:recommended"
   ],
+  "git-submodules": {
+    "enabled": true
+  },
   "labels": [
     "renovate"
   ],
