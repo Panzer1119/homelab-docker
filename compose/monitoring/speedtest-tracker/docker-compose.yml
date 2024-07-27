@@ -11,7 +11,7 @@ volumes:
 
 services:
   speedtest-tracker:
-    image: lscr.io/linuxserver/speedtest-tracker:0.20.7
+    image: lscr.io/linuxserver/speedtest-tracker:0.20.7@sha256:c6b161769d43a8b63c4bc127649e556429bbe0f4dedfd79a5d267123bd2376f3
     container_name: speedtest-tracker
     ports:
       - 8765:80
@@ -34,7 +34,7 @@ services:
       service: logging-gelf
 
   cache:
-    image: redis:6.2-alpine
+    image: redis:6.2-alpine@sha256:e3b17ba9479deec4b7d1eeec1548a253acc5374d68d3b27937fcfe4df8d18c7e
     env_file:
       - cache.env
     restart: unless-stopped
@@ -50,7 +50,7 @@ services:
       service: logging-gelf
 
   db:
-    image: postgres:15
+    image: postgres:15@sha256:68b988a164c8bdf0752fa7a4ae2d4b34a058e21c6327e69f741c081a38e97254
     restart: always
     env_file:
       - db.env

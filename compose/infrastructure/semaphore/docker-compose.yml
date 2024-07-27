@@ -9,7 +9,7 @@ volumes:
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:15@sha256:68b988a164c8bdf0752fa7a4ae2d4b34a058e21c6327e69f741c081a38e97254
     env_file:
       - db.env
     volumes:
@@ -20,7 +20,7 @@ services:
       service: logging-gelf
 
   semaphore:
-    image: semaphoreui/semaphore:v2.10.22
+    image: semaphoreui/semaphore:v2.10.22@sha256:2a2df841e4b6b33e82f87101e942ab6008207bd3b8e936bc9a48e2eea3671498
     container_name: semaphore
     env_file:
       - semaphore.env
