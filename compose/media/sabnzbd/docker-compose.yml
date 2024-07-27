@@ -10,7 +10,7 @@ volumes:
 
 services:
   sabnzbd:
-    image: ghcr.io/linuxserver/sabnzbd:4.3.2
+    image: ghcr.io/linuxserver/sabnzbd:4.3.2@sha256:d6a2a967d47b495c5342bc23de76d35eeb2f3ceb53c7be51885ad25f95dffe9b
     container_name: sabnzbd
     hostname: sabnzbd
     environment:
