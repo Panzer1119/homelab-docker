@@ -78,9 +78,9 @@ fi
 if [[ ${QUIET} -eq 0 ]]; then
   # If dry run is enabled, display the message
   if [[ ${DRY_RUN} -eq 1 ]]; then
-    echo "Would create Docker CIFS volume '${VOLUME_NAME}' pointing to '${ADDRESS}/${SHARE_NAME}'"
+    echo "Would create Docker CIFS volume '${VOLUME_NAME}' pointing to '${SHARE_NAME}' on '${ADDRESS}'"
   else
-    echo "Creating Docker CIFS volume '${VOLUME_NAME}' pointing to '${ADDRESS}/${SHARE_NAME}'..."
+    echo "Creating Docker CIFS volume '${VOLUME_NAME}' pointing to '${SHARE_NAME}' on '${ADDRESS}'..."
   fi
 fi
 
