@@ -8,6 +8,7 @@ CREATE_CIFS_VOLUME_SCRIPT_FILE="${SCRIPTS_DIR}/${CREATE_CIFS_VOLUME_SCRIPT_FILEN
 CREATE_SSHFS_VOLUME_SCRIPT_FILE="${SCRIPTS_DIR}/${CREATE_SSHFS_VOLUME_SCRIPT_FILENAME}"
 
 DIRECTORY=""
+VERBOSE=0
 QUIET=0
 DRY_RUN=0
 DELETE=0
@@ -21,8 +22,9 @@ DEFAULT_SSHFS_PORT=22
 # Function to display usage
 usage() {
   cat << EOF
-Usage: ${0} -d <directory> [-q] [-n] [-D]
+Usage: ${0} -d <directory> [-v] [-q] [-n] [-D]
   -d <directory>: Directory to recursively search for docker-compose.yml files
+  -v: Optional. Verbose mode
   -q: Optional. Quiet mode
   -n: Optional. Dry run
   -D: Optional. Delete the CIFS/SSHFS volumes (only requires -d)
@@ -39,9 +41,10 @@ for cmd in jq yq op; do
 done
 
 # Parse command line arguments
-while getopts "d:qnD" opt; do
+while getopts "d:vqnD" opt; do
   case ${opt} in
     d) DIRECTORY=${OPTARG} ;;
+    v) VERBOSE=1 ;;
     q) QUIET=1 ;;
     n) DRY_RUN=1 ;;
     D) DELETE=1 ;;
@@ -115,9 +118,13 @@ create_cifs_volume() {
   # Add quiet option if enabled
   [ "${QUIET}" -eq 1 ] && command+=("-q")
 
-  # If dry run is enabled, display the command
-  if [ "${DRY_RUN}" -eq 1 ]; then
+  # If verbose is enabled, display the command
+  if [ "${VERBOSE}" -eq 1 ]; then
     [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
+  fi
+
+  # If dry run is enabled, return
+  if [ "${DRY_RUN}" -eq 1 ]; then
     return
   fi
 
@@ -168,9 +175,14 @@ create_sshfs_volume() {
   # Add quiet option if enabled
   [ "${QUIET}" -eq 1 ] && command+=("-q")
 
-  # If dry run is enabled, display the command
-  if [ "${DRY_RUN}" -eq 1 ]; then
+  # If verbose is enabled, display the command
+  if [ "${VERBOSE}" -eq 1 ]; then
     [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
+    return
+  fi
+
+  # If dry run is enabled, return
+  if [ "${DRY_RUN}" -eq 1 ]; then
     return
   fi
 
