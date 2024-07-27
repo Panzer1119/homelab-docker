@@ -4,7 +4,8 @@ volumes:
     name: backup/prowlarr
     driver: zfs
     driver_opts:
-      - dedup=sha512,verify
+      - checksum=sha512
+      - dedup=verify
   config:
     name: config/prowlarr
     driver: zfs
