@@ -34,7 +34,7 @@ services:
       service: logging-gelf
 
   cache:
-    image: redis:6.2-alpine@sha256:e3b17ba9479deec4b7d1eeec1548a253acc5374d68d3b27937fcfe4df8d18c7e
+    image: redis:7.2-alpine@sha256:0bc09d9f486508aa42ecc2f18012bb1e3a1b2744ef3a6ad30942fa12579f0b03
     env_file:
       - cache.env
     restart: unless-stopped
