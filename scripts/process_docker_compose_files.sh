@@ -124,6 +124,9 @@ create_cifs_volume() {
   # Build the command to create the CIFS volume
   local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${host}" "-s" "${share}" "-u" "${username}" "-p" "${password}" "-e")
 
+  # Add verbose option if enabled
+  [ "${VERBOSE}" -eq 1 ] && command+=("-v")
+
   # Add quiet option if enabled
   [ "${QUIET}" -eq 1 ] && command+=("-q")
 
@@ -180,6 +183,9 @@ create_sshfs_volume() {
 
   # Build the command to create the SSHFS volume
   local command=("bash" "${CREATE_SSHFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${host}" "-p" "${port}" "-s" "${path}" "-u" "${username}" "-P" "${password}" "-e")
+
+  # Add verbose option if enabled
+  [ "${VERBOSE}" -eq 1 ] && command+=("-v")
 
   # Add quiet option if enabled
   [ "${QUIET}" -eq 1 ] && command+=("-q")
