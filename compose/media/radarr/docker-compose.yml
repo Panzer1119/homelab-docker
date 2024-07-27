@@ -1,5 +1,23 @@
 ---
 volumes:
+  backup:
+    name: backup/radarr
+    driver: zfs
+    driver_opts:
+      - checksum=sha512
+      - dedup=verify
+  backup-4k:
+    name: backup/radarr-4k
+    driver: zfs
+    driver_opts:
+      - checksum=sha512
+      - dedup=verify
+  backup-anime:
+    name: backup/radarr-anime
+    driver: zfs
+    driver_opts:
+      - checksum=sha512
+      - dedup=verify
   cache-usenet:
     name: cache/usenet
     external: true
@@ -53,6 +71,8 @@ services:
     hostname: radarr
     environment: *default-environment
     volumes:
+      #TODO Change the backup folder in the web interface
+      - backup:/backups
       - config:/config
       - data:/data/media/radarr
       - trash:/data/trash/radarr
@@ -74,6 +94,8 @@ services:
     hostname: radarr-4k
     environment: *default-environment
     volumes:
+      #TODO Change the backup folder in the web interface
+      - backup-4k:/backups
       - config-4k:/config
       - data-4k:/data/media/radarr-4k
       - trash-4k:/data/trash/radarr-4k
@@ -95,6 +117,8 @@ services:
     hostname: radarr-anime
     environment: *default-environment
     volumes:
+      #TODO Change the backup folder in the web interface
+      - backup-anime:/backups
       - config-anime:/config
       - data-anime:/data/media/radarr-anime
       - trash-anime:/data/trash/radarr-anime
