@@ -18,7 +18,11 @@
     "renovate"
   ],
   "major": {
-    "dependencyDashboardApproval": true
+    "dependencyDashboardApproval": true,
+    "automerge": false,
+  },
+  "minor": {
+    "automerge": false
   },
   "packageRules": [
     {
