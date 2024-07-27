@@ -12,16 +12,16 @@ volumes:
   config-anime:
     name: config/radarr-anime
     driver: zfs
-  movies:
-    name: radarr-movies
+  data:
+    name: radarr
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
-  movies-4k:
-    name: radarr-movies-4k
+  data-4k:
+    name: radarr-4k
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
-  movies-anime:
-    name: radarr-movies-anime
+  data-anime:
+    name: radarr-anime
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
 #  sh8-torrents:
@@ -59,12 +59,12 @@ services:
     environment: *default-environment
     volumes:
       - config:/config
-      - movies:/data/media/radarr
+      - data:/data/media/radarr
       - trash:/data/trash/radarr
       - *volume-cache-usenet
 #      - *volume-sh8-torrents
     labels:
-      - "de.panzer1119.docker.volume.radarr-movies.cifs.share=op://Docker/Radarr/CIFS/Share"
+      - "de.panzer1119.docker.volume.radarr.cifs.share=op://Docker/Radarr/CIFS/Share"
       - "de.panzer1119.docker.volume.radarr-trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash"
        #FIXME The docker volume plugin vieux/sshfs is deprecated and dangerous
 #      - "de.panzer1119.docker.volume.sh8-torrents.sshfs.host=op://Docker/SH8/Host"
@@ -86,12 +86,12 @@ services:
     environment: *default-environment
     volumes:
       - config-4k:/config
-      - movies-4k:/data/media/radarr-4k
+      - data-4k:/data/media/radarr-4k
       - trash-4k:/data/trash/radarr-4k
       - *volume-cache-usenet
 #      - *volume-sh8-torrents
     labels:
-      - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.share=op://Docker/Radarr/CIFS/Share_4K"
+      - "de.panzer1119.docker.volume.radarr-4k.cifs.share=op://Docker/Radarr/CIFS/Share_4K"
       - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_4K"
     network_mode: bridge
     ports:
@@ -108,12 +108,12 @@ services:
     environment: *default-environment
     volumes:
       - config-anime:/config
-      - movies-anime:/data/media/radarr-anime
+      - data-anime:/data/media/radarr-anime
       - trash-anime:/data/trash/radarr-anime
       - *volume-cache-usenet
 #      - *volume-sh8-torrents
     labels:
-      - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Anime"
+      - "de.panzer1119.docker.volume.radarr-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Anime"
       - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_Anime"
     network_mode: bridge
     ports:
