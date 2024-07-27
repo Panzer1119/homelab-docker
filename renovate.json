@@ -30,7 +30,7 @@
     {
       "description": "Update MariaDB or MySQL on a patch level only, bumps to major and minor versions might break compatibilty with an application",
       "enabled": false,
-      "managers": [
+      "matchManagers": [
         "docker-compose",
         "dockerfile"
       ],
@@ -38,28 +38,28 @@
         "major",
         "minor"
       ],
-      "packagePatterns": [
+      "matchPackagePatterns": [
         "^([^/]+\\/)*(mariadb|mysql)(:.+)?$"
       ]
     },
     {
       "description": "Update PostgreSQL on a minor version or patch level only, bumps to major versions might break compatibilty with an application",
       "enabled": false,
-      "managers": [
+      "matchManagers": [
         "docker-compose",
         "dockerfile"
       ],
       "matchUpdateTypes": [
         "major"
       ],
-      "packagePatterns": [
+      "matchPackagePatterns": [
         "^([^/]+\\/)*postgres(:.+)?$"
       ]
     },
     {
       "description": "Update MariaDB or PostgreSQL to the most recent release if they are standalone and not part of an application stack",
       "enabled": true,
-      "managers": [
+      "matchManagers": [
         "docker-compose",
         "dockerfile"
       ],
@@ -72,39 +72,39 @@
         "minor",
         "patch"
       ],
-      "packagePatterns": [
+      "matchPackagePatterns": [
         "^([^/]+\\/)*(mariadb|postgres)(:.+)?$"
       ]
     },
     {
       "description": "Over time Heimdall changed its versioning schema several times, ensure we only consider the current style",
-      "managers": [
+      "matchManagers": [
         "docker-compose",
         "dockerfile"
       ],
-      "packagePatterns": [
+      "matchPackagePatterns": [
         "^([^/]+\\/)*heimdall(:.+)?$"
       ],
       "versioning": "regex:^(?<major>\\d{1,2})\\.(?<minor>\\d+)(\\.(?<patch>\\d+))?$"
     },
     {
       "description": "Track stable releases of Nginx only",
-      "managers": [
+      "matchManagers": [
         "docker-compose",
         "dockerfile"
       ],
-      "packagePatterns": [
+      "matchPackagePatterns": [
         "^([^/]+\\/)*nginx(:.+)?$"
       ],
       "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d*[02468])(\\.(?<patch>\\d+))?(?:-(?<compatibility>.*))?$"
     },
     {
       "description": "Ignore erroneous version tags of Semaphore",
-      "managers": [
+      "matchManagers": [
         "docker-compose",
         "dockerfile"
       ],
-      "packagePatterns": [
+      "matchPackagePatterns": [
         "^([^/]+\\/)*semaphore(:.+)?$"
       ],
       "allowedVersions": "!/^v?2\\.19\\.10$/"
