@@ -24,6 +24,10 @@ volumes:
     name: radarr-movies-anime
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
+#  sh8-torrents:
+#    name: sh8-torrents
+#    # Because this is a vieux/sshfs volume, and it needs credentials, it is created outside of this file
+#    external: true
   trash:
     name: radarr-trash
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
@@ -46,6 +50,7 @@ x-environment: &default-environment
 x-volumes:
   - &volume-cache-usenet cache-usenet:/data/usenet
   - &volume-data /data:/data
+#  - &volume-sh8-torrents sh8-torrents:/data/torrents/sh8
 
 services:
   radarr:
@@ -59,9 +64,15 @@ services:
       - trash:/data/trash/radarr
       - *volume-cache-usenet
       - *volume-data
+#      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.radarr-movies.cifs.share=op://Docker/Radarr/CIFS/Share_Movies"
       - "de.panzer1119.docker.volume.radarr-trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash"
+       #FIXME The docker volume plugin vieux/sshfs is deprecated and dangerous
+#      - "de.panzer1119.docker.volume.sh8-torrents.sshfs.host=op://Docker/SH8/Host"
+#      - "de.panzer1119.docker.volume.sh8-torrents.sshfs.path=op://Docker/SH8/Path_Torrents"
+#      - "de.panzer1119.docker.volume.sh8-torrents.sshfs.username=op://Docker/SH8/Username"
+#      - "de.panzer1119.docker.volume.sh8-torrents.sshfs.password=op://Docker/SH8/Password"
     network_mode: bridge
     ports:
       - "7878:7878"
@@ -81,6 +92,7 @@ services:
       - trash-4k:/data/trash/radarr-4k
       - *volume-cache-usenet
       - *volume-data
+#      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_4K"
       - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_4K"
@@ -103,6 +115,7 @@ services:
       - trash-anime:/data/trash/radarr-anime
       - *volume-cache-usenet
       - *volume-data
+#      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Movies_Anime"
       - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_Anime"
