@@ -1,0 +1,81 @@
+---
+volumes:
+  config:
+    name: config/radarr
+    driver: zfs
+  config-4k:
+    name: data/radarr-4k
+    driver: zfs
+  config-anime:
+    name: data/radarr-anime
+    driver: zfs
+
+x-environment: &default-environment
+  - PGID=1000
+  - PUID=1000
+  - TZ=Europe/Berlin
+  - UMASK_SET=022
+
+x-volumes:
+  - &volume-data /data:/data
+  - &volume-downloads /data/empty:/downloads
+  - &volume-movies /data/empty:/movies
+  - &volume-trash /data/empty:/trash
+
+services:
+  radarr:
+    image: ghcr.io/linuxserver/radarr:5.8.3
+    container_name: radarr
+    hostname: radarr
+    environment: *default-environment
+    volumes:
+      - *volume-data
+      - *volume-downloads
+      - *volume-movies
+      - *volume-trash
+      - config:/config
+    network_mode: bridge
+    ports:
+      - "7878:7878"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  radarr-4k:
+    image: ghcr.io/linuxserver/radarr:5.8.3
+    container_name: radarr-4k
+    hostname: radarr-4k
+    environment: *default-environment
+    volumes:
+      - *volume-data
+      - *volume-downloads
+      - *volume-movies
+      - *volume-trash
+      - config-4k:/config
+    network_mode: bridge
+    ports:
+      - "7474:7878"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  radarr-anime:
+    image: ghcr.io/linuxserver/radarr:5.8.3
+    container_name: radarr-anime
+    hostname: radarr-anime
+    environment: *default-environment
+    volumes:
+      - *volume-data
+      - *volume-downloads
+      - *volume-movies
+      - *volume-trash
+      - config-anime:/config
+    network_mode: bridge
+    ports:
+      - "7171:7878"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
