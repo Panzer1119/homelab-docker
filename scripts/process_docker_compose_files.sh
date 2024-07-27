@@ -10,6 +10,10 @@ QUIET=0
 DRY_RUN=0
 DELETE=0
 
+DEFAULT_HOST=""
+DEFAULT_USERNAME=""
+DEFAULT_PASSWORD=""
+
 # Function to display usage
 usage() {
   cat << EOF
@@ -46,6 +50,12 @@ done
 if [ -z "${DIRECTORY}" ]; then
   usage
 fi
+
+load_defaults() {
+  DEFAULT_HOST=$(op read "op://Docker/Default/CIFS/Host")
+  DEFAULT_USERNAME=$(op read "op://Docker/Default/CIFS/Username")
+  DEFAULT_PASSWORD=$(op read "op://Docker/Default/CIFS/Password")
+}
 
 # Function to check if a value is empty or null
 check_value() {
@@ -142,6 +152,15 @@ process_docker_compose() {
       cifs_username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_username")
       cifs_password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].cifs_password")
 
+      # If the cifs host is empty or null, use the default host
+      [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ] && cifs_host="${DEFAULT_HOST}"
+
+      # If the cifs username is empty or null, use the default username
+      [ -z "${cifs_username}" ] || [ "${cifs_username}" == "null" ] && cifs_username="${DEFAULT_USERNAME}"
+
+      # If the cifs password is empty or null, use the default password
+      [ -z "${cifs_password}" ] || [ "${cifs_password}" == "null" ] && cifs_password="${DEFAULT_PASSWORD}"
+
       # If all CIFS values are empty or null, skip
       if { [ -z "${cifs_host}" ] || [ "${cifs_host}" == "null" ]; } &&
          { [ -z "${cifs_share}" ] || [ "${cifs_share}" == "null" ]; } &&
@@ -207,6 +226,12 @@ export -f process_docker_compose
 
 # Find all docker-compose.yml files
 files=$(find "${DIRECTORY}" -type f -name "*docker-compose.yml")
+
+# If no files are found, exit
+[ -z "${files}" ] && exit 0
+
+# Load the default values
+load_defaults
 
 # Process each docker-compose.yml file
 for file in ${files}; do
