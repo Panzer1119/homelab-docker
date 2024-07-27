@@ -4,10 +4,10 @@ volumes:
     name: config/sonarr
     driver: zfs
   config-4k:
-    name: data/sonarr-4k
+    name: config/sonarr-4k
     driver: zfs
   config-anime:
-    name: data/sonarr-anime
+    name: config/sonarr-anime
     driver: zfs
   #TODO Is this correct? (Maybe make it external and a named docker volume (on zfs) and also use it on sabnzbd?)
   data:
