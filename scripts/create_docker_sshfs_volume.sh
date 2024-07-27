@@ -89,7 +89,12 @@ fi
 
 # If quiet is disabled, display the message
 if [[ ${QUIET} -eq 0 ]]; then
-  echo "Creating Docker SSHFS volume '${VOLUME_NAME}' pointing to '${ADDRESS}/${SHARE_NAME}'..."
+  # If dry run is enabled, display the message
+  if [[ ${DRY_RUN} -eq 1 ]]; then
+    echo "Would create Docker SSHFS volume '${VOLUME_NAME}' pointing to '${SHARE_NAME}' on '${ADDRESS}'"
+  else
+    echo "Creating Docker SSHFS volume '${VOLUME_NAME}' pointing to '${SHARE_NAME}' on '${ADDRESS}'..."
+  fi
 fi
 
 # If verbose is enabled, display the docker command
