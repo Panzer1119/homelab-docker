@@ -21,7 +21,7 @@ Usage: ${0} -d <directory> [-q] [-n] [-D]
   -d <directory>: Directory to recursively search for docker-compose.yml files
   -q: Optional. Quiet mode
   -n: Optional. Dry run
-  -D: Optional. Delete the CIFS volumes (only requires -d)
+  -D: Optional. Delete the CIFS/SSHFS volumes (only requires -d)
 EOF
   exit 1
 }
@@ -174,7 +174,7 @@ process_docker_compose() {
 
     # Iterate over the volume label keys
     for volume_label_key in $(echo "${volume_labels}" | jq -r 'keys[]'); do
-      local volume_label_value volume_name cifs_key
+      local volume_label_value volume_name volume_driver key
 
       # Get the volume label value
       volume_label_value=$(echo "${volume_labels}" | jq -r ".[\"${volume_label_key}\"]")
@@ -183,23 +183,31 @@ process_docker_compose() {
       [ -z "${volume_label_value}" ] || [ "${volume_label_value}" == "null" ] && continue
 
       # Extract the volume name from the volume label key (the first part after "de.panzer1119.docker.volume.")
-      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.cifs.(host|share|username|password)$/\1/')
+      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|share|username|password)$/\1/')
 
       # If the volume name is empty or null, skip
       [ -z "${volume_name}" ] || [ "${volume_name}" == "null" ] && continue
 
-      # Extract the cifs key from the volume label key (the second part after "de.panzer1119.docker.volume.")
-      cifs_key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.cifs.(host|share|username|password)$/\2/')
+      # Extract the driver from the volume label key (the second part after "de.panzer1119.docker.volume.")
+      volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|share|username|password)$/\2/')
 
-      # If the cifs key is empty or null, skip
-      [ -z "${cifs_key}" ] || [ "${cifs_key}" == "null" ] && continue
+      # Create a dictionary with the volume name as the key and another dictionary with the key driver
+      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"driver\": \"${volume_driver}\"}")
 
-      # Create a dictionary with the volume name as the key and another dictionary with the cifs key as the key and the volume label value as the value
-      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"cifs_${cifs_key}\": \"${volume_label_value}\"}")
+      # Extract the key from the volume label key (the second part after "de.panzer1119.docker.volume.")
+      key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|share|username|password)$/\3/')
+
+      # If the key is empty or null, skip
+      [ -z "${key}" ] || [ "${key}" == "null" ] && continue
+
+      # Create a dictionary with the volume name as the key and another dictionary with the key as the key and the volume label value as the value
+      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"cifs_${key}\": \"${volume_label_value}\"}")
     done
 
     # Iterate over the volume dictionaries keys
     for volume_name in $(echo "${volume_dictionaries}" | jq -r 'keys[]'); do
+      local driver
+
       # If delete mode is enabled, delete the volume
       if [ "${DELETE}" -eq 1 ]; then
         # If quiet mode is not enabled, display the volume name
@@ -226,8 +234,22 @@ process_docker_compose() {
         continue
       fi
 
-      # Create the CIFS volume
-      create_cifs_volume "${volume_name}" "${volume_dictionaries}"
+      # Get the driver from the volume dictionaries
+      driver=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].driver")
+
+      # Switch on the driver
+      case "${driver}" in
+        cifs)
+          create_cifs_volume "${volume_name}" "${volume_dictionaries}"
+          ;;
+        sshfs)
+          echo "SSHFS driver not supported yet"
+          ;;
+        *)
+          echo "Error: Unsupported driver '${driver}' for volume '${volume_name}' in '${file}'"
+          exit 1
+          ;;
+      esac
     done
   done
 }
