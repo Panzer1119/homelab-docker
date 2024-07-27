@@ -129,7 +129,7 @@ create_cifs_volume() {
 
   # If verbose is enabled, display the command
   if [ "${VERBOSE}" -eq 1 ]; then
-    [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
+    echo "${command[*]}"
   fi
 
   # If dry run is enabled, return
@@ -186,8 +186,7 @@ create_sshfs_volume() {
 
   # If verbose is enabled, display the command
   if [ "${VERBOSE}" -eq 1 ]; then
-    [ "${QUIET}" -eq 0 ] && echo "${command[*]}"
-    return
+    echo "${command[*]}"
   fi
 
   # If dry run is enabled, return
