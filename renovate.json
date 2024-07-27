@@ -2,10 +2,15 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:best-practices",
+    ":assignee('Panzer1119')",
+    ":automergeBranch",
+    ":automergeDigest",
+    ":automergePatch",
     ":dependencyDashboard",
     ":enableVulnerabilityAlertsWithLabel('security')",
     ":preserveSemverRanges",
     ":rebaseStalePrs",
+    ":skipStatusChecks",
     "group:recommended"
   ],
   "labels": [
