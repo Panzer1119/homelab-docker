@@ -1,0 +1,25 @@
+---
+volumes:
+  config:
+    name: config/prowlarr
+    driver: zfs
+
+services:
+  prowlarr:
+    image: ghcr.io/linuxserver/prowlarr:1.20.1
+    container_name: prowlarr
+    hostname: prowlarr
+    environment:
+      - PGID=1000
+      - PUID=1000
+      - TZ=Europe/Berlin
+      - UMASK_SET=022
+    volumes:
+      - config:/config
+    network_mode: bridge
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
