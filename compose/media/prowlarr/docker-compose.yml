@@ -1,7 +1,7 @@
 ---
 volumes:
-  backups:
-    name: backups/prowlarr
+  backup:
+    name: backup/prowlarr
     driver: zfs
     driver_opts:
       - dedup=sha512,verify
@@ -20,7 +20,7 @@ services:
       - TZ=Europe/Berlin
       - UMASK_SET=022
     volumes:
-      - backups:/backups
+      - backup:/backups
       - config:/config
     network_mode: bridge
     ports:
