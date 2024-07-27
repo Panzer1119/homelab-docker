@@ -23,7 +23,7 @@ EOF
 }
 
 # Check for required commands
-for cmd in jq yq; do
+for cmd in jq yq op; do
   if ! command -v "${cmd}" &> /dev/null; then
     echo "Error: ${cmd} is not installed. Please install ${cmd} to run this script."
     exit 1
