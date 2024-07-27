@@ -57,14 +57,8 @@ services:
       - tv:/data/media/sonarr
       - trash:/data/trash/sonarr
     labels:
-      - "de.panzer1119.docker.volume.sonarr-tv.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.sonarr-tv.cifs.share=op://Docker/Sonarr/CIFS/Share_TV"
-      - "de.panzer1119.docker.volume.sonarr-tv.cifs.username=op://Docker/Sonarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.sonarr-tv.cifs.password=op://Docker/Sonarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.sonarr-trash.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.sonarr-trash.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash"
-      - "de.panzer1119.docker.volume.sonarr-trash.cifs.username=op://Docker/Sonarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.sonarr-trash.cifs.password=op://Docker/Sonarr/CIFS/Password"
     network_mode: bridge
     ports:
       - "8989:8989"
@@ -83,14 +77,8 @@ services:
       - tv-4k:/data/media/sonarr-4k
       - trash-4k:/data/trash/sonarr-4k
     labels:
-      - "de.panzer1119.docker.volume.sonarr-tv-4k.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.sonarr-tv-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_TV_4K"
-      - "de.panzer1119.docker.volume.sonarr-tv-4k.cifs.username=op://Docker/Sonarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.sonarr-tv-4k.cifs.password=op://Docker/Sonarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.sonarr-trash-4k.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.sonarr-trash-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_4K"
-      - "de.panzer1119.docker.volume.sonarr-trash-4k.cifs.username=op://Docker/Sonarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.sonarr-trash-4k.cifs.password=op://Docker/Sonarr/CIFS/Password"
     network_mode: bridge
     ports:
       - "4949:8989"
@@ -109,14 +97,8 @@ services:
       - tv-anime:/data/media/sonarr-anime
       - trash-anime:/data/trash/sonarr-anime
     labels:
-      - "de.panzer1119.docker.volume.sonarr-tv-anime.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.sonarr-tv-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_TV_Anime"
-      - "de.panzer1119.docker.volume.sonarr-tv-anime.cifs.username=op://Docker/Sonarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.sonarr-tv-anime.cifs.password=op://Docker/Sonarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.sonarr-trash-anime.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.sonarr-trash-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_Anime"
-      - "de.panzer1119.docker.volume.sonarr-trash-anime.cifs.username=op://Docker/Sonarr/CIFS/Username"
-      - "de.panzer1119.docker.volume.sonarr-trash-anime.cifs.password=op://Docker/Sonarr/CIFS/Password"
     network_mode: bridge
     ports:
       - "1919:8989"
