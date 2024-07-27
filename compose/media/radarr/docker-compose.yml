@@ -7,10 +7,10 @@ volumes:
     name: config/radarr
     driver: zfs
   config-4k:
-    name: data/radarr-4k
+    name: config/radarr-4k
     driver: zfs
   config-anime:
-    name: data/radarr-anime
+    name: config/radarr-anime
     driver: zfs
   movies:
     name: radarr-movies
