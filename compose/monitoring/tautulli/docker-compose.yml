@@ -1,0 +1,38 @@
+---
+volumes:
+  backup:
+    name: backup/tautulli
+    driver: zfs
+    driver_opts:
+      - checksum=sha512
+      - dedup=verify
+  cache:
+    name: cache/tautulli
+    driver: zfs
+  config:
+    name: config/tautulli
+    driver: zfs
+
+services:
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    hostname: tautulli
+    environment:
+      - PGID=1000
+      - PUID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - backup:/config/backups
+      - cache:/cache
+      - config:/config
+      #TODO Somehow get the logs from the plex container?
+      #- /docker/data/tautulli/plex_logs:/logs:ro
+      #- /docker/data/tautulli/plex_logs:/plex_logs:ro
+    network_mode: bridge
+    ports:
+      - "8181:8181"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
