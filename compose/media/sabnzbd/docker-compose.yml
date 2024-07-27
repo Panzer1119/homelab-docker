@@ -1,0 +1,42 @@
+---
+volumes:
+  config:
+    name: config/sabnzbd
+    driver: zfs
+
+services:
+  sabnzbd:
+    #3.5.3
+    #3.6.1 # 2022-11-08
+    #3.7.1 # until 2023-02-10
+    #3.7.2 # until 2023-05-03
+    #4.0.1 # until 2023-06-12
+    #4.0.2 # until 2023-07-15
+    #4.0.3 # until 2023-09-28
+    #4.1.0 # until 2024-01-05
+    #4.2.1 # until 2024-02-03
+    #4.2.2 # until 2024-03-15
+    #4.2.3 # until 2024-05-04
+    #4.3.0 # until 2024-05-07
+    #4.3.1 # until 2024-05-30
+    image: ghcr.io/linuxserver/sabnzbd:4.3.2
+    container_name: sabnzbd
+    hostname: sabnzbd
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      - UMASK=022
+      #- SAB_NOTIFICATION_PARAMETERS="" # Since v4.0.2
+    volumes:
+      - config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /data/usenet:/data/usenet
+    network_mode: bridge
+    ports:
+      - "8688:8080"
+      - "9090:9090"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
