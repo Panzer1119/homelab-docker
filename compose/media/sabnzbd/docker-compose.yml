@@ -1,15 +1,23 @@
 ---
 volumes:
-  config:
-    name: config/sabnzbd
-    driver: zfs
-  data:
-    name: cache/sabnzbd
+  cache-usenet:
+    name: cache/usenet
     driver: zfs
     driver_opts:
       compression: lz4
       quota: 256G
       recordsize: 1M
+  config:
+    name: config/sabnzbd
+    driver: zfs
+  backups:
+    name: sabnzbd-backups
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  nzb-backups:
+    name: sabnzbd-nzb-backups
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
 
 services:
   sabnzbd:
@@ -23,9 +31,23 @@ services:
       - UMASK=022
       #- SAB_NOTIFICATION_PARAMETERS="" # Since v4.0.2
     volumes:
+      #TODO Set the correct folders in SABnzbd web interface
       - config:/config
-      - data:/data/usenet
+      - cache-usenet:/data/usenet
+      - backups:/backups
+      - nzb-backups:/nzb-backups
       - /etc/localtime:/etc/localtime:ro
+    labels:
+      # sabnzbd-backups
+      - "de.panzer1119.docker.volume.sabnzbd-backups.cifs.host=op://Docker/SABnzbd/CIFS/Host"
+      - "de.panzer1119.docker.volume.sabnzbd-backups.cifs.share=op://Docker/SABnzbd/CIFS/Share_Backups"
+      - "de.panzer1119.docker.volume.sabnzbd-backups.cifs.username=op://Docker/SABnzbd/CIFS/Username"
+      - "de.panzer1119.docker.volume.sabnzbd-backups.cifs.password=op://Docker/SABnzbd/CIFS/Password"
+      # sabnzbd-nzb-backups
+      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.host=op://Docker/SABnzbd/CIFS/Host"
+      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.share=op://Docker/SABnzbd/CIFS/Share_NZB_Backups"
+      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.username=op://Docker/SABnzbd/CIFS/Username"
+      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.password=op://Docker/SABnzbd/CIFS/Password"
     network_mode: bridge
     ports:
       - "8688:8080"
