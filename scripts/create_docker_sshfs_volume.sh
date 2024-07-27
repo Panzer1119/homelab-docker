@@ -4,8 +4,10 @@
 PORT="22"
 PASSWORD=""
 IDENTITY_FILE=""
+VERBOSE=0
 EXIT_GRACEFULLY_IF_EXISTS=0
 QUIET=0
+DRY_RUN=0
 
 # Always fail the script, because the plugin is deprecated and dangerous (can lead to data loss, see: https://github.com/vieux/docker-volume-sshfs/issues/81)
 echo "Error: The vieux/sshfs plugin is deprecated and dangerous. See https://github.com/vieux/docker-volume-sshfs/issues/81 for more information."
@@ -19,7 +21,7 @@ fi
 
 # Function to display usage
 usage() {
-  echo "Usage: ${0} -n <volume_name> -a <address> -s <path> -u <username> [-p <port>] [-P <password>] [-i <file>] [-e] [-q]"
+  echo "Usage: ${0} -n <volume_name> -a <address> -s <path> -u <username> [-p <port>] [-P <password>] [-i <file>] [-v] [-N] [-e] [-q]"
   echo "  -n <volume_name>: Name of the Docker volume to create"
   echo "  -a <address>: Address of the SSHFS server"
   echo "  -p <port>: Port of the SSHFS server (default: 22)"
@@ -27,13 +29,15 @@ usage() {
   echo "  -u <username>: Username for authentication"
   echo "  -P <password>: Optional. Password for authentication"
   echo "  -i <file>: Optional. Identity file for SSH authentication"
+  echo "  -v: Optional. Verbose mode"
+  echo "  -N: Optional. Dry run"
   echo "  -e: Optional. Exit gracefully if volume already exists (default: exit with error)"
   echo "  -q: Optional. Quiet mode"
   exit 1
 }
 
 # Parse options
-while getopts "n:a:p:s:u:P:i:eq" opt; do
+while getopts "n:a:p:s:u:P:i:vNeq" opt; do
   case ${opt} in
     n) VOLUME_NAME="${OPTARG}" ;;
     a) ADDRESS="${OPTARG}" ;;
@@ -42,6 +46,8 @@ while getopts "n:a:p:s:u:P:i:eq" opt; do
     u) USERNAME="${OPTARG}" ;;
     P) PASSWORD="${OPTARG}" ;;
     i) IDENTITY_FILE="${OPTARG}" ;;
+    v) VERBOSE=1 ;;
+    N) DRY_RUN=1 ;;
     e) EXIT_GRACEFULLY_IF_EXISTS=1 ;;
     q) QUIET=1 ;;
     \?) echo "Invalid option: -${OPTARG}" >&2
@@ -81,13 +87,25 @@ if [[ -n ${IDENTITY_FILE} ]]; then
   DOCKER_CMD="${DOCKER_CMD} --opt 'IdentityFile=${IDENTITY_FILE}'"
 fi
 
-# Execute Docker command
+# If quiet is disabled, display the message
 if [[ ${QUIET} -eq 0 ]]; then
   echo "Creating Docker SSHFS volume '${VOLUME_NAME}' pointing to '${ADDRESS}/${SHARE_NAME}'..."
-  echo "${DOCKER_CMD}"
 fi
+
+# If verbose is enabled, display the docker command
+if [ "${VERBOSE}" -eq 1 ]; then
+  echo "Docker command: ${DOCKER_CMD}"
+fi
+
+# If dry run is enabled, exit
+if [ "${DRY_RUN}" -eq 1 ]; then
+  exit 0
+fi
+
+# Execute Docker command
 eval "${DOCKER_CMD}"
 
+# Display success message if not in quiet mode
 if [[ ${QUIET} -eq 0 ]]; then
   echo "Docker SSHFS volume '${VOLUME_NAME}' created successfully."
 fi
