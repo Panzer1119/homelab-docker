@@ -9,15 +9,20 @@ volumes:
   config-anime:
     name: data/radarr-anime
     driver: zfs
+  #TODO Is this correct? 
   data:
+    type: bind
+    src: /data
+    dest: /data
+  movies:
     name: radarr-movies
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
-  data-4k:
+  movies-4k:
     name: radarr-movies-4k
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
-  data-anime:
+  movies-anime:
     name: radarr-movies-anime
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
@@ -48,7 +53,8 @@ services:
     environment: *default-environment
     volumes:
       - config:/config
-      - data:/data/media/radarr
+      - data:/data
+      - movies:/data/media/radarr
       - trash:/data/trash/radarr
     labels:
       - "de.panzer1119.docker.volume.radarr-movies.cifs.host=op://Docker/Radarr/CIFS/Host"
@@ -74,7 +80,8 @@ services:
     environment: *default-environment
     volumes:
       - config-4k:/config
-      - data-4k:/data/media/radarr-4k
+      - data:/data
+      - movies-4k:/data/media/radarr-4k
       - trash-4k:/data/trash/radarr-4k
     labels:
       - "de.panzer1119.docker.volume.radarr-movies-4k.cifs.host=op://Docker/Radarr/CIFS/Host"
@@ -100,7 +107,8 @@ services:
     environment: *default-environment
     volumes:
       - config-anime:/config
-      - data-anime:/data/media/radarr-anime
+      - data:/data
+      - movies-anime:/data/media/radarr-anime
       - trash-anime:/data/trash/radarr-anime
     labels:
       - "de.panzer1119.docker.volume.radarr-movies-anime.cifs.host=op://Docker/Radarr/CIFS/Host"
