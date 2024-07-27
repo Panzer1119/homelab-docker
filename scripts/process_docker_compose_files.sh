@@ -250,7 +250,7 @@ process_docker_compose() {
       [ -z "${key}" ] || [ "${key}" == "null" ] && continue
 
       # Create a dictionary with the volume name as the key and another dictionary with the key as the key and the volume label value as the value
-      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"cifs_${key}\": \"${volume_label_value}\"}")
+      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"${key}\": \"${volume_label_value}\"}")
     done
 
     # Iterate over the volume dictionaries keys
