@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Function to process files
-process_files() {
+process_file() {
     local file="$1"
     local force="$2"
     local skip_existing="$3"
@@ -17,17 +17,21 @@ process_files() {
     # Check if file exists and decide whether to skip or overwrite
     if [ -f "${output_file}" ] && [ "${skip_existing}" == "true" ]; then
         echo "Skipping existing file: ${output_file}"
+        return
+    fi
+
+    # If dry run is enabled, display the message and return
+    if [ "${dry_run}" == "true" ]; then
+        echo "Dry run: Would process ${file} to ${output_file}"
+        return
+    fi
+
+    # Process the file
+    echo "Processing ${file} to ${output_file}..."
+    if [ "${force}" == "true" ]; then
+        op inject -f -i "${file}" -o "${output_file}" > /dev/null
     else
-        if [ "${dry_run}" == "true" ]; then
-            echo "Dry run: Would process ${file} to ${output_file}"
-        else
-            echo "Processing ${file} to ${output_file}..."
-            if [ "${force}" == "true" ]; then
-                op inject -f -i "${file}" -o "${output_file}" > /dev/null
-            else
-                op inject -i "${file}" -o "${output_file}" > /dev/null
-            fi
-        fi
+        op inject -i "${file}" -o "${output_file}" > /dev/null
     fi
 }
 
@@ -73,7 +77,7 @@ fi
 
 # Find and process the files
 find "${SEARCH_DIR}" -type f -name 'ref.*' | while read -r file; do
-    process_files "${file}" "${force}" "${skip_existing}" "${dry_run}"
+    process_file "${file}" "${force}" "${skip_existing}" "${dry_run}"
 done
 
 echo "All matching files processed."
