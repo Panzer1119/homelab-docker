@@ -15,7 +15,7 @@ volumes:
 
 services:
   tautulli:
-    image: lscr.io/linuxserver/tautulli:2021.12.16@sha256:9ba07aaddb8e2e7a6283eb8231dfd900f2d7dda38d70ec60fe7f5000a2dc0906
+    image: lscr.io/linuxserver/tautulli:2.14.3@sha256:05521bf5fbab6d9297fed5ae8525b4ff24dec3773bce40c0d0b831a8708a13e2
     container_name: tautulli
     hostname: tautulli
     environment:
