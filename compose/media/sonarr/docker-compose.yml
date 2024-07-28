@@ -42,6 +42,21 @@ volumes:
     name: sonarr-anime
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
+  sh8-torrents:
+    name: sh8-torrents
+    driver: rclone
+    driver_opts:
+      remote: "sh8:"
+      allow_other: "true"
+      vfs_cache_mode: full
+      poll_interval: 0
+    labels:
+      - "de.panzer1119.docker.volume.sh8-torrents.rclone.type=sftp"
+      - "de.panzer1119.docker.volume.sh8-torrents.rclone.host=op://Docker/SH8/Host"
+      - "de.panzer1119.docker.volume.sh8-torrents.rclone.port=op://Docker/SH8/Port"
+      - "de.panzer1119.docker.volume.sh8-torrents.rclone.path=op://Docker/SH8/Path_Torrents"
+      - "de.panzer1119.docker.volume.sh8-torrents.rclone.username=op://Docker/SH8/Username"
+      - "de.panzer1119.docker.volume.sh8-torrents.rclone.password=op://Docker/SH8/Password"
   trash:
     name: sonarr-trash
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
@@ -63,6 +78,7 @@ x-environment: &default-environment
 
 x-volumes:
   - &volume-cache-usenet cache-usenet:/data/usenet
+  - &volume-sh8-torrents sh8-torrents:/data/torrents/sh8
 
 services:
   sonarr:
@@ -77,6 +93,7 @@ services:
       - data:/data/media/sonarr
       - trash:/data/trash/sonarr
       - *volume-cache-usenet
+      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.sonarr.cifs.share=op://Docker/Sonarr/CIFS/Share"
       - "de.panzer1119.docker.volume.sonarr-trash.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash"
@@ -100,6 +117,7 @@ services:
       - data-4k:/data/media/sonarr-4k
       - trash-4k:/data/trash/sonarr-4k
       - *volume-cache-usenet
+      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.sonarr-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_4K"
       - "de.panzer1119.docker.volume.sonarr-trash-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_4K"
@@ -123,6 +141,7 @@ services:
       - data-anime:/data/media/sonarr-anime
       - trash-anime:/data/trash/sonarr-anime
       - *volume-cache-usenet
+      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.sonarr-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Anime"
       - "de.panzer1119.docker.volume.sonarr-trash-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_Anime"
