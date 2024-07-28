@@ -5,4 +5,4 @@
   - [`infrastructure`](./compose/infrastructure/README.md) - Infrastructure projects
   - [`media`](./compose/media/README.md) - Media projects
   - [`monitoring`](./compose/monitoring/README.md) - Monitoring projects
-- `scripts` - Scripts for managing Docker containers, volumes etc
+- [`scripts`](./scripts/README.md) - Scripts for managing Docker containers, volumes etc
