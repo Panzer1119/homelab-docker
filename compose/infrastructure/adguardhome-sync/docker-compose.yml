@@ -16,6 +16,7 @@ services:
       #- CONFIGFILE=/config/adguardhome-sync.yaml #optional
     volumes:
       - config:/config
+    network_mode: bridge
     ports:
       - "8261:8080"
     restart: unless-stopped
