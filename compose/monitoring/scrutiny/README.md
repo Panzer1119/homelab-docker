@@ -1,3 +1,5 @@
+[Up](../README.md)
+
 # Scrutiny
 
 ## Collector Configuration
