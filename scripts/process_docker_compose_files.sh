@@ -1,10 +1,12 @@
 #!/bin/bash
 
 CREATE_CIFS_VOLUME_SCRIPT_FILENAME="create_docker_cifs_volume.sh"
+CREATE_RCLONE_VOLUME_SCRIPT_FILENAME="create_docker_rclone_volume.sh"
 CREATE_SSHFS_VOLUME_SCRIPT_FILENAME="create_docker_sshfs_volume.sh"
 
 SCRIPTS_DIR=$(dirname "${0}")
 CREATE_CIFS_VOLUME_SCRIPT_FILE="${SCRIPTS_DIR}/${CREATE_CIFS_VOLUME_SCRIPT_FILENAME}"
+CREATE_RCLONE_VOLUME_SCRIPT_FILE="${SCRIPTS_DIR}/${CREATE_RCLONE_VOLUME_SCRIPT_FILENAME}"
 CREATE_SSHFS_VOLUME_SCRIPT_FILE="${SCRIPTS_DIR}/${CREATE_SSHFS_VOLUME_SCRIPT_FILENAME}"
 
 DIRECTORY=""
@@ -144,6 +146,77 @@ create_cifs_volume() {
 #  fi
 
   # Create the CIFS volume
+  if ! "${command[@]}"; then
+    exit 1
+  fi
+}
+
+create_rclone_volume() {
+  local volume_name="${1}"
+  local volume_dictionaries="${2}"
+
+  local type host port path username password
+
+  # Get the type, host, port, path, username, and password from the volume dictionaries
+  type=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].type")
+  host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].host")
+  port=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].port")
+  path=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].path")
+  username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].username")
+  password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].password")
+
+  # If all values are empty or null, skip
+  if { [ -z "${type}" ] || [ "${type}" == "null" ]; } &&
+     { [ -z "${host}" ] || [ "${host}" == "null" ]; } &&
+     { [ -z "${port}" ] || [ "${port}" == "null" ]; } &&
+     { [ -z "${path}" ] || [ "${path}" == "null" ]; } &&
+     { [ -z "${username}" ] || [ "${username}" == "null" ]; } &&
+     { [ -z "${password}" ] || [ "${password}" == "null" ]; }; then
+    return
+  fi
+
+  # Check each required Rclone value
+  check_value "${type}" "Rclone Type"
+  check_value "${host}" "Rclone Host"
+
+  # If quiet mode is not enabled, display the volume name and path
+  [ "${QUIET}" -eq 0 ] && echo "Found Rclone volume '${volume_name}' in '${file}'"
+
+  # Build the command to create the Rclone volume
+  local command=("bash" "${CREATE_RCLONE_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-t" "${type}" "-h" "${host}")
+
+  # Add the port if provided
+  [ -n "${port}" ] && command+=("-p" "${port}")
+
+  # Add the path if provided
+  [ -n "${path}" ] && command+=("-s" "${path}")
+
+  # Add the username if provided
+  [ -n "${username}" ] && command+=("-u" "${username}")
+
+  # Add the password if provided
+  [ -n "${password}" ] && command+=("-P" "${password}")
+
+  # Add verbose option if enabled
+  [ "${VERBOSE}" -eq 1 ] && command+=("-v")
+
+  # Add dry run option if enabled
+  [ "${DRY_RUN}" -eq 1 ] && command+=("-N")
+
+  # Add quiet option if enabled
+  [ "${QUIET}" -eq 1 ] && command+=("-q")
+
+  # If verbose is enabled, display the command
+  if [ "${VERBOSE}" -eq 1 ]; then
+    echo "${command[*]}"
+  fi
+
+#  # If dry run is enabled, return
+#  if [ "${DRY_RUN}" -eq 1 ]; then
+#    return
+#  fi
+
+  # Create the Rclone volume
   if ! "${command[@]}"; then
     exit 1
   fi
@@ -332,8 +405,7 @@ process_docker_compose() {
           create_cifs_volume "${volume_name}" "${volume_dictionaries}"
           ;;
         rclone)
-          echo "Error: 'rclone' driver is not supported yet for volume '${volume_name}' in '${file}'"
-          exit 1
+          create_rclone_volume "${volume_name}" "${volume_dictionaries}"
           ;;
         sshfs)
           create_sshfs_volume "${volume_name}" "${volume_dictionaries}"
