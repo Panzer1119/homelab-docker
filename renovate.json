@@ -121,6 +121,16 @@
         "^([^/]+\\/)*semaphore(:.+)?$"
       ],
       "allowedVersions": "!/^v?2\\.19\\.10$/"
+    },
+    {
+      "description": "Update ref.docker-compose.yml files too",
+      "enabled": true,
+      "matchManagers": [
+        "docker-compose"
+      ],
+      "matchFileNames": [
+          "**/ref.docker-compose.yml"
+      ]
     }
   ],
   "separateMinorPatch": true,
