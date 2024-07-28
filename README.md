@@ -1,6 +1,6 @@
 ## Repository Structure
 
-- `compose` - Docker compose projects
+- [`compose`](./compose/README.md) - Docker compose projects
   - [`common`](./compose/common/README.md) - Common docker compose parts
   - [`infrastructure`](./compose/infrastructure/README.md) - Infrastructure projects
   - [`media`](./compose/media/README.md) - Media projects
