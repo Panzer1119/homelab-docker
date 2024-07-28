@@ -2,10 +2,10 @@
 
 # Function to process files
 process_file() {
-    local file="$1"
-    local force="$2"
-    local skip_existing="$3"
-    local dry_run="$4"
+    local file="${1}"
+    local force="${2}"
+    local skip_existing="${3}"
+    local dry_run="${4}"
 
     # Determine the output filename
     if [ "$(basename "${file}")" == "ref.env" ]; then
@@ -36,8 +36,8 @@ process_file() {
 }
 
 # Check if directory is provided
-if [ -z "$1" ]; then
-    echo "Usage: $0 [-f] [-s] [-n] <directory>"
+if [ -z "${1}" ]; then
+    echo "Usage: ${0} [-f] [-s] [-n] <directory>"
     exit 1
 fi
 
@@ -58,8 +58,8 @@ while getopts ":fsn" opt; do
             dry_run=true
             ;;
         \?)
-            echo "Invalid option: -$OPTARG" >&2
-            echo "Usage: $0 [-f] [-s] [-n] <directory>"
+            echo "Invalid option: -${OPTARG}" >&2
+            echo "Usage: ${0} [-f] [-s] [-n] <directory>"
             exit 1
             ;;
     esac
@@ -67,7 +67,7 @@ done
 shift $((OPTIND -1))
 
 # Directory to search
-SEARCH_DIR="$1"
+SEARCH_DIR="${1}"
 
 # Validate directory
 if [ ! -d "${SEARCH_DIR}" ]; then
