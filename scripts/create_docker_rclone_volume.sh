@@ -7,6 +7,7 @@ VOLUME_NAME=""
 TYPE=""
 HOST=""
 PORT=""
+PATH=""
 USERNAME=""
 PASSWORD=""
 VERBOSE=0
@@ -25,12 +26,13 @@ fi
 # Function to display usage
 usage() {
 cat << EOF
-Usage: ${0} -n <volume_name> -t <type> -h <host> [-p <port>] [-u <username>] [-P <password>] [-v] [-N] [-e] [-q]
+Usage: ${0} -n <volume_name> -t <type> -h <host> [-p <port>] [-s <path>] [-u <username>] [-P <password>] [-v] [-N] [-e] [-q]
 Create a Docker volume using the Rclone plugin.
   -n <volume_name>: Name of the Docker volume to create
   -t <type>: Type of the Rclone remote (e.g. sftp)
   -h <host>: Hostname or IP address of the Rclone remote
   -p <port>: Optional. Port number of the Rclone remote
+  -s <path>: Optional. Path of the Rclone remote
   -u <username>: Optional. Username for authentication
   -P <password>: Optional. Password for authentication
   -v: Optional. Verbose mode
@@ -47,12 +49,13 @@ if [[ ${EUID} -ne 0 ]]; then
 fi
 
 # Parse options
-while getopts "n:t:h:p:u:P:vNeq" opt; do
+while getopts "n:t:h:p:s:u:P:vNeq" opt; do
   case ${opt} in
     n) VOLUME_NAME="${OPTARG}" ;;
     t) TYPE="${OPTARG}" ;;
     h) HOST="${OPTARG}" ;;
     p) PORT="${OPTARG}" ;;
+    s) PATH="${OPTARG}" ;;
     u) USERNAME="${OPTARG}" ;;
     P) PASSWORD="${OPTARG}" ;;
     v) VERBOSE=1 ;;
@@ -108,6 +111,11 @@ fi
 # Add the port if provided
 if [[ -n "${PORT}" ]]; then
   RCLONE_CONFIG_PART="${RCLONE_CONFIG_PART}\nport = ${PORT}"
+fi
+
+# Add the path if provided
+if [[ -n "${PATH}" ]]; then
+  RCLONE_CONFIG_PART="${RCLONE_CONFIG_PART}\npath_override = ${PATH}"
 fi
 
 # Add the username if provided
