@@ -1,0 +1,24 @@
+---
+volumes:
+  config:
+    name: config/adguardhome-sync
+    driver: zfs
+
+services:
+  adguardhome-sync:
+    image: lscr.io/linuxserver/adguardhome-sync:version-v0.6.12
+    container_name: adguardhome-sync
+    hostname: adguardhome-sync
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      #- CONFIGFILE=/config/adguardhome-sync.yaml #optional
+    volumes:
+      - config:/config
+    ports:
+      - "8261:8080"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
