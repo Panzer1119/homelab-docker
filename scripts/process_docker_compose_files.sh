@@ -272,19 +272,19 @@ process_docker_compose() {
       [ -z "${volume_label_value}" ] || [ "${volume_label_value}" == "null" ] && continue
 
       # Extract the volume name from the volume label key (the first part after "de.panzer1119.docker.volume.")
-      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|port|share|username|password)$/\1/')
+      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|share|username|password)$/\1/')
 
       # If the volume name is empty or null, skip
       [ -z "${volume_name}" ] || [ "${volume_name}" == "null" ] && continue
 
       # Extract the driver from the volume label key (the second part after "de.panzer1119.docker.volume.")
-      volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|port|share|username|password)$/\2/')
+      volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|share|username|password)$/\2/')
 
       # Create a dictionary with the volume name as the key and another dictionary with the key driver
       volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"driver\": \"${volume_driver}\"}")
 
       # Extract the key from the volume label key (the second part after "de.panzer1119.docker.volume.")
-      key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs).(host|port|share|username|password)$/\3/')
+      key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|share|username|password)$/\3/')
 
       # If the key is empty or null, skip
       [ -z "${key}" ] || [ "${key}" == "null" ] && continue
@@ -330,6 +330,10 @@ process_docker_compose() {
       case "${driver}" in
         cifs)
           create_cifs_volume "${volume_name}" "${volume_dictionaries}"
+          ;;
+        rclone)
+          echo "Error: 'rclone' driver is not supported yet for volume '${volume_name}' in '${file}'"
+          exit 1
           ;;
         sshfs)
           create_sshfs_volume "${volume_name}" "${volume_dictionaries}"
