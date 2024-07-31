@@ -13,7 +13,7 @@ volumes:
 
 services:
   wiki:
-    image: requarks/wiki:2.5
+    image: requarks/wiki:2.5@sha256:1aae39563cf15d8cfc6371b6d33805653d9348a1af944a8be4501db36f120b84
     container_name: wiki
     depends_on:
       - db
@@ -33,7 +33,7 @@ services:
       service: logging-gelf
 
   search:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2@sha256:d528cec81720266974fdfe7a0f12fee928dc02e5a2c754b45b9a84c84695bfd9
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
@@ -53,7 +53,7 @@ services:
       service: logging-gelf
 
   db:
-    image: postgres:11-alpine
+    image: postgres:11-alpine@sha256:ea50b9fd617b66c9135816a4536cf6e0697d4eea7014a7194479c95f6edd5ef9
     env_file:
       - db.env
     environment:
