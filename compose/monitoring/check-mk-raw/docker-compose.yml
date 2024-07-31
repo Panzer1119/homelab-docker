@@ -1,0 +1,27 @@
+---
+volumes:
+  monitoring:
+    name: data/check-mk-raw
+    driver: zfs
+#    driver_opts:
+#      - checksum=sha512
+#      - dedup=verify
+
+services:
+  check-mk-raw:
+    image: checkmk/check-mk-raw:2.3.0-latest
+    container_name: check-mk-raw
+    hostname: check-mk-raw
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "monitoring:/omd/sites"
+    tmpfs:
+      - "/opt/omd/sites/cmk/tmp:uid=1000,gid=1000"
+    ports:
+      - "8000:8000"
+      - "8080:5000"
+    network_mode: bridge
+    restart: always
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
