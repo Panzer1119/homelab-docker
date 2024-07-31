@@ -54,7 +54,7 @@ services:
 
   db:
     #TODO Migrate the current database on postgres 11 to the new postgres 15
-    image: postgres:15-alpine
+    image: postgres:15-alpine@sha256:468d34fefd6338031787c7b8e94078975b3aaf4d66c7ead25c39cd3ba46a15c6
     env_file:
       - db.env
     environment:
