@@ -45,8 +45,6 @@ services:
     volumes:
       #TODO Move the current elasticsearch data to the new volume
       - search:/usr/share/elasticsearch/data
-    ports:
-      - "13224:9200"
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
