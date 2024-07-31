@@ -1,0 +1,77 @@
+---
+volumes:
+  db:
+    name: data/wiki/postgres
+    driver: zfs
+  search:
+    name: data/wiki/elasticsearch
+    driver: zfs
+  wiki:
+    name: wiki-storage
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+
+services:
+  wiki:
+    image: requarks/wiki:2.5
+    container_name: wiki
+    depends_on:
+      - db
+      - search
+    env_file:
+      - wiki.env
+    volumes:
+      #TODO Move the current wiki storage to the new volume
+      - wiki:/storage/local
+    labels:
+      - "de.panzer1119.docker.volume.wiki-storage.cifs.share=op://Docker/Wiki/CIFS/Share_Storage"
+    ports:
+      - "8033:3000"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  search:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      #TODO Move the current elasticsearch data to the new volume
+      - search:/usr/share/elasticsearch/data
+    ports:
+      - "13224:9200"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  db:
+    image: postgres:11-alpine
+    env_file:
+      - db.env
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      #TODO Move the current postgres data to the new volume
+      - db:/var/lib/postgresql/data
+    restart: unless-stopped
+    #TODO Why was the logging driver set to none?
+#    logging:
+#      driver: "none"
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+#  adminer:
+#    image: adminer
+#    ports:
+#      - "8685:8080"
+#    restart: unless-stopped

@@ -13,3 +13,4 @@ This contains Docker compose projects for infrastructure services.
 - [NetBox](./netbox/README.md) #TODO
 - [Portainer](./portainer/README.md) #TODO
 - [Sempahore](./semaphore/README.md)
+- [Wiki.js](./wiki/README.md)
