@@ -303,8 +303,17 @@ main() {
     exit 1
   fi
 
+  # If running in dry run mode, print a message
+  if [ "${DRY_RUN}" -eq 1 ]; then
+    log "Running in dry run mode. No changes will be made." "INFO"
+  fi
+
+  # Get the docker compose file for the given stack
+  docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
+
   # If running in verbose mode, print the options
   if [ "${VERBOSE}" -eq 1 ]; then
+    log "Options:" "VERBOSE"
     log "Stacks directory: ${stacks_dir}" "VERBOSE"
     log "Stack name: ${stack_name}" "VERBOSE"
     log "Target image: ${target_image}" "VERBOSE"
@@ -315,15 +324,8 @@ main() {
     log "Dry run: ${DRY_RUN}" "VERBOSE"
     log "Verbose: ${VERBOSE}" "VERBOSE"
     log "Quiet: ${QUIET}" "VERBOSE"
+    log "Docker compose file: ${docker_compose_file}" "VERBOSE"
   fi
-
-  # If running in dry run mode, print a message
-  if [ "${DRY_RUN}" -eq 1 ]; then
-    log "Running in dry run mode. No changes will be made." "INFO"
-  fi
-
-  # Get the docker compose file for the given stack
-  docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
 
   # Stop the stack (if not in dry run mode)
   if [ "${DRY_RUN}" -eq 1 ]; then
