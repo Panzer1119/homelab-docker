@@ -157,8 +157,8 @@ snapshot_volumes() {
   local stack_name="${2}"
   local target_image "${3}"
   local target_tag "${4}"
-  local base_dataset="${6}"
-  local snapshot_name="${7}"
+  local base_dataset="${5}"
+  local snapshot_name="${6}"
 
   local docker_compose_file
   local docker_compose_json
