@@ -333,12 +333,12 @@ main() {
   else
     log "Stopping stack '${stack_name}'" "DEBUG"
     docker compose -f "${docker_compose_file}" down
-  fi
 
-  while docker compose -f "${docker_compose_file}" ps -q | xargs docker inspect --format '{{.State.Status}}' | grep -q "running"; do
-    log "Stack '${stack_name}' is still running. Waiting..." "VERBOSE"
-    sleep 5
-  done
+    while docker compose -f "${docker_compose_file}" ps -q | xargs docker inspect --format '{{.State.Status}}' | grep -q "running"; do
+      log "Stack '${stack_name}' is still running. Waiting..." "VERBOSE"
+      sleep 5
+    done
+  fi
 
   # Generate the snapshot name
   snapshot_name="$(generate_snapshot_name "${snapshot_prefix}")"
