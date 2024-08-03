@@ -347,9 +347,11 @@ main() {
 
   # Generate the snapshot name
   snapshot_name="$(generate_snapshot_name "${snapshot_prefix}")"
+  log "Using snapshot name: '${snapshot_name}'" "DEBUG"
 
   # Get the base dataset of the zfs docker volume plugin
   base_dataset="$(get_base_dataset)"
+  log "Using base dataset: '${base_dataset}'" "DEBUG"
 
   # Snapshot the volumes of the stack
   snapshot_volumes "${stacks_dir}" "${stack_name}" "${target_image}" "${target_tag}" "${base_dataset}" "${snapshot_name}"
