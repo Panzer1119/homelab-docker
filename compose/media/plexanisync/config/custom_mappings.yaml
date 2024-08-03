@@ -2,3 +2,18 @@
 remote-urls:
   - https://raw.githubusercontent.com/RickDB/PlexAniSync-Custom-Mappings/main/series-tmdb.en.yaml
   - https://raw.githubusercontent.com/RickDB/PlexAniSync-Custom-Mappings/main/movies-tmdb.en.yaml
+
+entries:
+  - title: "As a Reincarnated Aristocrat, I’ll Use My Appraisal Skill to Rise in the New World"
+    guid: plex://show/64643386fb4f5f85f8e88ed6
+    seasons:
+      - season: 1
+        anilist-id: 164702
+      - season: 2
+        anilist-id: 178434
+
+  - title: "Ich bin eine Spinne, na und?"
+    guid: plex://show/5e5855a9ef1f92003e96b323
+    seasons:
+      - season: 1
+        anilist-id: 103632
