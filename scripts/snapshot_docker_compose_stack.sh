@@ -292,12 +292,14 @@ main() {
   # Check if the stacks directory is provided
   if [ -z "${stacks_dir}" ]; then
     log "Stacks directory not provided." "ERROR"
+    usage
     exit 1
   fi
 
   # Check if the stack name is provided
   if [ -z "${stack_name}" ]; then
     log "Stack name not provided." "ERROR"
+    usage
     exit 1
   fi
 
