@@ -1,0 +1,16 @@
+---
+services:
+  plexanisync:
+    image: ghcr.io/rickdb/plexanisync:1.4
+    container_name: plexanisync
+    hostname: plexanisync
+    env_file:
+      - plexanisync.env
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${PWD}/config/custom_mappings.yaml:/plexanisync/custom_mappings.yaml" #FIXME "PWD" might not work in all environments
+    network_mode: bridge
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf

@@ -7,6 +7,7 @@ This contains Docker compose projects for media services.
 ## Projects
 
 - [Lidarr](./lidarr/README.md) #TODO
+- [PlexAniSync](./plexanisync/README.md)
 - [Prowlarr](./prowlarr/README.md)
 - [Radarr](./radarr/README.md)
 - [Readarr](./readarr/README.md) #TODO
