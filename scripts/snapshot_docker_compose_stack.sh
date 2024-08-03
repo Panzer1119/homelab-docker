@@ -271,7 +271,7 @@ main() {
         DRY_RUN=1
         ;;
       -v|--verbose)
-        DEBUG=1
+        VERBOSE=1
         ;;
       -q|--quiet)
         QUIET=1
