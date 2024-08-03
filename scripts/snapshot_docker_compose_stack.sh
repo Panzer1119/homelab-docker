@@ -70,6 +70,9 @@ log() {
   local message="${1}"
   local log_level="${2:-INFO}"
 
+  # Pad the log level to 7 characters
+  log_level="$(printf "%-7s" "${log_level}")"
+
   # Check if the log level is debug and if the debug or the verbose flag is set
   if [ "${log_level}" == "DEBUG" ] && [ "${DEBUG}" -ne 1 ] && [ "${VERBOSE}" -ne 1 ]; then
     return
