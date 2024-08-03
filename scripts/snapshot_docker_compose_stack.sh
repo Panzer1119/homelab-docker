@@ -191,7 +191,7 @@ snapshot_volumes() {
   mapfile -t relative_dataset_array < <(echo "${relative_dataset_array_json}" | jq -r '.[]')
 
   # Iterate over the zfs datasets and snapshot them
-  log "Snapshotting volumes for stack '${stack_name}' as '${snapshot_name}'" "INFO"
+  log "Snapshotting volumes of stack '${stack_name}' as '${snapshot_name}'" "INFO"
   for relative_dataset in "${relative_dataset_array[@]}"; do
     snapshot_volume "${stack_name}" "${target_image}" "${target_tag}" "${base_dataset}" "${relative_dataset}" "${snapshot_name}"
   done
