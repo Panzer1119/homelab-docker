@@ -333,8 +333,6 @@ main() {
     docker compose -f "${docker_compose_file}" down
   fi
 
-  # Wait for the stack to stop
-  log "Waiting for stack '${stack_name}' to stop" "VERBOSE"
   while docker compose -f "${docker_compose_file}" ps -q | xargs docker inspect --format '{{.State.Status}}' | grep -q "running"; do
     log "Stack '${stack_name}' is still running. Waiting..." "VERBOSE"
     sleep 5
