@@ -172,14 +172,14 @@ snapshot_volumes() {
 
   # Get the docker compose file for the given stack
   docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
-  log "Using docker compose file: '${docker_compose_file}'" "VERBOSE"
+  log "Using docker compose file: '${docker_compose_file}'" "DEBUG"
 
   # Parse the docker compose file as JSON
   docker_compose_json="$(docker compose -f "${docker_compose_file}" config --format json --dry-run)"
 
   # Get the volumes section of the docker compose file
   volumes_json="$(echo "${docker_compose_json}" | jq -r '.volumes')"
-  log "Found volumes $(echo "${volumes_json}" | jq -r 'length')" "VERBOSE"
+  log "Found $(echo "${volumes_json}" | jq -r 'length') volumes" "DEBUG"
 
   # Get all volume objects that are using the zfs driver and convert them to an array
   volume_array_json="$(echo "${volumes_json}" | jq -r 'map(select(.driver == "zfs"))')"
