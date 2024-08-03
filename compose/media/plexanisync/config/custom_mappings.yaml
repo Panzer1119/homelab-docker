@@ -17,3 +17,12 @@ entries:
     seasons:
       - season: 1
         anilist-id: 103632
+
+  - title: "Case Closed"
+    guid: plex://show/5d9c0847705e7a001e6d7c86
+    synonyms:
+      - "Detective Conan"
+      - "Detektiv Conan"
+    seasons:
+      - season: 1
+        anilist-id: 235
