@@ -122,18 +122,18 @@ generate_snapshot_name() {
 
 # Snapshot the given volume
 snapshot_volume() {
-  local dataset="${1}"
-  local stack_name="${2}"
-  local target_image "${3}"
-  local target_tag "${4}"
-  local base_dataset="${5}"
+  local stack_name="${1}"
+  local target_image "${2}"
+  local target_tag "${3}"
+  local base_dataset="${4}"
+  local relative_dataset="${5}"
   local snapshot_name="${6}"
 
-  local snapshot="${base_dataset}/${dataset}@${snapshot_name}"
+  local snapshot="${base_dataset}/${relative_dataset}@${snapshot_name}"
 
   # Check if the dry run flag is set
   if [ "${DRY_RUN}" -eq 1 ]; then
-    log "[Dry run] Would take snapshot '${snapshot}' of volume '${dataset}'" "INFO"
+    log "[Dry run] Would take snapshot '${snapshot}' of volume '${relative_dataset}'" "INFO"
     log "[Dry run] Would set properties for snapshot '${snapshot}'" "VERBOSE"
     [[ -n "${target_image}" ]] && log "[Dry run] Would set property '${KEY_STACK_IMAGE}=${target_image}' for snapshot '${snapshot}'" "VERBOSE"
     [[ -n "${target_tag}" ]] && log "[Dry run] Would set property '${KEY_STACK_TAG}=${target_tag}' for snapshot '${snapshot}'" "VERBOSE"
@@ -141,7 +141,7 @@ snapshot_volume() {
   fi
 
   # Take a snapshot of the volume
-  log "Taking snapshot '${snapshot}' of volume '${dataset}'" "INFO"
+  log "Taking snapshot '${snapshot}' of volume '${relative_dataset}'" "INFO"
   zfs snapshot "${snapshot}"
 
   # Set the snapshot properties
@@ -165,6 +165,7 @@ snapshot_volumes() {
   local volumes_json
   local volume_array_json
   local relative_dataset_array_json
+  local relative_dataset_array
 
   # Get the docker compose file for the given stack
   docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
@@ -184,8 +185,14 @@ snapshot_volumes() {
   relative_dataset_array_json="$(echo "${volume_array_json}" | jq -r 'map(.name)')"
   log "Found relative zfs datasets: ${relative_dataset_array_json}" "DEBUG"
 
+  # Convert the relative dataset array to a bash array
+  mapfile -t relative_dataset_array < <(echo "${relative_dataset_array_json}" | jq -r '.[]')
+
+  # Iterate over the zfs datasets and snapshot them
   log "Snapshotting volumes for stack '${stack_name}' as '${snapshot_name}'" "INFO"
-  #TODO Snapshot the volumes
+  for relative_dataset in "${relative_dataset_array[@]}"; do
+    snapshot_volume "${stack_name}" "${target_image}" "${target_tag}" "${base_dataset}" "${relative_dataset}" "${snapshot_name}"
+  done
 }
 
 # Get the base zfs dataset of the zfs docker volume plugin
