@@ -325,9 +325,13 @@ main() {
   # Get the docker compose file for the given stack
   docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
 
-  # Stop the stack
-  log "Stopping stack '${stack_name}'" "DEBUG"
-  docker compose -f "${docker_compose_file}" down
+  # Stop the stack (if not in dry run mode)
+  if [ "${DRY_RUN}" -eq 1 ]; then
+    log "[DRY RUN] Would stop stack '${stack_name}'" "INFO"
+  else
+    log "Stopping stack '${stack_name}'" "DEBUG"
+    docker compose -f "${docker_compose_file}" down
+  fi
 
   # Wait for the stack to stop
   log "Waiting for stack '${stack_name}' to stop" "VERBOSE"
@@ -345,10 +349,14 @@ main() {
   # Snapshot the volumes of the stack
   snapshot_volumes "${stacks_dir}" "${stack_name}" "${target_image}" "${target_tag}" "${base_dataset}" "${snapshot_name}"
 
-  # Start the stack if the up-after flag is set
+  # Start the stack if the up-after flag is set (if not in dry run mode)
   if [ "${UP_AFTER}" -eq 1 ]; then
-    log "Starting stack '${stack_name}'" "DEBUG"
-    docker compose -f "${docker_compose_file}" up -d
+    if [ "${DRY_RUN}" -eq 1 ]; then
+      log "[DRY RUN] Would start stack '${stack_name}'" "INFO"
+    else
+      log "Starting stack '${stack_name}'" "DEBUG"
+      docker compose -f "${docker_compose_file}" up -d
+    fi
   fi
 }
 
