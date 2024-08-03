@@ -4,10 +4,12 @@
 KEY_STACK_NAME="de.panzer1119.docker:stack_name"
 KEY_STACK_IMAGE="de.panzer1119.docker:target_image"
 KEY_STACK_TAG="de.panzer1119.docker:target_tag"
-DEFAULT_SNAPSHOT_PREFIX="stack-checkpoint"
 DOCKER_ZFS_PLUGIN_SERVICE_FILE="/etc/systemd/system/docker-zfs-plugin.service"
 
-# Defaults
+# Default values
+DEFAULT_SNAPSHOT_PREFIX="stack-checkpoint"
+
+# Variables
 UP_AFTER=0
 DEBUG=0
 DRY_RUN=0
@@ -113,11 +115,6 @@ generate_snapshot_name() {
 
   # Generate the timestamp
   timestamp="$(date -u +"%Y%m%dT%H%M%SZ")"
-
-  # If the snapshot prefix is empty, use the default prefix
-  if [ -z "${snapshot_prefix}" ]; then
-    snapshot_prefix="${DEFAULT_SNAPSHOT_PREFIX}"
-  fi
 
   # Generate and return the snapshot name
   echo "${snapshot_prefix}-${timestamp}"
@@ -313,6 +310,11 @@ main() {
 
   # Get the docker compose file for the given stack
   docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
+
+  # If the snapshot prefix is empty, use the default prefix
+  if [ -z "${snapshot_prefix}" ]; then
+    snapshot_prefix="${DEFAULT_SNAPSHOT_PREFIX}"
+  fi
 
   # If running in verbose mode, print the options
   if [ "${VERBOSE}" -eq 1 ]; then
