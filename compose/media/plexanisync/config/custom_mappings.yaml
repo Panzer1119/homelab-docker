@@ -102,3 +102,27 @@ entries:
         anilist-id: 481
       - season: 5
         anilist-id: 481
+
+  - title: "Naruto - The Movie - Geheimmission im Land des ewigen Schnees"
+    guid: plex://movie/5d7768408a7581001f12ed0f
+    seasons:
+      - season: 1
+        anilist-id: 442
+
+  - title: "Naruto - The Movie 2 - Die Legende des Steins von Gelel"
+    guid: plex://movie/5d7768407228e5001f1e02fd
+    seasons:
+      - season: 1
+        anilist-id: 936
+
+  - title: "Naruto Movie 3: Guardians of the Crescent Moon Kingdom"
+    guid: plex://movie/5d776842f59e58002189a2f7
+    seasons:
+      - season: 1
+        anilist-id: 2144
+
+  - title: "Yu-Gi-Oh!: Der Film"
+    guid: plex://movie/5d776836103a2d001f567ebd
+    seasons:
+      - season: 1
+        anilist-id: 1894
