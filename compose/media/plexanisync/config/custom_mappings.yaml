@@ -88,3 +88,17 @@ entries:
         anilist-id: 235
       - season: 32
         anilist-id: 235
+
+  - title: "Yu-Gi-Oh!"
+    guid: plex://show/5d9c081dba6eb9001fb9c35c
+    seasons:
+      - season: 1
+        anilist-id: 481
+      - season: 2
+        anilist-id: 481
+      - season: 3
+        anilist-id: 481
+      - season: 4
+        anilist-id: 481
+      - season: 5
+        anilist-id: 481
