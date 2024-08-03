@@ -137,7 +137,7 @@ snapshot_volume() {
   # Check if the dry run flag is set
   if [ "${DRY_RUN}" -eq 1 ]; then
     log "[DRY RUN] Would take snapshot '${snapshot}' of volume '${relative_dataset}'" "INFO"
-    log "[DRY RUN] Would set properties for snapshot '${snapshot}'" "VERBOSE"
+    log "[DRY RUN] Would set property '${KEY_STACK_NAME}=${stack_name}' for snapshot '${snapshot}'" "VERBOSE"
     [[ -n "${target_image}" ]] && log "[DRY RUN] Would set property '${KEY_STACK_IMAGE}=${target_image}' for snapshot '${snapshot}'" "VERBOSE"
     [[ -n "${target_tag}" ]] && log "[DRY RUN] Would set property '${KEY_STACK_TAG}=${target_tag}' for snapshot '${snapshot}'" "VERBOSE"
     return
