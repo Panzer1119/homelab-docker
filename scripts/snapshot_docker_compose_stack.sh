@@ -126,8 +126,8 @@ generate_snapshot_name() {
 # Snapshot the given volume
 snapshot_volume() {
   local stack_name="${1}"
-  local target_image "${2}"
-  local target_tag "${3}"
+  local target_image="${2}"
+  local target_tag="${3}"
   local base_dataset="${4}"
   local relative_dataset="${5}"
   local snapshot_name="${6}"
@@ -158,8 +158,8 @@ snapshot_volume() {
 snapshot_volumes() {
   local stacks_dir="${1}"
   local stack_name="${2}"
-  local target_image "${3}"
-  local target_tag "${4}"
+  local target_image="${3}"
+  local target_tag="${4}"
   local base_dataset="${5}"
   local snapshot_name="${6}"
 
