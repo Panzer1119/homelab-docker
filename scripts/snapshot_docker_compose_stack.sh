@@ -136,7 +136,7 @@ snapshot_volume() {
 
   # Check if the dry run flag is set
   if [ "${DRY_RUN}" -eq 1 ]; then
-    log "[DRY RUN] Would take snapshot '${snapshot}' of volume '${relative_dataset}'" "INFO"
+    log "[DRY RUN] Would take snapshot '${snapshot}' of docker zfs volume '${relative_dataset}'" "INFO"
     log "[DRY RUN] Would set property '${KEY_STACK_NAME}' to '${stack_name}' for snapshot '${snapshot}'" "VERBOSE"
     [[ -n "${target_image}" ]] && log "[DRY RUN] Would set property '${KEY_STACK_IMAGE}' to '${target_image}' for snapshot '${snapshot}'" "VERBOSE"
     [[ -n "${target_tag}" ]] && log "[DRY RUN] Would set property '${KEY_STACK_TAG}' to '${target_tag}' for snapshot '${snapshot}'" "VERBOSE"
@@ -144,7 +144,7 @@ snapshot_volume() {
   fi
 
   # Take a snapshot of the volume
-  log "Taking snapshot '${snapshot}' of volume '${relative_dataset}'" "INFO"
+  log "Taking snapshot '${snapshot}' of docker zfs volume '${relative_dataset}'" "INFO"
   zfs snapshot "${snapshot}"
 
   # Set the snapshot properties
