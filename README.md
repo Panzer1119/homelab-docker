@@ -2,6 +2,7 @@
 
 - [`compose`](./compose/README.md) - Docker compose projects
   - [`common`](./compose/common/README.md) - Common docker compose parts
+  - [`content`](./compose/content/README.md) - Content projects
   - [`infrastructure`](./compose/infrastructure/README.md) - Infrastructure projects
   - [`media`](./compose/media/README.md) - Media projects
   - [`monitoring`](./compose/monitoring/README.md) - Monitoring projects
