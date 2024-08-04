@@ -1,0 +1,87 @@
+---
+volumes:
+  broker:
+    name: cache/paperless-ngx/broker
+    driver: zfs
+  db:
+    name: data/paperless-ngx/postgres
+    driver: zfs
+  paperless-ngx-data:
+    name: data/paperless-ngx/data
+    driver: zfs
+  paperless-ngx-media:
+    name: data/paperless-ngx/media
+    driver: zfs
+  paperless-ngx-export:
+    name: data/paperless-ngx/export
+    driver: zfs
+  paperless-ngx-consume:
+    name: cache/paperless-ngx/consume
+
+services:
+  db:
+    image: postgres:16
+    env_file: db.env
+    volumes:
+      - db:/var/lib/postgresql/data
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  broker:
+    image: redis:7
+    volumes:
+      - broker:/data
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  gotenberg:
+    image: gotenberg/gotenberg:8.7
+    # The gotenberg chromium route is used to convert .eml files. We do not
+    # want to allow external content like tracking pixels or even javascript.
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  tika:
+    image: apache/tika:2.9.2.1
+#    image: apache/tika:2.9.2.1-full
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.11.2
+    depends_on:
+      - db
+      - broker
+      - gotenberg
+      - tika
+    env_file: paperless-ngx.env
+    volumes:
+      - paperless-ngx-data:/usr/src/paperless/data
+      - paperless-ngx-media:/usr/src/paperless/media
+      - paperless-ngx-export:/usr/src/paperless/export
+      - paperless-ngx-consume:/usr/src/paperless/consume
+      - "${PWD}/scripts:/scripts:ro" #FIXME "PWD" might not work in all environments
+      #TODO How to handle the consume folder on the NAS?
+    ports:
+      - "8217:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-fs", "-S", "--max-time", "2", "http://localhost:8000" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf

@@ -6,4 +6,4 @@ This contains Docker compose projects for content services.
 
 ## Projects
 
-- [Paperless-ngx](./paperless-ngx/README.md) #TODO
+- [Paperless-ngx](./paperless-ngx/README.md)
