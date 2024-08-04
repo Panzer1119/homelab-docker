@@ -20,7 +20,7 @@ volumes:
 
 services:
   db:
-    image: postgres:16
+    image: postgres:16@sha256:d0f363f8366fbc3f52d172c6e76bc27151c3d643b870e1062b4e8bfe65baf609
     env_file: db.env
     volumes:
       - db:/var/lib/postgresql/data
@@ -30,7 +30,7 @@ services:
       service: logging-gelf
 
   broker:
-    image: redis:7
+    image: redis:7@sha256:79676a8f74e4aed85b6d6a2f4e4e3e55d8a229baa7168362e592bbfdc67b0c9b
     volumes:
       - broker:/data
     restart: unless-stopped
@@ -39,7 +39,7 @@ services:
       service: logging-gelf
 
   gotenberg:
-    image: gotenberg/gotenberg:8.7
+    image: gotenberg/gotenberg:8.7@sha256:437b9cd3c35113774818b30767ae267cb08f04d88125410c135cdd5952c0571e
     # The gotenberg chromium route is used to convert .eml files. We do not
     # want to allow external content like tracking pixels or even javascript.
     command:
@@ -52,7 +52,7 @@ services:
       service: logging-gelf
 
   tika:
-    image: apache/tika:2.9.2.1
+    image: apache/tika:2.9.2.1@sha256:2be134745fcb59826c54041489946c66218b948ea0c0be3a37cb7919ecc845ba
 #    image: apache/tika:2.9.2.1-full
     restart: unless-stopped
     extends:
@@ -60,7 +60,7 @@ services:
       service: logging-gelf
 
   webserver:
-    image: ghcr.io/paperless-ngx/paperless-ngx:2.11.2
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.11.2@sha256:4935f39b40abb0b2e326af7f7292c215e873b99f998ed987d256d5aa4b9c0f60
     depends_on:
       - db
       - broker
