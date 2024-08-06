@@ -51,8 +51,8 @@
         "major",
         "minor"
       ],
-      "matchPackagePatterns": [
-        "^([^/]+\\/)*(mariadb|mysql)(:.+)?$"
+      "matchPackageNames": [
+        "/^([^/]+\\/)*(mariadb|mysql)(:.+)?$/"
       ]
     },
     {
@@ -65,8 +65,8 @@
       "matchUpdateTypes": [
         "major"
       ],
-      "matchPackagePatterns": [
-        "^([^/]+\\/)*postgres(:.+)?$"
+      "matchPackageNames": [
+        "/^([^/]+\\/)*postgres(:.+)?$/"
       ]
     },
     {
@@ -85,8 +85,8 @@
         "minor",
         "patch"
       ],
-      "matchPackagePatterns": [
-        "^([^/]+\\/)*(mariadb|postgres)(:.+)?$"
+      "matchPackageNames": [
+        "/^([^/]+\\/)*(mariadb|postgres)(:.+)?$/"
       ]
     },
     {
@@ -95,10 +95,10 @@
         "docker-compose",
         "dockerfile"
       ],
-      "matchPackagePatterns": [
-        "^([^/]+\\/)*heimdall(:.+)?$"
-      ],
-      "versioning": "regex:^(?<major>\\d{1,2})\\.(?<minor>\\d+)(\\.(?<patch>\\d+))?$"
+      "versioning": "regex:^(?<major>\\d{1,2})\\.(?<minor>\\d+)(\\.(?<patch>\\d+))?$",
+      "matchPackageNames": [
+        "/^([^/]+\\/)*heimdall(:.+)?$/"
+      ]
     },
     {
       "description": "Track stable releases of Nginx only",
@@ -106,10 +106,10 @@
         "docker-compose",
         "dockerfile"
       ],
-      "matchPackagePatterns": [
-        "^([^/]+\\/)*nginx(:.+)?$"
-      ],
-      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d*[02468])(\\.(?<patch>\\d+))?(?:-(?<compatibility>.*))?$"
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d*[02468])(\\.(?<patch>\\d+))?(?:-(?<compatibility>.*))?$",
+      "matchPackageNames": [
+        "/^([^/]+\\/)*nginx(:.+)?$/"
+      ]
     },
     {
       "description": "Ignore erroneous version tags of Semaphore",
@@ -117,10 +117,10 @@
         "docker-compose",
         "dockerfile"
       ],
-      "matchPackagePatterns": [
-        "^([^/]+\\/)*semaphore(:.+)?$"
-      ],
-      "allowedVersions": "!/^v?2\\.19\\.10$/"
+      "allowedVersions": "!/^v?2\\.19\\.10$/",
+      "matchPackageNames": [
+        "/^([^/]+\\/)*semaphore(:.+)?$/"
+      ]
     }
   ],
   "separateMinorPatch": true,
