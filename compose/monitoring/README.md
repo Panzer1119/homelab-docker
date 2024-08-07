@@ -9,7 +9,7 @@ This contains Docker compose projects for monitoring services.
 - [Checkmk Raw](check-mk-raw/README.md)
 - [Graylog](./graylog/README.md)
 - [Scrutiny](./scrutiny/README.md)
-- [InfluxDB](./influxdb/README.md) #TODO
+- [InfluxDB](./influxdb/README.md)
 - [Grafana](./grafana/README.md) #TODO
 - [Tautulli](./tautulli/README.md)
 - [Speedtest Tracker](./speedtest-tracker/README.md)

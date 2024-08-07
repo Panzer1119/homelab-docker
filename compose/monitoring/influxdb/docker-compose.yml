@@ -1,0 +1,25 @@
+---
+volumes:
+  config:
+    name: config/influxdb
+    driver: zfs
+  data:
+    name: data/influxdb
+    driver: zfs
+
+services:
+  influxdb:
+    image: influxdb:2.2.0
+    container_name: influxdb
+    hostname: influxdb
+    env_file: influxdb.env
+    volumes:
+      - config:/etc/influxdb2
+      - data:/var/lib/influxdb2
+    network_mode: bridge
+    ports:
+      - "8086:8086"
+    restart: always
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
