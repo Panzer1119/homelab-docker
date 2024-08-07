@@ -9,7 +9,7 @@ volumes:
 
 services:
   influxdb:
-    image: influxdb:2.2.0
+    image: influxdb:2.2.0@sha256:f7c5f4db4a8dced75773aa94cecd5466ade67328068258f6b98ad98a040b3abb
     container_name: influxdb
     hostname: influxdb
     env_file: influxdb.env
