@@ -11,7 +11,7 @@ volumes:
 
 services:
   speedtest-tracker:
-    image: lscr.io/linuxserver/speedtest-tracker:0.20.9@sha256:95919033c7e5e6a7339eeca18912d1c7b1e6724c5ae2e852ad0abd03e23fab34
+    image: lscr.io/linuxserver/speedtest-tracker:0.21.1@sha256:7959e47fc7d132987494f5e2b4caf258ae5e57f685aac82219418add2fabd84f
     container_name: speedtest-tracker
     ports:
       - 8765:80
