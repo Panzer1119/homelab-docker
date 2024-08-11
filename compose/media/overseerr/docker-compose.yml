@@ -1,0 +1,25 @@
+---
+volumes:
+  config:
+    name: config/overseerr
+    driver: zfs
+
+services:
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:1.33.2
+    container_name: overseerr
+    hostname: overseerr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Europe/Berlin
+      - PGID=1000
+      - PUID=1000
+    volumes:
+      - config:/config
+    network_mode: bridge
+    ports:
+      - "5055:5055"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
