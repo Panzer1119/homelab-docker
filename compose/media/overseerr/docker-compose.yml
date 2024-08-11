@@ -6,7 +6,7 @@ volumes:
 
 services:
   overseerr:
-    image: lscr.io/linuxserver/overseerr:1.33.2
+    image: lscr.io/linuxserver/overseerr:1.33.2@sha256:3543bcc57aaa74842d8d88c6a0a6805b166d89e2dfc0db74b703ee59f8d7266e
     container_name: overseerr
     hostname: overseerr
     environment:
