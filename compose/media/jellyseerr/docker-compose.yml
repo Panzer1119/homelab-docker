@@ -1,0 +1,25 @@
+---
+volumes:
+  config:
+    name: config/jellyseerr
+    driver: zfs
+
+services:
+  jellyseerr:
+    image: fallenbagel/jellyseerr:1.9.2
+    container_name: jellyseerr
+    hostname: jellyseerr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Europe/Berlin
+      - PGID=1000
+      - PUID=1000
+    volumes:
+      - config:/config
+    network_mode: bridge
+    ports:
+      - "5057:5055"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf

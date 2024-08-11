@@ -6,6 +6,7 @@ This contains Docker compose projects for media services.
 
 ## Projects
 
+- [Jellyseerr](./jellyseerr/README.md)
 - [Lidarr](./lidarr/README.md) #TODO
 - [Overseerr](./overseerr/README.md)
 - [PlexAniSync](./plexanisync/README.md)
