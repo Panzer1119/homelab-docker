@@ -131,7 +131,10 @@
       ],
       "versioning": "regex:^version-v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
       "matchPackageNames": [
-          "/^(ghcr|lscr).io\\/linuxserver\\/.*$/"
+          "/^(ghcr|lscr).io\\/linuxserver\\/.*$/",
+          "!ghcr.io/linuxserver/prowlarr",
+          "!ghcr.io/linuxserver/radarr",
+          "!ghcr.io/linuxserver/sonarr"
       ]
     }
   ],
