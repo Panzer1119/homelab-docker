@@ -129,7 +129,7 @@
           "docker-compose",
           "dockerfile"
       ],
-      "versioning": "regex:^version-v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
+      "versioning": "regex:^version-v?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
       "matchPackageNames": [
           "/^(ghcr|lscr).io\\/linuxserver\\/.*$/",
           "!ghcr.io/linuxserver/prowlarr",
