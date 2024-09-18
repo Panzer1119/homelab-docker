@@ -6,7 +6,7 @@ volumes:
 
 services:
   overseerr:
-    image: ghcr.io/linuxserver/overseerr:version-v1.33.2@sha256:51cc0140a896591aee450170c9cf7af07a8a282cc43b8db8396f93186ab54425
+    image: ghcr.io/linuxserver/overseerr:version-v1.33.2@sha256:a0b33879c540d978372b26eb4281e645e3908f7016da1f7376236a6f09efc948
     container_name: overseerr
     hostname: overseerr
     environment:
