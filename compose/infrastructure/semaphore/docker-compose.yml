@@ -9,7 +9,7 @@ volumes:
 
 services:
   postgres:
-    image: postgres:15@sha256:e1e7c4b2198284cf98c7445b84dd0ba7f0648cd596e4db5f09b9f36a5990732c
+    image: postgres:15@sha256:cdc3094cf9e59630a28991310588c12da0317799b0e3f67307a4fcbf39126e68
     env_file:
       - db.env
     volumes:
