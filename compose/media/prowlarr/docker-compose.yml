@@ -12,7 +12,7 @@ volumes:
 
 services:
   prowlarr:
-    image: ghcr.io/linuxserver/prowlarr:1.23.1@sha256:8d3da3256868cf40f06cdca2074dee07a190ec42a6df022fb9fe6f73842ba293
+    image: ghcr.io/linuxserver/prowlarr:1.24.3@sha256:a6fc8ab9ff34d82327d29f8b5bfb7a672c0e54a274e5e5b023db01c335d05dfd
     container_name: prowlarr
     hostname: prowlarr
     environment:
