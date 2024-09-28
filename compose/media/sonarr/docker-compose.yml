@@ -82,7 +82,7 @@ x-volumes:
 
 services:
   sonarr:
-    image: ghcr.io/linuxserver/sonarr:4.0.9@sha256:98c21a64377619ec74778c70cc2e74d3e978a4d2c61f97b9ad88a0e5bc0766f9
+    image: ghcr.io/linuxserver/sonarr:4.0.9@sha256:12570fbaddc8733664e1e5d9bb12a719cb07f9455c518097b0e6426f4960f884
     container_name: sonarr
     hostname: sonarr
     environment: *default-environment
@@ -106,7 +106,7 @@ services:
       service: logging-gelf
 
   sonarr-4k:
-    image: ghcr.io/linuxserver/sonarr:4.0.9@sha256:98c21a64377619ec74778c70cc2e74d3e978a4d2c61f97b9ad88a0e5bc0766f9
+    image: ghcr.io/linuxserver/sonarr:4.0.9@sha256:12570fbaddc8733664e1e5d9bb12a719cb07f9455c518097b0e6426f4960f884
     container_name: sonarr-4k
     hostname: sonarr-4k
     environment: *default-environment
@@ -130,7 +130,7 @@ services:
       service: logging-gelf
 
   sonarr-anime:
-    image: ghcr.io/linuxserver/sonarr:4.0.9@sha256:98c21a64377619ec74778c70cc2e74d3e978a4d2c61f97b9ad88a0e5bc0766f9
+    image: ghcr.io/linuxserver/sonarr:4.0.9@sha256:12570fbaddc8733664e1e5d9bb12a719cb07f9455c518097b0e6426f4960f884
     container_name: sonarr-anime
     hostname: sonarr-anime
     environment: *default-environment
