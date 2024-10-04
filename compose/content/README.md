@@ -6,4 +6,5 @@ This contains Docker compose projects for content services.
 
 ## Projects
 
+- [Hoarder](./hoarder/README.md)
 - [Paperless-ngx](./paperless-ngx/README.md)
