@@ -16,7 +16,7 @@ services:
       # OPENAI_API_KEY: ...
       DATA_DIR: /data
   chrome:
-    image: gcr.io/zenika-hub/alpine-chrome:123
+    image: gcr.io/zenika-hub/alpine-chrome:123@sha256:e38563d4475a3d791e986500a2e4125c9afd13798067138881cf770b1f6f3980
     restart: unless-stopped
     command:
       - --no-sandbox
@@ -26,7 +26,7 @@ services:
       - --remote-debugging-port=9222
       - --hide-scrollbars
   meilisearch:
-    image: getmeili/meilisearch:v1.6
+    image: getmeili/meilisearch:v1.6@sha256:634e83ffe5bad15239fa26bd04d06bccb84a1f2f06ad8a35135b510711348792
     restart: unless-stopped
     env_file:
       - .env
