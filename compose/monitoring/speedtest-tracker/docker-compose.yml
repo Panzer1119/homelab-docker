@@ -50,7 +50,7 @@ services:
       service: logging-gelf
 
   db:
-    image: postgres:15@sha256:8e97b8526ed19304b144f7478bc9201646acf0723cdc100e9bb7495712cbadb6
+    image: postgres:15@sha256:9d781e6be0753661f87fe8bd3e857e221d0a1016d828682450efcd9907ac655c
     restart: always
     env_file:
       - db.env
