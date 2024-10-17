@@ -20,7 +20,7 @@ volumes:
 
 services:
   db:
-    image: postgres:16@sha256:3228c4e22d88a14437c3820c56886c79f830858774013bd0f497a1e765752cb9
+    image: postgres:16@sha256:d32f68374aa762a698438c0c37f1f7815ad5086cfc1a3869c390322cd7adeb74
     env_file: db.env
     volumes:
       - db:/var/lib/postgresql/data
