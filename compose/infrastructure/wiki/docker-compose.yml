@@ -33,7 +33,7 @@ services:
       service: logging-gelf
 
   search:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.24@sha256:70a20649aef54770cc31e59fd91c79cbc00cb6b9ea6c92015bad995b965f8f4c
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.25@sha256:aaf1c65bc2d0d400d59ec70f0a137a5b4f3fb9c764319120ea3ca5a1e1e7869a
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
