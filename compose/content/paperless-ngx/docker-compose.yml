@@ -30,7 +30,7 @@ services:
       service: logging-gelf
 
   broker:
-    image: redis:7@sha256:c16e2b5ec23a6a0f741796ae42d07d056ea0154d928e2df7e2de14899408d3ab
+    image: redis:7@sha256:af0be38eb8e43191bae9b03fe5c928803930b6f93e2dde3a7ad1165c04b1ce22
     volumes:
       - broker:/data
     restart: unless-stopped
