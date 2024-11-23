@@ -82,7 +82,7 @@ x-volumes:
 
 services:
   radarr:
-    image: ghcr.io/linuxserver/radarr:5.12.2@sha256:e0045d420eaf298a9449e12ed1cce654f171cc1043311f0f1cadaf2afeabe795
+    image: ghcr.io/linuxserver/radarr:5.15.1@sha256:c60610599d681dc7ea0aa1a5edfc1637ff4b5fb062872aea1539d291c835c4b3
     container_name: radarr
     hostname: radarr
     environment: *default-environment
@@ -106,7 +106,7 @@ services:
       service: logging-gelf
 
   radarr-4k:
-    image: ghcr.io/linuxserver/radarr:5.12.2@sha256:e0045d420eaf298a9449e12ed1cce654f171cc1043311f0f1cadaf2afeabe795
+    image: ghcr.io/linuxserver/radarr:5.15.1@sha256:c60610599d681dc7ea0aa1a5edfc1637ff4b5fb062872aea1539d291c835c4b3
     container_name: radarr-4k
     hostname: radarr-4k
     environment: *default-environment
@@ -130,7 +130,7 @@ services:
       service: logging-gelf
 
   radarr-anime:
-    image: ghcr.io/linuxserver/radarr:5.12.2@sha256:e0045d420eaf298a9449e12ed1cce654f171cc1043311f0f1cadaf2afeabe795
+    image: ghcr.io/linuxserver/radarr:5.15.1@sha256:c60610599d681dc7ea0aa1a5edfc1637ff4b5fb062872aea1539d291c835c4b3
     container_name: radarr-anime
     hostname: radarr-anime
     environment: *default-environment
