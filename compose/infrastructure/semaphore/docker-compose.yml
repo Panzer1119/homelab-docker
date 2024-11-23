@@ -1,11 +1,17 @@
 ---
 volumes:
   semaphore:
-    name: config/semaphore
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/semaphore"
   db:
-    name: data/semaphore
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/semaphore"
 
 services:
   postgres:

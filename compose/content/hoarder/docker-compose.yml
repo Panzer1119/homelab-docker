@@ -1,11 +1,17 @@
 ---
 volumes:
   hoarder:
-    name: data/hoarder-app/data
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/hoarder-app/data"
   mailisearch:
-    name: data/hoarder-app/mailisearch
-    driver: zfs
+      driver: local
+      driver_opts:
+        type: none
+        o: bind
+        device: "/docker/data/hoarder-app/mailisearch"
 
 services:
   web:

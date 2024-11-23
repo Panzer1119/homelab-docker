@@ -1,35 +1,48 @@
 ---
 volumes:
   backup:
-    name: backup/radarr
-    driver: zfs
+    #TODO Move this to a cifs volume?
+    driver: local
     driver_opts:
-      - checksum=sha512
-      - dedup=verify
+      type: none
+      o: bind
+      device: "/docker/backup/radarr"
   backup-4k:
-    name: backup/radarr-4k
-    driver: zfs
+    #TODO Move this to a cifs volume?
+    driver: local
     driver_opts:
-      - checksum=sha512
-      - dedup=verify
+      type: none
+      o: bind
+      device: "/docker/backup/radarr-4k"
   backup-anime:
-    name: backup/radarr-anime
-    driver: zfs
+    #TODO Move this to a cifs volume?
+    driver: local
     driver_opts:
-      - checksum=sha512
-      - dedup=verify
+      type: none
+      o: bind
+      device: "/docker/backup/radarr-anime"
   cache-usenet:
-    name: cache/usenet
+    name: cache-usenet
+    # This is defined in the sabnzbd compose file
     external: true
   config:
-    name: config/radarr
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/radarr"
   config-4k:
-    name: config/radarr-4k
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/radarr-4k"
   config-anime:
-    name: config/radarr-anime
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/radarr-anime"
   data:
     name: radarr
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file

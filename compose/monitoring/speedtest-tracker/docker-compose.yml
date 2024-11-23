@@ -1,13 +1,22 @@
 volumes:
   speedtest-tracker:
-    name: config/speedtest-tracker
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/speedtest-tracker"
   cache:
-    name: cache/speedtest-tracker
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/cache/speedtest-tracker"
   db:
-    name: data/speedtest-tracker
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/speedtest-tracker"
 
 services:
   speedtest-tracker:

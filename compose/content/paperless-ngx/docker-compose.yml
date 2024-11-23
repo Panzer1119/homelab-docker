@@ -1,22 +1,41 @@
 ---
 volumes:
   broker:
-    name: cache/paperless-ngx/broker
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/cache/paperless-ngx/broker"
   db:
-    name: data/paperless-ngx/postgres
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/paperless-ngx/postgres"
   paperless-ngx-data:
-    name: data/paperless-ngx/data
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/paperless-ngx/data"
   paperless-ngx-media:
-    name: data/paperless-ngx/media
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/paperless-ngx/media"
   paperless-ngx-export:
-    name: data/paperless-ngx/export
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/paperless-ngx/export"
   paperless-ngx-consume:
-    name: cache/paperless-ngx/consume
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/cache/paperless-ngx/consume"
 
 services:
   db:

@@ -1,11 +1,17 @@
 ---
 volumes:
   config:
-    name: config/influxdb
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/influxdb"
   data:
-    name: data/influxdb
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/influxdb"
 
 services:
   influxdb:

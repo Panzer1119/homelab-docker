@@ -1,8 +1,11 @@
 ---
 volumes:
   config:
-    name: config/adguardhome-sync
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/adguardhome-sync"
 
 services:
   adguardhome-sync:

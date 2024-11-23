@@ -1,11 +1,17 @@
 ---
 volumes:
+  #  monitoring:
+  #    name: data/check-mk-raw
+  #    driver: zfs
+  ##    driver_opts:
+  ##      - checksum=sha512
+  ##      - dedup=verify
   monitoring:
-    name: data/check-mk-raw
-    driver: zfs
-#    driver_opts:
-#      - checksum=sha512
-#      - dedup=verify
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/check-mk-raw"
 
 services:
   check-mk-raw:

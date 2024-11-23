@@ -1,11 +1,17 @@
 ---
 volumes:
   db:
-    name: data/wiki/postgres
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/wiki/postgres"
   search:
-    name: data/wiki/elasticsearch
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/data/wiki/elasticsearch"
   wiki:
     name: wiki-storage
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file

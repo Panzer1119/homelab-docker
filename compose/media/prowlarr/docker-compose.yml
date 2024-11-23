@@ -1,14 +1,18 @@
 ---
 volumes:
   backup:
-    name: backup/prowlarr
-    driver: zfs
+    #TODO Move this to a cifs volume?
+    driver: local
     driver_opts:
-      - checksum=sha512
-      - dedup=verify
+      type: none
+      o: bind
+      device: "/docker/backup/prowlarr"
   config:
-    name: config/prowlarr
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/prowlarr"
 
 services:
   prowlarr:

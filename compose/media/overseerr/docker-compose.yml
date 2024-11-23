@@ -1,8 +1,11 @@
 ---
 volumes:
   config:
-    name: config/overseerr
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/overseerr"
 
 services:
   overseerr:

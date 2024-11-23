@@ -1,35 +1,48 @@
 ---
 volumes:
   backup:
-    name: backup/sonarr
-    driver: zfs
+    #TODO Move this to a cifs volume?
+    driver: local
     driver_opts:
-      - checksum=sha512
-      - dedup=verify
+      type: none
+      o: bind
+      device: "/docker/backup/sonarr"
   backup-4k:
-    name: backup/sonarr-4k
-    driver: zfs
+    #TODO Move this to a cifs volume?
+    driver: local
     driver_opts:
-      - checksum=sha512
-      - dedup=verify
+      type: none
+      o: bind
+      device: "/docker/backup/sonarr-4k"
   backup-anime:
-    name: backup/sonarr-anime
-    driver: zfs
+    #TODO Move this to a cifs volume?
+    driver: local
     driver_opts:
-      - checksum=sha512
-      - dedup=verify
+      type: none
+      o: bind
+      device: "/docker/backup/sonarr-anime"
   cache-usenet:
     name: cache/usenet
+    # This is defined in the sabnzbd compose file
     external: true
   config:
-    name: config/sonarr
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/sonarr"
   config-4k:
-    name: config/sonarr-4k
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/sonarr-4k"
   config-anime:
-    name: config/sonarr-anime
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/sonarr-anime"
   data:
     name: sonarr
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file

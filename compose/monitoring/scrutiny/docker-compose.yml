@@ -1,7 +1,10 @@
 volumes:
   scrutiny-web:
-    name: config/scrutiny
-    driver: zfs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/scrutiny"
 
 services:
   web:
