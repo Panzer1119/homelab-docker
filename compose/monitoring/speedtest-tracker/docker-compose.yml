@@ -11,7 +11,7 @@ volumes:
 
 services:
   speedtest-tracker:
-    image: ghcr.io/linuxserver/speedtest-tracker:version-v0.21.6@sha256:e24696169db539e6447fd3196c76a12a806a8d38a657e722f336a3e33ba305c7
+    image: ghcr.io/linuxserver/speedtest-tracker:version-v0.23.1@sha256:5ef139071ec61478e335ff643d7aad994de381d4ce2d4d7d9a2326bb35d261b0
     container_name: speedtest-tracker
     ports:
       - 8765:80
