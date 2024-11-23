@@ -26,7 +26,7 @@ services:
       - --remote-debugging-port=9222
       - --hide-scrollbars
   meilisearch:
-    image: getmeili/meilisearch:v1.6@sha256:634e83ffe5bad15239fa26bd04d06bccb84a1f2f06ad8a35135b510711348792
+    image: getmeili/meilisearch:v1.11@sha256:6f8f1fc29d1ff67b4d8d503bb4e0a69b55c8d42600decafde951344218193a27
     restart: unless-stopped
     env_file:
       - .env
