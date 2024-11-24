@@ -2,6 +2,8 @@
 services:
   webserver:
     image: ghcr.io/paperless-ngx/paperless-ngx:2.13.5@sha256:199c67ed55bfb9d58bf90db2ee280880ae9ebc63413e54c73522f9c4ebdc7bad
+    container_name: paperless-ngx
+    hostname: paperless-ngx
     depends_on:
       - db
       - broker
