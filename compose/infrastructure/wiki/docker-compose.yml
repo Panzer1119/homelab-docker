@@ -1,17 +1,5 @@
 ---
 volumes:
-  db:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/data/wiki/postgres"
-  search:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/data/wiki/elasticsearch"
   wiki:
     name: wiki_storage
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
@@ -51,7 +39,7 @@ services:
         hard: -1
     volumes:
       #TODO Move the current elasticsearch data to the new volume
-      - search:/usr/share/elasticsearch/data
+      - /docker/data/wiki/elasticsearch:/usr/share/elasticsearch/data
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
@@ -67,7 +55,7 @@ services:
       - PGID=1000
     volumes:
       #TODO Move the current postgres data to the new volume
-      - db:/var/lib/postgresql/data
+      - /docker/data/wiki/postgres:/var/lib/postgresql/data
     restart: unless-stopped
     #TODO Why was the logging driver set to none?
 #    logging:
