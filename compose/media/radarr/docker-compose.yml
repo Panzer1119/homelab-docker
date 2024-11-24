@@ -1,6 +1,28 @@
 ---
 volumes:
+  config:
+    name: radarr-config
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/radarr"
+  config-4k:
+    name: radarr-config-4k
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/radarr-4k"
+  config-anime:
+    name: radarr-config-anime
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/radarr-anime"
   backup:
+    name: radarr-backup
     #TODO Move this to a cifs volume?
     driver: local
     driver_opts:
@@ -8,6 +30,7 @@ volumes:
       o: bind
       device: "/docker/backup/radarr"
   backup-4k:
+    name: radarr-backup-4k
     #TODO Move this to a cifs volume?
     driver: local
     driver_opts:
@@ -15,6 +38,7 @@ volumes:
       o: bind
       device: "/docker/backup/radarr-4k"
   backup-anime:
+    name: radarr-backup-anime
     #TODO Move this to a cifs volume?
     driver: local
     driver_opts:
@@ -25,34 +49,28 @@ volumes:
     name: cache-usenet
     # This is defined in the sabnzbd compose file
     external: true
-  config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/radarr"
-  config-4k:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/radarr-4k"
-  config-anime:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/radarr-anime"
   data:
-    name: radarr
+    name: radarr-data
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   data-4k:
-    name: radarr-4k
+    name: radarr-data-4k
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   data-anime:
-    name: radarr-anime
+    name: radarr-data-anime
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  trash:
+    name: radarr-trash
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  trash-4k:
+    name: radarr-trash-4k
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  trash-anime:
+    name: radarr-trash-anime
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   sh8-torrents:
@@ -70,18 +88,6 @@ volumes:
       - "de.panzer1119.docker.volume.sh8-torrents.rclone.path=op://Docker/SH8/Path_Torrents"
       - "de.panzer1119.docker.volume.sh8-torrents.rclone.username=op://Docker/SH8/Username"
       - "de.panzer1119.docker.volume.sh8-torrents.rclone.password=op://Docker/SH8/Password"
-  trash:
-    name: radarr-trash
-    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
-    external: true
-  trash-4k:
-    name: radarr-trash-4k
-    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
-    external: true
-  trash-anime:
-    name: radarr-trash-anime
-    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
-    external: true
 
 x-environment: &common-environment
   PGID: 1000
