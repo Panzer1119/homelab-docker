@@ -50,7 +50,8 @@ volumes:
       o: bind
 #      device: "/docker/cache/usenet"
       #TODO Create a folder in ram for this?
-      device: "/tmp/cache/usenet"
+#      device: "/tmp/cache/usenet"
+      device: "/data/usenet"
   backup:
     #TODO Move current backups to this volume
     name: sabnzbd_backup
