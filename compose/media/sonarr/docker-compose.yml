@@ -8,6 +8,11 @@ x-environment: &common-environment
 x-volume-cache-usenet: &volume-cache-usenet "cache-usenet:/data/usenet"
 x-volume-sh8-torrents: &volume-sh8-torrents "sh8-torrents:/data/torrents/sh8"
 
+# These are here to prevent the image from creating folders inside the container
+x-volume-downloads: &volume-downloads /data/empty:/downloads
+x-volume-trash: &volume-trash /data/empty:/trash
+x-volume-tv: &volume-tv /data/empty:/tv
+
 services:
   sonarr:
     image: ghcr.io/linuxserver/sonarr:4.0.10@sha256:a30d870ae503e617e84909367c8f19096567ef60834fa8d81d86d17a13e50d1a
@@ -22,6 +27,9 @@ services:
       - trash:/data/trash/sonarr
       - *volume-cache-usenet
       - *volume-sh8-torrents
+      - *volume-downloads
+      - *volume-trash
+      - *volume-tv
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
@@ -50,6 +58,9 @@ services:
       - trash-4k:/data/trash/sonarr-4k
       - *volume-cache-usenet
       - *volume-sh8-torrents
+      - *volume-downloads
+      - *volume-trash
+      - *volume-tv
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
@@ -78,6 +89,9 @@ services:
       - trash-anime:/data/trash/sonarr-anime
       - *volume-cache-usenet
       - *volume-sh8-torrents
+      - *volume-downloads
+      - *volume-trash
+      - *volume-tv
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
