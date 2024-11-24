@@ -1,12 +1,4 @@
 ---
-volumes:
-  config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/overseerr"
-
 services:
   overseerr:
     image: ghcr.io/linuxserver/overseerr:version-v1.33.2@sha256:54cd6f5510c781a385c4d471364402d9cc5ecefad2728f32dd150d9333f67a65
@@ -18,7 +10,7 @@ services:
       - PGID=1000
       - PUID=1000
     volumes:
-      - config:/config
+      - /docker/config/overseerr:/config
     network_mode: bridge
     ports:
       - "5055:5055"
