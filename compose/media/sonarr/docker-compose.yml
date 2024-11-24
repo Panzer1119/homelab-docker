@@ -5,8 +5,8 @@ x-environment: &common-environment
   TZ: Europe/Berlin
   UMASK_SET: 022
 
-x-common-volume-1: &common-volume-1 "cache-usenet:/data/usenet"
-x-common-volume-2: &common-volume-2 "sh8-torrents:/data/torrents/sh8"
+x-volume-cache-usenet: &volume-cache-usenet "cache-usenet:/data/usenet"
+x-volume-sh8-torrents: &volume-sh8-torrents "sh8-torrents:/data/torrents/sh8"
 
 services:
   sonarr:
@@ -20,8 +20,8 @@ services:
       - config:/config
       - media:/data/media/sonarr
       - trash:/data/trash/sonarr
-      - *common-volume-1
-      - *common-volume-2
+      - *volume-cache-usenet
+      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
@@ -48,8 +48,8 @@ services:
       - config-4k:/config
       - media-4k:/data/media/sonarr-4k
       - trash-4k:/data/trash/sonarr-4k
-      - *common-volume-1
-      - *common-volume-2
+      - *volume-cache-usenet
+      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
@@ -76,8 +76,8 @@ services:
       - config-anime:/config
       - media-anime:/data/media/sonarr-anime
       - trash-anime:/data/trash/sonarr-anime
-      - *common-volume-1
-      - *common-volume-2
+      - *volume-cache-usenet
+      - *volume-sh8-torrents
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
