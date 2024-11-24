@@ -21,6 +21,7 @@ services:
   wiki:
     image: requarks/wiki:2.5@sha256:707fa8f0c739d098346eff46af4ef3e71f10df88b0b49785c70b4cf0075274d5
     container_name: wiki
+    hostname: wiki
     depends_on:
       - db
       - search
