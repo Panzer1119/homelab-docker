@@ -1,12 +1,4 @@
 ---
-volumes:
-  config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/jellyseerr"
-
 services:
   jellyseerr:
     image: fallenbagel/jellyseerr:2.1.0@sha256:af5563771964282e5bfb6a4f30b05c75c8d30661a920f0399086f575217d0573
@@ -18,7 +10,7 @@ services:
       - PGID=1000
       - PUID=1000
     volumes:
-      - config:/config
+      - /docker/config/jellyseerr:/config
     network_mode: bridge
     ports:
       - "5057:5055"
