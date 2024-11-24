@@ -1,25 +1,11 @@
 ---
-volumes:
-  semaphore:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/semaphore"
-  db:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/data/semaphore"
-
 services:
   postgres:
     image: postgres:15@sha256:a35b3c0190dac5a82ec1778b34cb4963bdd9d161f80381a6297be6e2c3c13a7c
     env_file:
       - db.env
     volumes:
-      - db:/var/lib/postgresql/data
+      - /docker/data/semaphore:/var/lib/postgresql/data
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
@@ -33,7 +19,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - semaphore:/etc/semaphore:rw
+      - /docker/config/semaphore:/etc/semaphore:rw
     depends_on:
       - postgres
     restart: unless-stopped
