@@ -304,7 +304,7 @@ process_docker_compose() {
 
   # Iterate over the service keys
   for service_key in ${service_keys}; do
-    local labels volume_labels volume_dictionaries
+    local labels volume_labels volume_dictionaries volume_driver_default_dictionaries
 
     # Get the labels array for the service
     labels=$(yq ".services.${service_key}.labels" "${file}")
@@ -334,6 +334,9 @@ process_docker_compose() {
     # Create an empty dictionary for the volume dictionaries
     volume_dictionaries="{}"
 
+    # Create an empty dictionary for the volume driver default dictionaries
+    volume_driver_default_dictionaries="{}"
+
     # Iterate over the volume label keys
     for volume_label_key in $(echo "${volume_labels}" | jq -r 'keys[]'); do
       local volume_label_value volume_name volume_driver key
@@ -353,22 +356,39 @@ process_docker_compose() {
       # Extract the driver from the volume label key (the second part after "de.panzer1119.docker.volume.")
       volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password)$/\2/')
 
-      # Create a dictionary with the volume name as the key and another dictionary with the key driver
-      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"driver\": \"${volume_driver}\"}")
-
       # Extract the key from the volume label key (the third part after "de.panzer1119.docker.volume.")
       key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password)$/\3/')
 
       # If the key is empty or null, skip
       [ -z "${key}" ] || [ "${key}" == "null" ] && continue
 
+      # If the volume name is "default" process it differently
+      if [ "${volume_name}" == "default" ]; then
+        # Create a driver default dictionary with the volume driver as the key and another dictionary with the key as the key and the volume label value as the value
+        volume_driver_default_dictionaries=$(echo "${volume_driver_default_dictionaries}" | jq -r ".[\"${volume_driver}\"] |= . + {\"${key}\": \"${volume_label_value}\"}")
+
+        continue
+      fi
+
+      # Create a dictionary with the volume name as the key and another dictionary with the key driver
+      volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"driver\": \"${volume_driver}\"}")
+
       # Create a dictionary with the volume name as the key and another dictionary with the key as the key and the volume label value as the value
       volume_dictionaries=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"] |= . + {\"${key}\": \"${volume_label_value}\"}")
     done
 
+    # Print volume_driver_default_dictionaries
+    [ "${VERBOSE}" -eq 1 ] && echo "volume_driver_default_dictionaries" && echo "${volume_driver_default_dictionaries}"
+
+    # Print volume_dictionaries
+    [ "${VERBOSE}" -eq 1 ] && echo "volume_dictionaries" && echo "${volume_dictionaries}"
+
     # Iterate over the volume dictionaries keys
     for volume_name in $(echo "${volume_dictionaries}" | jq -r 'keys[]'); do
-      local driver
+      local driver volume_dictionary volume_driver_default_dictionary
+
+      # If the volume name is "default", skip
+      [ "${volume_name}" == "default" ] && continue
 
       # If delete mode is enabled, delete the volume
       if [ "${DELETE}" -eq 1 ]; then
@@ -396,19 +416,37 @@ process_docker_compose() {
         continue
       fi
 
-      # Get the driver from the volume dictionaries
-      driver=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].driver")
+      # Get the volume dictionary for the current volume name
+      volume_dictionary=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"]")
+
+      # Print volume_dictionary
+      [ "${VERBOSE}" -eq 1 ] && echo "volume_dictionary" && echo "${volume_dictionary}"
+
+      # Get the driver from the volume dictionary
+      driver=$(echo "${volume_dictionary}" | jq -r '.driver')
+
+      # Get the default volume dictionary for the current driver (or an empty dictionary if it does not exist)
+      volume_driver_default_dictionary=$(echo "${volume_driver_default_dictionaries}" | jq -r ".[\"${driver}\"] // {}")
+
+      # Print the default volume driver dictionary
+      [ "${VERBOSE}" -eq 1 ] && echo "volume_driver_default_dictionary" && echo "${volume_driver_default_dictionary}"
+
+      # Merge the default volume driver dictionary with the current volume dictionary (but do not overwrite current values)
+      volume_dictionary=$(echo "${volume_driver_default_dictionary}" "${volume_dictionary}" | jq -s '. | add')
+
+      # Print volume_dictionary
+      [ "${VERBOSE}" -eq 1 ] && echo "volume_dictionary" && echo "${volume_dictionary}"
 
       # Switch on the driver
       case "${driver}" in
         cifs)
-          create_cifs_volume "${volume_name}" "${volume_dictionaries}"
+          create_cifs_volume "${volume_name}" "${volume_dictionary}"
           ;;
         rclone)
-          create_rclone_volume "${volume_name}" "${volume_dictionaries}"
+          create_rclone_volume "${volume_name}" "${volume_dictionary}"
           ;;
         sshfs)
-          create_sshfs_volume "${volume_name}" "${volume_dictionaries}"
+          create_sshfs_volume "${volume_name}" "${volume_dictionary}"
           ;;
         *)
           echo "Error: Unsupported driver '${driver}' for volume '${volume_name}' in '${file}'"
