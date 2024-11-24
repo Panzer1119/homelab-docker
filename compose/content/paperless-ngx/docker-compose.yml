@@ -15,8 +15,8 @@ services:
       - /docker/data/paperless-ngx/media:/usr/src/paperless/media
       - /docker/data/paperless-ngx/export:/usr/src/paperless/export
       - /docker/cache/paperless-ngx/consume:/usr/src/paperless/consume
+      - consume-tn-main-1:/usr/src/paperless/consume/tn-main-1
       - "${PWD}/scripts:/scripts:ro" #FIXME "PWD" might not work in all environments
-      #TODO How to handle the consume folder on the NAS?
     ports:
       - "8217:8000"
     healthcheck:
@@ -68,3 +68,9 @@ services:
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
+
+volumes:
+  consume-tn-main-1:
+    name: paperless-ngx_consume_tn-main-1
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
