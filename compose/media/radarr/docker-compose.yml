@@ -5,7 +5,7 @@ x-environment: &common-environment
   TZ: Europe/Berlin
   UMASK_SET: 022
 
-x-volume-cache-usenet: &volume-cache-usenet "cache-usenet:/data/usenet"
+x-volume-cache-usenet: &volume-cache-usenet "cache_usenet:/data/usenet"
 #x-volume-sh8-torrents: &volume-sh8-torrents "sh8-torrents:/data/torrents/sh8"
 
 # These are here to prevent the image from creating folders inside the container

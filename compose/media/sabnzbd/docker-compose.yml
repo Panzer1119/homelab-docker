@@ -23,8 +23,8 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/SABnzbd/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/SABnzbd/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/SABnzbd/CIFS/Password"
-      - "de.panzer1119.docker.volume.sabnzbd-backup.cifs.share=op://Docker/SABnzbd/CIFS/Share_Backup"
-      - "de.panzer1119.docker.volume.sabnzbd-nzb-backup.cifs.share=op://Docker/SABnzbd/CIFS/Share_NZB_Backup"
+      - "de.panzer1119.docker.volume.sabnzbd_backup.cifs.share=op://Docker/SABnzbd/CIFS/Share_Backup"
+      - "de.panzer1119.docker.volume.sabnzbd_nzb-backup.cifs.share=op://Docker/SABnzbd/CIFS/Share_NZB_Backup"
     network_mode: bridge
     ports:
       - "8688:8080"
@@ -36,14 +36,14 @@ services:
 
 volumes:
   config:
-    name: sabnzbd-config
+    name: sabnzbd_config
     driver: local
     driver_opts:
       type: none
       o: bind
       device: "/docker/config/sabnzbd"
   cache-usenet:
-    name: cache-usenet
+    name: cache_usenet
     driver: local
     driver_opts:
       type: none
@@ -53,11 +53,11 @@ volumes:
       device: "/tmp/cache/usenet"
   backup:
     #TODO Move current backups to this volume
-    name: sabnzbd-backup
+    name: sabnzbd_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   nzb-backup:
     #TODO Move current nzb backups to this volume
-    name: sabnzbd-nzb-backup
+    name: sabnzbd_nzb-backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
