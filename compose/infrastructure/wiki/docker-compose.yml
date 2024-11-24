@@ -16,7 +16,6 @@ services:
     env_file:
       - wiki.env
     volumes:
-      #TODO Move the current wiki storage to the new volume
       - wiki:/storage/local
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Wiki/CIFS/Host"
@@ -41,7 +40,6 @@ services:
         soft: -1
         hard: -1
     volumes:
-      #TODO Move the current elasticsearch data to the new volume
       - /docker/data/wiki/elasticsearch:/usr/share/elasticsearch/data
     restart: unless-stopped
     extends:
@@ -57,7 +55,6 @@ services:
       - PUID=1000
       - PGID=1000
     volumes:
-      #TODO Move the current postgres data to the new volume
       - /docker/data/wiki/postgres:/var/lib/postgresql/data
     restart: unless-stopped
     #TODO Why was the logging driver set to none?
