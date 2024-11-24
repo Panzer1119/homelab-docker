@@ -41,8 +41,8 @@ services:
       service: logging-gelf
 
   db:
-    #TODO Migrate the current database on postgres 11 to the new postgres 15
-    image: postgres:15-alpine@sha256:5d4b2f57adc7739452b0be6cee25f263bfc64b609446bcdd8170354cf8ba8e80
+    #TODO Upgrade postgres 11 to postgres 15
+    image: postgres:11-alpine
     env_file:
       - db.env
     environment:
