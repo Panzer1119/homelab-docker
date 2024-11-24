@@ -19,6 +19,9 @@ services:
       #TODO Move the current wiki storage to the new volume
       - wiki:/storage/local
     labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Wiki/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Wiki/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Wiki/CIFS/Password"
       - "de.panzer1119.docker.volume.wiki_storage.cifs.share=op://Docker/Wiki/CIFS/Share_Storage"
     ports:
       - "8033:3000"
