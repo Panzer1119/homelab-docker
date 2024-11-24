@@ -11,10 +11,10 @@ services:
       - tika
     env_file: paperless-ngx.env
     volumes:
-      - paperless-ngx-data:/usr/src/paperless/data
-      - paperless-ngx-media:/usr/src/paperless/media
-      - paperless-ngx-export:/usr/src/paperless/export
-      - paperless-ngx-consume:/usr/src/paperless/consume
+      - /docker/data/paperless-ngx/data:/usr/src/paperless/data
+      - /docker/data/paperless-ngx/media:/usr/src/paperless/media
+      - /docker/data/paperless-ngx/export:/usr/src/paperless/export
+      - /docker/cache/paperless-ngx/consume:/usr/src/paperless/consume
       - "${PWD}/scripts:/scripts:ro" #FIXME "PWD" might not work in all environments
       #TODO How to handle the consume folder on the NAS?
     ports:
@@ -33,7 +33,7 @@ services:
     image: postgres:16@sha256:5d65b8bdb20369ea902b987aa63cfe4983130bc8cd2c25830d126636b80b608d
     env_file: db.env
     volumes:
-      - db:/var/lib/postgresql/data
+      - /docker/data/paperless-ngx/postgres:/var/lib/postgresql/data
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
@@ -42,7 +42,7 @@ services:
   broker:
     image: redis:7@sha256:af0be38eb8e43191bae9b03fe5c928803930b6f93e2dde3a7ad1165c04b1ce22
     volumes:
-      - broker:/data
+      - /docker/cache/paperless-ngx/broker:/data
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
@@ -68,41 +68,3 @@ services:
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
-
-volumes:
-  broker:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/cache/paperless-ngx/broker"
-  db:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/data/paperless-ngx/postgres"
-  paperless-ngx-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/data/paperless-ngx/data"
-  paperless-ngx-media:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/data/paperless-ngx/media"
-  paperless-ngx-export:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/data/paperless-ngx/export"
-  paperless-ngx-consume:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/cache/paperless-ngx/consume"
