@@ -87,15 +87,15 @@ check_value() {
 
 create_cifs_volume() {
   local volume_name="${1}"
-  local volume_dictionaries="${2}"
+  local volume_dictionary="${2}"
 
   local host share username password
 
   # Get the host, share, username, and password from the volume dictionaries
-  host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].host")
-  share=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].share")
-  username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].username")
-  password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].password")
+  host=$(echo "${volume_dictionary}" | jq -r ".host")
+  share=$(echo "${volume_dictionary}" | jq -r ".share")
+  username=$(echo "${volume_dictionary}" | jq -r ".username")
+  password=$(echo "${volume_dictionary}" | jq -r ".password")
 
   # If the host is empty or null, use the default host
   [ -z "${host}" ] || [ "${host}" == "null" ] && host="${DEFAULT_CIFS_HOST}"
@@ -153,17 +153,17 @@ create_cifs_volume() {
 
 create_rclone_volume() {
   local volume_name="${1}"
-  local volume_dictionaries="${2}"
+  local volume_dictionary="${2}"
 
   local type host port path username password
 
   # Get the type, host, port, path, username, and password from the volume dictionaries
-  type=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].type")
-  host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].host")
-  port=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].port")
-  path=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].path")
-  username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].username")
-  password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].password")
+  type=$(echo "${volume_dictionary}" | jq -r ".type")
+  host=$(echo "${volume_dictionary}" | jq -r ".host")
+  port=$(echo "${volume_dictionary}" | jq -r ".port")
+  path=$(echo "${volume_dictionary}" | jq -r ".path")
+  username=$(echo "${volume_dictionary}" | jq -r ".username")
+  password=$(echo "${volume_dictionary}" | jq -r ".password")
 
   # If all values are empty or null, skip
   if { [ -z "${type}" ] || [ "${type}" == "null" ]; } &&
@@ -224,16 +224,16 @@ create_rclone_volume() {
 
 create_sshfs_volume() {
   local volume_name="${1}"
-  local volume_dictionaries="${2}"
+  local volume_dictionary="${2}"
 
   local host port path username password
 
   # Get the host, path, username, and password from the volume dictionaries
-  host=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].host")
-  port=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].port")
-  path=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].path")
-  username=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].username")
-  password=$(echo "${volume_dictionaries}" | jq -r ".[\"${volume_name}\"].password")
+  host=$(echo "${volume_dictionary}" | jq -r ".host")
+  port=$(echo "${volume_dictionary}" | jq -r ".port")
+  path=$(echo "${volume_dictionary}" | jq -r ".path")
+  username=$(echo "${volume_dictionary}" | jq -r ".username")
+  password=$(echo "${volume_dictionary}" | jq -r ".password")
 
   # If the port is empty or null, use the default ssh port
   [ -z "${port}" ] || [ "${port}" == "null" ] && port="${DEFAULT_SSHFS_PORT}"
