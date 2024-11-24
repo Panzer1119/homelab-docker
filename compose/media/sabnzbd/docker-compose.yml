@@ -11,18 +11,20 @@ services:
       - UMASK=022
       #- SAB_NOTIFICATION_PARAMETERS="" # Since v4.0.2
     volumes:
-      #TODO Set the correct folders in SABnzbd web interface
-      #TODO Configure automatic backups?
-      - backup:/backups
+      #TODO Change the backup folder in the web interface
+      #TODO Change the nzb backup folder in the web interface
+      #TODO Set up automatic backups?
+      - backup:/backup
       - config:/config
       - cache-usenet:/data/usenet
-      - nzb-backups:/nzb-backups
+      - nzb-backup:/nzb-backup
       - /etc/localtime:/etc/localtime:ro
     labels:
-      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.host=op://Docker/SABnzbd/CIFS/Host"
-      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.share=op://Docker/SABnzbd/CIFS/Share_NZB_Backups"
-      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.username=op://Docker/SABnzbd/CIFS/Username"
-      - "de.panzer1119.docker.volume.sabnzbd-nzb-backups.cifs.password=op://Docker/SABnzbd/CIFS/Password"
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/SABnzbd/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/SABnzbd/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/SABnzbd/CIFS/Password"
+      - "de.panzer1119.docker.volume.sabnzbd-backup.cifs.share=op://Docker/SABnzbd/CIFS/Share_Backup"
+      - "de.panzer1119.docker.volume.sabnzbd-nzb-backup.cifs.share=op://Docker/SABnzbd/CIFS/Share_NZB_Backup"
     network_mode: bridge
     ports:
       - "8688:8080"
@@ -33,13 +35,13 @@ services:
       service: logging-gelf
 
 volumes:
-  backup:
-    #TODO Move this to a cifs volume?
+  config:
+    name: sabnzbd-config
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: "/docker/backup/sabnzbd"
+      device: "/docker/config/sabnzbd"
   cache-usenet:
     name: cache-usenet
     driver: local
@@ -49,14 +51,13 @@ volumes:
 #      device: "/docker/cache/usenet"
       #TODO Create a folder in ram for this?
       device: "/tmp/cache/usenet"
-  config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/sabnzbd"
-  nzb-backups:
+  backup:
+    #TODO Move current backups to this volume
+    name: sabnzbd-backup
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  nzb-backup:
     #TODO Move current nzb backups to this volume
-    name: sabnzbd-nzb-backups
+    name: sabnzbd-nzb-backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
