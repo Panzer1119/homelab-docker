@@ -18,13 +18,13 @@ services:
       #TODO Change the backup folder in the web interface
       - backup:/backups
       - config:/config
-      - data:/data/media/radarr
+      - media:/data/media/radarr
       - trash:/data/trash/radarr
       - *common-volume-1
       - *common-volume-2
     labels:
       - "de.panzer1119.docker.volume.radarr-backup.cifs.share=op://Docker/Radarr/CIFS/Share_Backup"
-      - "de.panzer1119.docker.volume.radarr-data.cifs.share=op://Docker/Radarr/CIFS/Share"
+      - "de.panzer1119.docker.volume.radarr-media.cifs.share=op://Docker/Radarr/CIFS/Share_Media"
       - "de.panzer1119.docker.volume.radarr-trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash"
     network_mode: bridge
     ports:
@@ -43,13 +43,13 @@ services:
       #TODO Change the backup folder in the web interface
       - backup-4k:/backups
       - config-4k:/config
-      - data-4k:/data/media/radarr-4k
+      - media-4k:/data/media/radarr-4k
       - trash-4k:/data/trash/radarr-4k
       - *common-volume-1
       - *common-volume-2
     labels:
       - "de.panzer1119.docker.volume.radarr-backup-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Backup_4K"
-      - "de.panzer1119.docker.volume.radarr-data-4k.cifs.share=op://Docker/Radarr/CIFS/Share_4K"
+      - "de.panzer1119.docker.volume.radarr-media-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Media_4K"
       - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_4K"
     network_mode: bridge
     ports:
@@ -68,13 +68,13 @@ services:
       #TODO Change the backup folder in the web interface
       - backup-anime:/backups
       - config-anime:/config
-      - data-anime:/data/media/radarr-anime
+      - media-anime:/data/media/radarr-anime
       - trash-anime:/data/trash/radarr-anime
       - *common-volume-1
       - *common-volume-2
     labels:
       - "de.panzer1119.docker.volume.radarr-backup-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Backup_Anime"
-      - "de.panzer1119.docker.volume.radarr-data-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Anime"
+      - "de.panzer1119.docker.volume.radarr-media-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Media_Anime"
       - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_Anime"
     network_mode: bridge
     ports:
@@ -125,16 +125,16 @@ volumes:
     name: radarr-backup-anime
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
-  data:
-    name: radarr-data
+  media:
+    name: radarr-media
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
-  data-4k:
-    name: radarr-data-4k
+  media-4k:
+    name: radarr-media-4k
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
-  data-anime:
-    name: radarr-data-anime
+  media-anime:
+    name: radarr-media-anime
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   trash:
