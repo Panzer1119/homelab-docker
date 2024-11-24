@@ -5,7 +5,7 @@ x-environment: &common-environment
   TZ: Europe/Berlin
   UMASK_SET: 022
 
-x-volume-cache-usenet: &volume-cache-usenet "cache_usenet:/data/usenet"
+x-volume-cache-usenet: &volume-cache-usenet "/data/usenet:/data/usenet"
 #x-volume-sh8-torrents: &volume-sh8-torrents "sh8-torrents:/data/torrents/sh8"
 
 # These are here to prevent the image from creating folders inside the container
@@ -20,11 +20,10 @@ services:
     hostname: sonarr
     environment: *common-environment
     volumes:
-      #TODO Change the backup folder in the web interface
       - backup:/backups
-      - config:/config
       - media:/data/media/sonarr
       - trash:/data/trash/sonarr
+      - /docker/config/sonarr:/config
       - *volume-cache-usenet
 #      - *volume-sh8-torrents
       - *volume-downloads
@@ -51,11 +50,10 @@ services:
     hostname: sonarr-4k
     environment: *common-environment
     volumes:
-      #TODO Change the backup folder in the web interface
       - backup-4k:/backups
-      - config-4k:/config
       - media-4k:/data/media/sonarr-4k
       - trash-4k:/data/trash/sonarr-4k
+      - /docker/config/sonarr-4k:/config
       - *volume-cache-usenet
 #      - *volume-sh8-torrents
       - *volume-downloads
@@ -82,11 +80,10 @@ services:
     hostname: sonarr-anime
     environment: *common-environment
     volumes:
-      #TODO Change the backup folder in the web interface
       - backup-anime:/backups
-      - config-anime:/config
       - media-anime:/data/media/sonarr-anime
       - trash-anime:/data/trash/sonarr-anime
+      - /docker/config/sonarr-anime:/config
       - *volume-cache-usenet
 #      - *volume-sh8-torrents
       - *volume-downloads
@@ -108,43 +105,19 @@ services:
       service: logging-gelf
 
 volumes:
-  config:
-    name: sonarr_config
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/sonarr"
-  config-4k:
-    name: sonarr-4k_config
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/sonarr-4k"
-  config-anime:
-    name: sonarr-anime_config
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/sonarr-anime"
   cache-usenet:
     name: cache-usenet
     # This is defined in the sabnzbd compose file
     external: true
   backup:
-    #TODO Move current backups to this volume
     name: sonarr_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   backup-4k:
-    #TODO Move current backups to this volume
     name: sonarr-4k_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   backup-anime:
-    #TODO Move current backups to this volume
     name: sonarr-anime_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
