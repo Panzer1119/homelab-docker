@@ -11,7 +11,12 @@ services:
       - UMASK_SET=022
     volumes:
       - backup:/backups
-      - config:/config
+      - /docker/config/prowlarr:/config
+    labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Prowlarr/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Prowlarr/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Prowlarr/CIFS/Password"
+      - "de.panzer1119.docker.volume.prowlarr_backup.cifs.share=op://Docker/Prowlarr/CIFS/Share_Backup"
     network_mode: bridge
     ports:
       - "9696:9696"
@@ -22,15 +27,6 @@ services:
 
 volumes:
   backup:
-    #TODO Move this to a cifs volume?
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/backup/prowlarr"
-  config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/prowlarr"
+    name: prowlarr_backup
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
