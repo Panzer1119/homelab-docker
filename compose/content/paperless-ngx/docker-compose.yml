@@ -17,6 +17,11 @@ services:
       - /docker/cache/paperless-ngx/consume:/usr/src/paperless/consume
       - consume-tn-main-1:/usr/src/paperless/consume/tn-main-1
       - "${PWD}/scripts:/scripts:ro" #FIXME "PWD" might not work in all environments
+    labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Paperless/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Paperless/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Paperless/CIFS/Password"
+      - "de.panzer1119.docker.volume.paperless-ngx_consume_tn-main-1.cifs.share=op://Docker/Paperless/CIFS/Share_Consume"
     ports:
       - "8217:8000"
     healthcheck:
