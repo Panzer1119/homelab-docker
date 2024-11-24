@@ -1,6 +1,28 @@
 ---
 volumes:
+  config:
+    name: sonarr-config
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/sonarr"
+  config-4k:
+    name: sonarr-config-4k
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/sonarr-4k"
+  config-anime:
+    name: sonarr-config-anime
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/sonarr-anime"
   backup:
+    name: sonarr-backup
     #TODO Move this to a cifs volume?
     driver: local
     driver_opts:
@@ -8,6 +30,7 @@ volumes:
       o: bind
       device: "/docker/backup/sonarr"
   backup-4k:
+    name: sonarr-backup-4k
     #TODO Move this to a cifs volume?
     driver: local
     driver_opts:
@@ -15,6 +38,7 @@ volumes:
       o: bind
       device: "/docker/backup/sonarr-4k"
   backup-anime:
+    name: sonarr-backup-anime
     #TODO Move this to a cifs volume?
     driver: local
     driver_opts:
@@ -22,37 +46,31 @@ volumes:
       o: bind
       device: "/docker/backup/sonarr-anime"
   cache-usenet:
-    name: cache/usenet
+    name: cache-usenet
     # This is defined in the sabnzbd compose file
     external: true
-  config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/sonarr"
-  config-4k:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/sonarr-4k"
-  config-anime:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/sonarr-anime"
   data:
-    name: sonarr
+    name: sonarr-data
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   data-4k:
-    name: sonarr-4k
+    name: sonarr-data-4k
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   data-anime:
-    name: sonarr-anime
+    name: sonarr-data-anime
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  trash:
+    name: sonarr-trash
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  trash-4k:
+    name: sonarr-trash-4k
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  trash-anime:
+    name: sonarr-trash-anime
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   sh8-torrents:
@@ -70,18 +88,6 @@ volumes:
       - "de.panzer1119.docker.volume.sh8-torrents.rclone.path=op://Docker/SH8/Path_Torrents"
       - "de.panzer1119.docker.volume.sh8-torrents.rclone.username=op://Docker/SH8/Username"
       - "de.panzer1119.docker.volume.sh8-torrents.rclone.password=op://Docker/SH8/Password"
-  trash:
-    name: sonarr-trash
-    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
-    external: true
-  trash-4k:
-    name: sonarr-trash-4k
-    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
-    external: true
-  trash-anime:
-    name: sonarr-trash-anime
-    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
-    external: true
 
 x-environment: &common-environment
   PGID: 1000
