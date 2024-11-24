@@ -1,6 +1,20 @@
 ---
 services:
   sabnzbd:
+    #3.5.3
+    #3.6.1 # 2022-11-08
+    #3.7.1 # until 2023-02-10
+    #3.7.2 # until 2023-05-03
+    #4.0.1 # until 2023-06-12
+    #4.0.2 # until 2023-07-15
+    #4.0.3 # until 2023-09-28
+    #4.1.0 # until 2024-01-05
+    #4.2.1 # until 2024-02-03
+    #4.2.2 # until 2024-03-15
+    #4.2.3 # until 2024-05-04
+    #4.3.0 # until 2024-05-07
+    #4.3.1 # until 2024-05-30
+    #4.3.2 # until 2024-08-31
     image: ghcr.io/linuxserver/sabnzbd:version-4.3.3@sha256:1bd04442a6cb35fc8f4a18c474ba93d6600026dcbd364d0577e63cc6cdebfd87
     container_name: sabnzbd
     hostname: sabnzbd
