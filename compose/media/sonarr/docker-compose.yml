@@ -34,9 +34,9 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Sonarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.sonarr-backup.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup"
-      - "de.panzer1119.docker.volume.sonarr-media.cifs.share=op://Docker/Sonarr/CIFS/Share_Media"
-      - "de.panzer1119.docker.volume.sonarr-trash.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash"
+      - "de.panzer1119.docker.volume.sonarr_backup.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup"
+      - "de.panzer1119.docker.volume.sonarr_media.cifs.share=op://Docker/Sonarr/CIFS/Share_Media"
+      - "de.panzer1119.docker.volume.sonarr_trash.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash"
     network_mode: bridge
     ports:
       - "8989:8989"
@@ -65,9 +65,9 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Sonarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.sonarr-backup-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup_4K"
-      - "de.panzer1119.docker.volume.sonarr-media-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Media_4K"
-      - "de.panzer1119.docker.volume.sonarr-trash-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_4K"
+      - "de.panzer1119.docker.volume.sonarr-4k_backup.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup_4K"
+      - "de.panzer1119.docker.volume.sonarr-4k_media.cifs.share=op://Docker/Sonarr/CIFS/Share_Media_4K"
+      - "de.panzer1119.docker.volume.sonarr-4k_trash.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_4K"
     network_mode: bridge
     ports:
       - "4949:8989"
@@ -96,9 +96,9 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Sonarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.sonarr-backup-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup_Anime"
-      - "de.panzer1119.docker.volume.sonarr-media-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Media_Anime"
-      - "de.panzer1119.docker.volume.sonarr-trash-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_Anime"
+      - "de.panzer1119.docker.volume.sonarr-anime_backup.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup_Anime"
+      - "de.panzer1119.docker.volume.sonarr-anime_media.cifs.share=op://Docker/Sonarr/CIFS/Share_Media_Anime"
+      - "de.panzer1119.docker.volume.sonarr-anime_trash.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_Anime"
     network_mode: bridge
     ports:
       - "1919:8989"
@@ -109,21 +109,21 @@ services:
 
 volumes:
   config:
-    name: sonarr-config
+    name: sonarr_config
     driver: local
     driver_opts:
       type: none
       o: bind
       device: "/docker/config/sonarr"
   config-4k:
-    name: sonarr-config-4k
+    name: sonarr-4k_config
     driver: local
     driver_opts:
       type: none
       o: bind
       device: "/docker/config/sonarr-4k"
   config-anime:
-    name: sonarr-config-anime
+    name: sonarr-anime_config
     driver: local
     driver_opts:
       type: none
@@ -135,41 +135,41 @@ volumes:
     external: true
   backup:
     #TODO Move current backups to this volume
-    name: sonarr-backup
+    name: sonarr_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   backup-4k:
     #TODO Move current backups to this volume
-    name: sonarr-backup-4k
+    name: sonarr-4k_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   backup-anime:
     #TODO Move current backups to this volume
-    name: sonarr-backup-anime
+    name: sonarr-anime_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   media:
-    name: sonarr-media
+    name: sonarr_media
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   media-4k:
-    name: sonarr-media-4k
+    name: sonarr-4k_media
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   media-anime:
-    name: sonarr-media-anime
+    name: sonarr-anime_media
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   trash:
-    name: sonarr-trash
+    name: sonarr_trash
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   trash-4k:
-    name: sonarr-trash-4k
+    name: sonarr-4k_trash
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   trash-anime:
-    name: sonarr-trash-anime
+    name: sonarr-anime_trash
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
 #  sh8-torrents:
