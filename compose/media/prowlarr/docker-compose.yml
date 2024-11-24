@@ -1,19 +1,4 @@
 ---
-volumes:
-  backup:
-    #TODO Move this to a cifs volume?
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/backup/prowlarr"
-  config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/prowlarr"
-
 services:
   prowlarr:
     image: ghcr.io/linuxserver/prowlarr:1.26.1@sha256:c492863c8e1da876a6be3d0d5836f25b3547c0a3293f0e9f09cd198ebf47ea37
@@ -34,3 +19,18 @@ services:
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
+
+volumes:
+  backup:
+    #TODO Move this to a cifs volume?
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/backup/prowlarr"
+  config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/config/prowlarr"
