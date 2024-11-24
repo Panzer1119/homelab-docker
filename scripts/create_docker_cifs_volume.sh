@@ -63,7 +63,7 @@ if docker volume inspect "${VOLUME_NAME}" &> /dev/null; then
 fi
 
 # Build Docker volume create command
-DOCKER_CMD="docker volume create --driver local --name '${VOLUME_NAME}' --opt type=cifs --opt 'device=//${ADDRESS}/${SHARE_NAME}' --opt 'o=addr=${ADDRESS},username=${USERNAME},password=${PASSWORD},file_mode=0777,dir_mode=0777,vers=${SMB_VERSION}'"
+DOCKER_CMD="docker volume create --driver local --name '${VOLUME_NAME}' --opt type=cifs --opt 'device=//${ADDRESS}/${SHARE_NAME}' --opt 'o=addr=${ADDRESS},username=${USERNAME},password=${PASSWORD},noperm,file_mode=0777,dir_mode=0777,vers=${SMB_VERSION}'"
 
 # Add optional parameters if provided
 if [[ -n ${USER_ID} ]]; then
