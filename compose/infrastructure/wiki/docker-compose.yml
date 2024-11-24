@@ -13,7 +13,7 @@ volumes:
       o: bind
       device: "/docker/data/wiki/elasticsearch"
   wiki:
-    name: wiki-storage
+    name: wiki_storage
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
 
@@ -31,7 +31,7 @@ services:
       #TODO Move the current wiki storage to the new volume
       - wiki:/storage/local
     labels:
-      - "de.panzer1119.docker.volume.wiki-storage.cifs.share=op://Docker/Wiki/CIFS/Share_Storage"
+      - "de.panzer1119.docker.volume.wiki_storage.cifs.share=op://Docker/Wiki/CIFS/Share_Storage"
     ports:
       - "8033:3000"
     restart: unless-stopped
