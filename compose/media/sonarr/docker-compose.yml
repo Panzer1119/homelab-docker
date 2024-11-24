@@ -23,6 +23,7 @@ services:
       - *common-volume-1
       - *common-volume-2
     labels:
+      - "de.panzer1119.docker.volume.sonarr-backup.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup"
       - "de.panzer1119.docker.volume.sonarr-data.cifs.share=op://Docker/Sonarr/CIFS/Share"
       - "de.panzer1119.docker.volume.sonarr-trash.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash"
     network_mode: bridge
@@ -47,6 +48,7 @@ services:
       - *common-volume-1
       - *common-volume-2
     labels:
+      - "de.panzer1119.docker.volume.sonarr-backup-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup_4K"
       - "de.panzer1119.docker.volume.sonarr-data-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_4K"
       - "de.panzer1119.docker.volume.sonarr-trash-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_4K"
     network_mode: bridge
@@ -71,6 +73,7 @@ services:
       - *common-volume-1
       - *common-volume-2
     labels:
+      - "de.panzer1119.docker.volume.sonarr-backup-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup_Anime"
       - "de.panzer1119.docker.volume.sonarr-data-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Anime"
       - "de.panzer1119.docker.volume.sonarr-trash-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_Anime"
     network_mode: bridge
