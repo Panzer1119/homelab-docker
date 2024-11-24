@@ -23,7 +23,7 @@ services:
       - *common-volume-1
       - *common-volume-2
     labels:
-      - "de.panzer1119.docker.volume.radarr.cifs.share=op://Docker/Radarr/CIFS/Share"
+      - "de.panzer1119.docker.volume.radarr-data.cifs.share=op://Docker/Radarr/CIFS/Share"
       - "de.panzer1119.docker.volume.radarr-trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash"
     network_mode: bridge
     ports:
@@ -47,7 +47,7 @@ services:
       - *common-volume-1
       - *common-volume-2
     labels:
-      - "de.panzer1119.docker.volume.radarr-4k.cifs.share=op://Docker/Radarr/CIFS/Share_4K"
+      - "de.panzer1119.docker.volume.radarr-data-4k.cifs.share=op://Docker/Radarr/CIFS/Share_4K"
       - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_4K"
     network_mode: bridge
     ports:
@@ -71,7 +71,7 @@ services:
       - *common-volume-1
       - *common-volume-2
     labels:
-      - "de.panzer1119.docker.volume.radarr-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Anime"
+      - "de.panzer1119.docker.volume.radarr-data-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Anime"
       - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_Anime"
     network_mode: bridge
     ports:
