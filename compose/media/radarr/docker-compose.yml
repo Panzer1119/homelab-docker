@@ -34,9 +34,9 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Radarr/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Radarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.radarr-backup.cifs.share=op://Docker/Radarr/CIFS/Share_Backup"
-      - "de.panzer1119.docker.volume.radarr-media.cifs.share=op://Docker/Radarr/CIFS/Share_Media"
-      - "de.panzer1119.docker.volume.radarr-trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash"
+      - "de.panzer1119.docker.volume.radarr_backup.cifs.share=op://Docker/Radarr/CIFS/Share_Backup"
+      - "de.panzer1119.docker.volume.radarr_media.cifs.share=op://Docker/Radarr/CIFS/Share_Media"
+      - "de.panzer1119.docker.volume.radarr_trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash"
     network_mode: bridge
     ports:
       - "7878:7878"
@@ -65,9 +65,9 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Radarr/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Radarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.radarr-backup-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Backup_4K"
-      - "de.panzer1119.docker.volume.radarr-media-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Media_4K"
-      - "de.panzer1119.docker.volume.radarr-trash-4k.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_4K"
+      - "de.panzer1119.docker.volume.radarr-4k_backup.cifs.share=op://Docker/Radarr/CIFS/Share_Backup_4K"
+      - "de.panzer1119.docker.volume.radarr-4k_media.cifs.share=op://Docker/Radarr/CIFS/Share_Media_4K"
+      - "de.panzer1119.docker.volume.radarr-4k_trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_4K"
     network_mode: bridge
     ports:
       - "7474:7878"
@@ -96,9 +96,9 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Radarr/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Radarr/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Radarr/CIFS/Password"
-      - "de.panzer1119.docker.volume.radarr-backup-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Backup_Anime"
-      - "de.panzer1119.docker.volume.radarr-media-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Media_Anime"
-      - "de.panzer1119.docker.volume.radarr-trash-anime.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_Anime"
+      - "de.panzer1119.docker.volume.radarr-anime_backup.cifs.share=op://Docker/Radarr/CIFS/Share_Backup_Anime"
+      - "de.panzer1119.docker.volume.radarr-anime_media.cifs.share=op://Docker/Radarr/CIFS/Share_Media_Anime"
+      - "de.panzer1119.docker.volume.radarr-anime_trash.cifs.share=op://Docker/Radarr/CIFS/Share_Trash_Anime"
     network_mode: bridge
     ports:
       - "7171:7878"
@@ -109,21 +109,21 @@ services:
 
 volumes:
   config:
-    name: radarr-config
+    name: radarr_config
     driver: local
     driver_opts:
       type: none
       o: bind
       device: "/docker/config/radarr"
   config-4k:
-    name: radarr-config-4k
+    name: radarr-4k_config
     driver: local
     driver_opts:
       type: none
       o: bind
       device: "/docker/config/radarr-4k"
   config-anime:
-    name: radarr-config-anime
+    name: radarr-anime_config
     driver: local
     driver_opts:
       type: none
@@ -135,41 +135,41 @@ volumes:
     external: true
   backup:
     #TODO Move current backups to this volume
-    name: radarr-backup
+    name: radarr_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   backup-4k:
     #TODO Move current backups to this volume
-    name: radarr-backup-4k
+    name: radarr-4k_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   backup-anime:
     #TODO Move current backups to this volume
-    name: radarr-backup-anime
+    name: radarr-anime_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   media:
-    name: radarr-media
+    name: radarr_media
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   media-4k:
-    name: radarr-media-4k
+    name: radarr-4k_media
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   media-anime:
-    name: radarr-media-anime
+    name: radarr-anime_media
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   trash:
-    name: radarr-trash
+    name: radarr_trash
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   trash-4k:
-    name: radarr-trash-4k
+    name: radarr-4k_trash
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   trash-anime:
-    name: radarr-trash-anime
+    name: radarr-anime_trash
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
 #  sh8-torrents:
