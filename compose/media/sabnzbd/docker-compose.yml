@@ -11,13 +11,12 @@ services:
       - UMASK=022
       #- SAB_NOTIFICATION_PARAMETERS="" # Since v4.0.2
     volumes:
-      #TODO Change the backup folder in the web interface
-      #TODO Change the nzb backup folder in the web interface
       #TODO Set up automatic backups?
       - backup:/backup
-      - config:/config
-      - cache-usenet:/data/usenet
       - nzb-backup:/nzb-backup
+      #TODO Create a folder in ram for the cache?
+      - /data/usenet:/data/usenet
+      - /docker/config/sabnzbd:/config
       - /etc/localtime:/etc/localtime:ro
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/SABnzbd/CIFS/Host"
@@ -35,30 +34,11 @@ services:
       service: logging-gelf
 
 volumes:
-  config:
-    name: sabnzbd_config
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/sabnzbd"
-  cache-usenet:
-    name: cache_usenet
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-#      device: "/docker/cache/usenet"
-      #TODO Create a folder in ram for this?
-#      device: "/tmp/cache/usenet"
-      device: "/data/usenet"
   backup:
-    #TODO Move current backups to this volume
     name: sabnzbd_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
   nzb-backup:
-    #TODO Move current nzb backups to this volume
     name: sabnzbd_nzb-backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
