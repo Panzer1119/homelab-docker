@@ -23,6 +23,9 @@ services:
       - *common-volume-1
       - *common-volume-2
     labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Sonarr/CIFS/Password"
       - "de.panzer1119.docker.volume.sonarr-backup.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup"
       - "de.panzer1119.docker.volume.sonarr-media.cifs.share=op://Docker/Sonarr/CIFS/Share_Media"
       - "de.panzer1119.docker.volume.sonarr-trash.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash"
@@ -48,6 +51,9 @@ services:
       - *common-volume-1
       - *common-volume-2
     labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Sonarr/CIFS/Password"
       - "de.panzer1119.docker.volume.sonarr-backup-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup_4K"
       - "de.panzer1119.docker.volume.sonarr-media-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Media_4K"
       - "de.panzer1119.docker.volume.sonarr-trash-4k.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_4K"
@@ -73,6 +79,9 @@ services:
       - *common-volume-1
       - *common-volume-2
     labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Sonarr/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Sonarr/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Sonarr/CIFS/Password"
       - "de.panzer1119.docker.volume.sonarr-backup-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Backup_Anime"
       - "de.panzer1119.docker.volume.sonarr-media-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Media_Anime"
       - "de.panzer1119.docker.volume.sonarr-trash-anime.cifs.share=op://Docker/Sonarr/CIFS/Share_Trash_Anime"
