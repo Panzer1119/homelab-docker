@@ -1,5 +1,32 @@
 ---
 services:
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.13.5@sha256:199c67ed55bfb9d58bf90db2ee280880ae9ebc63413e54c73522f9c4ebdc7bad
+    depends_on:
+      - db
+      - broker
+      - gotenberg
+      - tika
+    env_file: paperless-ngx.env
+    volumes:
+      - paperless-ngx-data:/usr/src/paperless/data
+      - paperless-ngx-media:/usr/src/paperless/media
+      - paperless-ngx-export:/usr/src/paperless/export
+      - paperless-ngx-consume:/usr/src/paperless/consume
+      - "${PWD}/scripts:/scripts:ro" #FIXME "PWD" might not work in all environments
+      #TODO How to handle the consume folder on the NAS?
+    ports:
+      - "8217:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-fs", "-S", "--max-time", "2", "http://localhost:8000" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
   db:
     image: postgres:16@sha256:5d65b8bdb20369ea902b987aa63cfe4983130bc8cd2c25830d126636b80b608d
     env_file: db.env
@@ -35,33 +62,6 @@ services:
   tika:
     image: apache/tika:2.9.2.1@sha256:2be134745fcb59826c54041489946c66218b948ea0c0be3a37cb7919ecc845ba
 #    image: apache/tika:2.9.2.1-full
-    restart: unless-stopped
-    extends:
-      file: ../../common/docker-compose.yml
-      service: logging-gelf
-
-  webserver:
-    image: ghcr.io/paperless-ngx/paperless-ngx:2.13.5@sha256:199c67ed55bfb9d58bf90db2ee280880ae9ebc63413e54c73522f9c4ebdc7bad
-    depends_on:
-      - db
-      - broker
-      - gotenberg
-      - tika
-    env_file: paperless-ngx.env
-    volumes:
-      - paperless-ngx-data:/usr/src/paperless/data
-      - paperless-ngx-media:/usr/src/paperless/media
-      - paperless-ngx-export:/usr/src/paperless/export
-      - paperless-ngx-consume:/usr/src/paperless/consume
-      - "${PWD}/scripts:/scripts:ro" #FIXME "PWD" might not work in all environments
-      #TODO How to handle the consume folder on the NAS?
-    ports:
-      - "8217:8000"
-    healthcheck:
-      test: [ "CMD", "curl", "-fs", "-S", "--max-time", "2", "http://localhost:8000" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
