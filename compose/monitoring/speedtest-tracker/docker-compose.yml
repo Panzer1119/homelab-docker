@@ -23,7 +23,7 @@ services:
     image: ghcr.io/linuxserver/speedtest-tracker:version-v0.23.1@sha256:cf6fa95f8edf6c711b9d48605424f6cfd6f1e5cf10483128b26be0036fe31209
     container_name: speedtest-tracker
     ports:
-      - 8765:80
+      - "8765:80"
     env_file:
       - speedtest-tracker.env
     volumes:
@@ -64,7 +64,7 @@ services:
     env_file:
       - db.env
     #    ports:
-    #      - 5434:5432
+    #      - "5434:5432"
     volumes:
       - db:/var/lib/postgresql/data
     extends:
