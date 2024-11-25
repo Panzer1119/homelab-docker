@@ -10,6 +10,7 @@ compose/content/paperless-ngx/scripts/post-consumption-paperparrot.sh
 compose/content/paperless-ngx/scripts/post-consumption-pushover.sh
 compose/content/paperless-ngx/scripts/send_pushover_message.sh
 compose/monitoring/scrutiny/collector.yml
+compose/monitoring/scrutiny/scrutiny.yml
 compose/media/sabnzbd/create_backup.sh
 
 ### JetBrains template
