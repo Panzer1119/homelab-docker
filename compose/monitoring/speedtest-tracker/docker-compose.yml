@@ -4,51 +4,51 @@ services:
     image: ghcr.io/linuxserver/speedtest-tracker:version-v0.23.1@sha256:cf6fa95f8edf6c711b9d48605424f6cfd6f1e5cf10483128b26be0036fe31209
     container_name: speedtest-tracker
     hostname: speedtest-tracker
-    ports:
-      - "8765:80"
+    depends_on:
+      - db
+      - cache
     env_file:
       - speedtest-tracker.env
     volumes:
       - /docker/config/speedtest-tracker:/config
-    restart: unless-stopped
-    depends_on:
-      - db
-      - cache
+    ports:
+      - "8765:80"
     healthcheck:
       test: curl -fSs http://localhost:80/api/healthcheck || exit 1
       interval: 10s
       retries: 3
       start_period: 30s
       timeout: 10s
+    restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
 
   cache:
     image: redis:7.4-alpine@sha256:c1e88455c85225310bbea54816e9c3f4b5295815e6dbf80c34d40afc6df28275
+    command: redis-server --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}
     env_file:
       - cache.env
-    restart: unless-stopped
+    volumes:
+      - /docker/cache/speedtest-tracker/redis:/data
     #    expose:
     #      - '6379'
     #    ports:
     #      - '6379:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}
-    volumes:
-      - /docker/cache/speedtest-tracker/redis:/data
+    restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
 
   db:
     image: postgres:15@sha256:a35b3c0190dac5a82ec1778b34cb4963bdd9d161f80381a6297be6e2c3c13a7c
-    restart: always
     env_file:
       - db.env
-    #    ports:
-    #      - "5434:5432"
     volumes:
       - /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
+    #    ports:
+    #      - "5434:5432"
+    restart: always
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
