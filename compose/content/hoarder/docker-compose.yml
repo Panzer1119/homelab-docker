@@ -1,18 +1,4 @@
 ---
-volumes:
-  hoarder:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/data/hoarder-app/data"
-  mailisearch:
-      driver: local
-      driver_opts:
-        type: none
-        o: bind
-        device: "/docker/data/hoarder-app/mailisearch"
-
 services:
   web:
     image: ghcr.io/hoarder-app/hoarder:0.19.0@sha256:237430c1c8117ada68a2d6c37487e5c234a306f43c244670689e6cabd2cffce2
@@ -21,7 +7,7 @@ services:
     env_file:
       - hoarder.env
     volumes:
-      - hoarder:/data
+      - /docker/data/hoarder-app/data:/data
     ports:
       - "3038:3000"
     restart: unless-stopped
@@ -48,7 +34,7 @@ services:
     env_file:
       - meilisearch.env
     volumes:
-      - mailisearch:/meili_data
+      - /docker/data/hoarder-app/mailisearch:/meili_data
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
