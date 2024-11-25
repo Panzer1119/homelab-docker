@@ -17,6 +17,7 @@ services:
   web:
     image: ghcr.io/hoarder-app/hoarder:0.19.0@sha256:237430c1c8117ada68a2d6c37487e5c234a306f43c244670689e6cabd2cffce2
     container_name: hoarder
+    hostname: hoarder
     env_file:
       - hoarder.env
     volumes:
