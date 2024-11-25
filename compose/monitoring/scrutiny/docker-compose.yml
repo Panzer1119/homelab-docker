@@ -10,7 +10,7 @@ services:
       - /docker/config/scrutiny:/opt/scrutiny/config
     network_mode: bridge
     ports:
-      - 8076:8080
+      - "8076:8080"
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
