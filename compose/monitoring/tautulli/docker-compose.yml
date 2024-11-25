@@ -9,13 +9,17 @@ services:
       - PUID=1000
       - TZ=Europe/Berlin
     volumes:
-      #TODO Change backup folder in the web interface?
       - backup:/config/backups
       - /docker/cache/tautulli:/cache
       - /docker/config/tautulli:/config
       #TODO Somehow get the logs from the plex container?
       #- /docker/data/tautulli/plex_logs:/logs:ro
       #- /docker/data/tautulli/plex_logs:/plex_logs:ro
+    labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Tautulli/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Tautulli/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Tautulli/CIFS/Password"
+      - "de.panzer1119.docker.volume.tautulli_backup.cifs.share=op://Docker/Tautulli/CIFS/Share_Backup"
     network_mode: bridge
     ports:
       - "8181:8181"
@@ -26,9 +30,6 @@ services:
 
 volumes:
   backup:
-    #TODO Move this to a cifs volume?
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/backup/tautulli"
+    name: tautulli_backup
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
