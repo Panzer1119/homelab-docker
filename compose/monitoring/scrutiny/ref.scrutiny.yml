@@ -1,0 +1,31 @@
+version: 1
+
+web:
+  listen:
+    port: 8080
+    host: 0.0.0.0
+    basepath: ''
+
+  database:
+    location: /opt/scrutiny/config/scrutiny.db
+
+  src:
+    frontend:
+      path: /opt/scrutiny/web
+
+  influxdb:
+    scheme: http
+    host: "{{ op://Docker/Scrutiny/InfluxDB/Host }}"
+    port: 8086
+    token: "{{ op://Docker/Scrutiny/InfluxDB/Token }}"
+    org: "{{ op://Docker/Scrutiny/InfluxDB/Organization }}"
+    bucket: "{{ op://Docker/Scrutiny/InfluxDB/Bucket }}"
+    retention_policy: true
+
+log:
+  file: ''
+  level: INFO
+
+#notify:
+#  urls:
+#    - 'pushover://shoutrrr:{{ op://Docker/Scrutiny/Pushover/App-Key }}@{{ op://Docker/Scrutiny/Pushover/User-Key }}/?priority=1'
