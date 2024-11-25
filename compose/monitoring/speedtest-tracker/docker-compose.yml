@@ -20,22 +20,6 @@ volumes:
 
 services:
   speedtest-tracker:
-    # v0.11.20 # until 2024-06-03
-    # v0.11.22 # until 2024-06-03
-    # v0.12.2 # until 2024-06-03
-    # v0.13.4 # until 2024-06-03
-    # v0.14.1 # until 2024-06-03
-    # v0.14.7 # until 2024-06-03
-    # v0.15.5 # until 2024-06-03
-    # v0.16.6 # until 2024-06-04
-    # v0.17.3 # until 2024-06-04
-    # v0.18.7 # until 2024-06-04
-    #image: 'ghcr.io/alexjustesen/speedtest-tracker:v0.18.7' # until 2024-06-04 # https://github.com/alexjustesen/speedtest-tracker/issues/1117
-    # 0.18.7 (LinuxServer.io) # until 2024-06-04
-    # 0.19.0 # until 2024-06-08
-    # 0.20.3 # until 2024-06-13
-    # 0.20.6 # until 2024-07-18
-    # 0.20.7 # until 2024-11-23
     image: ghcr.io/linuxserver/speedtest-tracker:version-v0.23.1@sha256:cf6fa95f8edf6c711b9d48605424f6cfd6f1e5cf10483128b26be0036fe31209
     container_name: speedtest-tracker
     ports:
