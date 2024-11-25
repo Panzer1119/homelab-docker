@@ -1,25 +1,4 @@
 ---
-volumes:
-  backup:
-    #TODO Move this to a cifs volume?
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/backup/tautulli"
-  cache:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/cache/tautulli"
-  config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/tautulli"
-
 services:
   tautulli:
     image: ghcr.io/linuxserver/tautulli:version-v2.14.6@sha256:2f68096053131939bff668adeffc2511baf0e01e0c140248ab220e08b2d85151
@@ -30,9 +9,10 @@ services:
       - PUID=1000
       - TZ=Europe/Berlin
     volumes:
+      #TODO Change backup folder in the web interface?
       - backup:/config/backups
-      - cache:/cache
-      - config:/config
+      - /docker/cache/tautulli:/cache
+      - /docker/config/tautulli:/config
       #TODO Somehow get the logs from the plex container?
       #- /docker/data/tautulli/plex_logs:/logs:ro
       #- /docker/data/tautulli/plex_logs:/plex_logs:ro
@@ -43,3 +23,12 @@ services:
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
+
+volumes:
+  backup:
+    #TODO Move this to a cifs volume?
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "/docker/backup/tautulli"
