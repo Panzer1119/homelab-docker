@@ -1,23 +1,4 @@
-volumes:
-  speedtest-tracker:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/speedtest-tracker"
-  cache:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/cache/speedtest-tracker"
-  db:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/data/speedtest-tracker"
-
+---
 services:
   speedtest-tracker:
     image: ghcr.io/linuxserver/speedtest-tracker:version-v0.23.1@sha256:cf6fa95f8edf6c711b9d48605424f6cfd6f1e5cf10483128b26be0036fe31209
@@ -27,7 +8,7 @@ services:
     env_file:
       - speedtest-tracker.env
     volumes:
-      - speedtest-tracker:/config
+      - /docker/config/speedtest-tracker:/config
     restart: unless-stopped
     depends_on:
       - db
@@ -53,7 +34,7 @@ services:
     #      - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}
     volumes:
-      - cache:/data
+      - /docker/cache/speedtest-tracker/redis:/data
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
@@ -66,7 +47,7 @@ services:
     #    ports:
     #      - "5434:5432"
     volumes:
-      - db:/var/lib/postgresql/data
+      - /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
