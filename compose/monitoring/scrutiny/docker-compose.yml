@@ -1,11 +1,4 @@
-volumes:
-  scrutiny-web:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "/docker/config/scrutiny"
-
+---
 services:
   web:
     image: ghcr.io/analogj/scrutiny:v0.8.1-web@sha256:dbb6b56e5d3dfa9256fea8ef9b9fd8fb302c555ddd0554b8ad958ec050a14994
@@ -14,7 +7,7 @@ services:
     env_file:
       - scrutiny-web.env
     volumes:
-      - scrutiny-web:/opt/scrutiny/config
+      - /docker/config/scrutiny:/opt/scrutiny/config
     network_mode: bridge
     ports:
       - 8076:8080
