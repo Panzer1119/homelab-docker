@@ -7,7 +7,7 @@ services:
     env_file:
       - scrutiny-web.env
     volumes:
-      - /docker/config/scrutiny:/opt/scrutiny/config
+      - /docker/config/scrutiny/web:/opt/scrutiny/config
     network_mode: bridge
     ports:
       - "8076:8080"
