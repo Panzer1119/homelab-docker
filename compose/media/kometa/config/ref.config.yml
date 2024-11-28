@@ -26,3 +26,15 @@ anidb:
 #  cache_expiration: "60"
   username: "op://Docker/AniDB/Username"
   password: "op://Docker/AniDB/Password"
+
+trakt:
+  client_id: "op://Docker/Kometa/Trakt/Client-ID"
+  client_secret: "op://Docker/Kometa/Trakt/Client-Secret"
+  pin:
+  authorization:
+    access_token: "op://Docker/Kometa/Trakt/Access-Token"
+    token_type: "Bearer"
+    expires_in: "op://Docker/Kometa/Trakt/Expires-In"
+    refresh_token: "op://Docker/Kometa/Trakt/Refresh-Token"
+    scope: "public"
+    created_at: "op://Docker/Kometa/Trakt/Created-At"
