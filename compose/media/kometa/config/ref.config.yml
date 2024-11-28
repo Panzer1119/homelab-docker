@@ -18,3 +18,11 @@ tmdb:
 tautulli:
   url: "op://Docker/Tautulli/URL-Local"
   apikey: "op://Docker/Tautulli/API-Key"
+
+anidb:
+  client: "op://Docker/AniDB/Kometa/Client-Name"
+  version: "1"
+  language: "de"
+#  cache_expiration: "60"
+  username: "op://Docker/AniDB/Username"
+  password: "op://Docker/AniDB/Password"
