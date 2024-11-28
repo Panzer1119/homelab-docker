@@ -1,0 +1,16 @@
+---
+plex:
+  url: "op://Docker/Kometa/Plex/URL-Local"
+  token: "op://Docker/Kometa/Plex/Token"
+  timeout: "60"
+  db_cache: "4096"
+#  clean_bundles: "true"
+#  empty_trash: "true"
+#  optimize: "false"
+  verify_ssl: "true"
+
+tmdb:
+  apikey: "op://Docker/Kometa/TMDb/API-Key"
+  language: "de"
+  region: "DE"
+#  cache_expiration: "60"

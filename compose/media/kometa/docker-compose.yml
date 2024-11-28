@@ -1,0 +1,15 @@
+---
+services:
+  kometa:
+    image: kometateam/kometa
+    container_name: kometa
+    hostname: kometa
+    env_file:
+      - kometa.env
+    volumes:
+      - "${PWD}/config:/config:ro" #FIXME "PWD" might not work in all environments
+    network_mode: bridge
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
