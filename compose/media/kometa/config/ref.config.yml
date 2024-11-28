@@ -38,3 +38,14 @@ trakt:
     refresh_token: "op://Docker/Kometa/Trakt/Refresh-Token"
     scope: "public"
     created_at: "op://Docker/Kometa/Trakt/Created-At"
+
+mal:
+  client_id: "op://Docker/Kometa/MyAnimeList/Client-ID"
+  client_secret: "op://Docker/Kometa/MyAnimeList/Client-Secret"
+  localhost_url: "op://Docker/Kometa/MyAnimeList/Localhost-URL"
+  authorization:
+    access_token: "op://Docker/Kometa/MyAnimeList/Access-Token"
+    token_type: "Bearer"
+    expires_in: "op://Docker/Kometa/MyAnimeList/Expires-In"
+    refresh_token: "op://Docker/Kometa/MyAnimeList/Refresh-Token"
+  cache_expiration: "60"
