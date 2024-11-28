@@ -10,7 +10,7 @@ services:
       - /docker/config/kometa:/config
       - "${PWD}/config/config.yml:/config/config.yml" #FIXME "PWD" might not work in all environments
     network_mode: bridge
-    restart: unless-stopped
+    restart: no
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
