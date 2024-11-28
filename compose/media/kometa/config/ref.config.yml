@@ -14,3 +14,7 @@ tmdb:
   language: "de"
   region: "DE"
 #  cache_expiration: "60"
+
+tautulli:
+  url: "op://Docker/Tautulli/URL-Local"
+  apikey: "op://Docker/Tautulli/API-Key"
