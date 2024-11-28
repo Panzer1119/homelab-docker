@@ -7,7 +7,7 @@ plex:
 #  clean_bundles: true
 #  empty_trash: true
 #  optimize: false
-#  verify_ssl: true
+  verify_ssl: false
 
 tmdb:
   apikey: "op://Docker/Kometa/TMDb/API-Key"
