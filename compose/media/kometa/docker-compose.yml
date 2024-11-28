@@ -7,7 +7,8 @@ services:
     env_file:
       - kometa.env
     volumes:
-      - "${PWD}/config:/config:ro" #FIXME "PWD" might not work in all environments
+      - /docker/config/kometa:/config
+      - "${PWD}/config/config.yml:/config/config.yml" #FIXME "PWD" might not work in all environments
     network_mode: bridge
     restart: unless-stopped
     extends:
