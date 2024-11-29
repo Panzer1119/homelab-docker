@@ -16,7 +16,8 @@
     ":rebaseStalePrs",
     ":separateMultipleMajorReleases",
     ":skipStatusChecks",
-    "group:recommended"
+    "group:recommended",
+    "schedule:daily"
   ],
   "labels": [
     "renovate"
