@@ -132,3 +132,21 @@ entries:
     seasons:
       - season: 1
         anilist-id: 20770
+
+  - title: "Arpeggio of Blue Steel: Ars Nova"
+    guid: plex://show/5d9c08314eefaa001f5d7d69
+    seasons:
+      - season: 1
+        anilist-id: 18893
+
+  - title: "Arpeggio of Blue Steel: Ars Nova - DC"
+    guid: plex://movie/5d776d44ad5437001f7d1a15
+    seasons:
+      - season: 1
+        anilist-id: 20763
+
+  - title: "Arpeggio of Blue Steel: Ars Nova - Cadenza"
+    guid: plex://movie/5d776bd496b655001fe1d6b9
+    seasons:
+      - season: 1
+        anilist-id: 20764
