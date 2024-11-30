@@ -126,3 +126,9 @@ entries:
     seasons:
       - season: 1
         anilist-id: 1894
+
+  - title: "Akatsuki no Yona: Prinzessin der Morgendämmerung"
+    guid: plex://show/5d9c084a1cae62001f74b1ad
+    seasons:
+      - season: 1
+        anilist-id: 20770
