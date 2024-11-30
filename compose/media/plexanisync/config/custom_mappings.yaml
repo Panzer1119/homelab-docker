@@ -150,3 +150,9 @@ entries:
     seasons:
       - season: 1
         anilist-id: 20764
+
+  - title: "Akashic Records of Bastard Magical Instructor"
+    guid: plex://show/5d9c08cc4eefaa001f5e3602
+    seasons:
+      - season: 1
+        anilist-id: 21700
