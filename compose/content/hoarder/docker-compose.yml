@@ -1,7 +1,7 @@
 ---
 services:
   web:
-    image: ghcr.io/hoarder-app/hoarder:0.19.0@sha256:237430c1c8117ada68a2d6c37487e5c234a306f43c244670689e6cabd2cffce2
+    image: ghcr.io/hoarder-app/hoarder:0.20.0@sha256:d09c79e8fec1651252d25d6c4d7f723c72548bd9a070136251c901aa36d571e3
     container_name: hoarder
     hostname: hoarder
     env_file:
