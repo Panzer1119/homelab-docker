@@ -15,7 +15,7 @@ x-volume-movies: &volume-movies /data/empty:/movies
 
 services:
   radarr:
-    image: ghcr.io/linuxserver/radarr:5.16.3@sha256:eb894bd26fd3fb29981bf91b140834417ce2ed28ab8217d0ce121db5c460f39a
+    image: ghcr.io/linuxserver/radarr:5.17.2@sha256:7a25facfb3e08c9f57cee1ffd995141de80587be1b038bba5fa8611c2355225a
     container_name: radarr
     hostname: radarr
     environment: *common-environment
@@ -45,7 +45,7 @@ services:
       service: logging-gelf
 
   radarr-4k:
-    image: ghcr.io/linuxserver/radarr:5.16.3@sha256:eb894bd26fd3fb29981bf91b140834417ce2ed28ab8217d0ce121db5c460f39a
+    image: ghcr.io/linuxserver/radarr:5.17.2@sha256:7a25facfb3e08c9f57cee1ffd995141de80587be1b038bba5fa8611c2355225a
     container_name: radarr-4k
     hostname: radarr-4k
     environment: *common-environment
@@ -75,7 +75,7 @@ services:
       service: logging-gelf
 
   radarr-anime:
-    image: ghcr.io/linuxserver/radarr:5.16.3@sha256:eb894bd26fd3fb29981bf91b140834417ce2ed28ab8217d0ce121db5c460f39a
+    image: ghcr.io/linuxserver/radarr:5.17.2@sha256:7a25facfb3e08c9f57cee1ffd995141de80587be1b038bba5fa8611c2355225a
     container_name: radarr-anime
     hostname: radarr-anime
     environment: *common-environment
