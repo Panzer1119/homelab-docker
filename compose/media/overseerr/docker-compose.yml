@@ -1,7 +1,7 @@
 ---
 services:
   overseerr:
-    image: ghcr.io/linuxserver/overseerr:version-v1.33.2@sha256:83e6fc76652148401b7526eebce7855adeb7f3a56fb9dffd4cb6336ad43e5310
+    image: ghcr.io/linuxserver/overseerr:version-v1.33.2@sha256:637ba966bc1f4c349c3f3ab3d269639f679b3f69f409ee7ac776c468cf508b07
     container_name: overseerr
     hostname: overseerr
     environment:
