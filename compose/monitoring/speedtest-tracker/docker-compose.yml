@@ -1,7 +1,7 @@
 ---
 services:
   speedtest-tracker:
-    image: ghcr.io/linuxserver/speedtest-tracker:version-v1.2.0@sha256:ba3b6054b47d474398be464438f067839160b6be0487a184f2e1d0d9448c3f72
+    image: ghcr.io/linuxserver/speedtest-tracker:version-v1.2.2@sha256:cf311bf612935ca6b9405c09b81cc3df99b9e9ebb9ec03701b37be4a64722985
     container_name: speedtest-tracker
     hostname: speedtest-tracker
     depends_on:
