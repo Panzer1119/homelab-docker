@@ -368,6 +368,7 @@ main() {
     local docker_image_sha256=""
     if [[ "${docker_image}" =~ @sha256:([a-f0-9]+) ]]; then
       docker_image_sha256="${BASH_REMATCH[1]}"
+      log "Extracted image sha256: ${docker_image_sha256}" "VERBOSE"
       # Remove the sha256 part from the docker image
       docker_image="${docker_image%@sha256:*}"
     fi
@@ -375,6 +376,7 @@ main() {
     local docker_image_tag="latest"
     if [[ "${docker_image}" =~ :([^:]+)$ ]]; then
       docker_image_tag="${BASH_REMATCH[1]}"
+      log "Extracted image tag: ${docker_image_tag}" "VERBOSE"
       # Remove the tag part from the docker image
       docker_image="${docker_image%:*}"
     fi
@@ -399,6 +401,9 @@ main() {
         docker_image_user="${repo_part}"
         docker_image_name="${rest}"
       fi
+      log "Extracted image repository: ${docker_image_repository}" "VERBOSE"
+      log "Extracted image user: ${docker_image_user}" "VERBOSE"
+      log "Extracted image name: ${docker_image_name}" "VERBOSE"
     fi
     # If docker image repository is empty, set it to "docker.io"
     if [ -z "${docker_image_repository}" ]; then
