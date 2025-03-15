@@ -5,6 +5,7 @@ KEY_STACK_NAME="de.panzer1119.docker:stack_name"
 KEY_TARGET_IMAGE="de.panzer1119.docker:target_image"
 KEY_TARGET_TAG="de.panzer1119.docker:target_tag"
 KEY_TARGET_SHA256="de.panzer1119.docker:target_sha256"
+KEY_GIT_COMMIT_SHA1="de.panzer1119.docker:git_commit_sha1"
 
 # Default values
 DEFAULT_SNAPSHOT_PREFIX="stack-checkpoint"
@@ -28,6 +29,7 @@ Options:
   -i, --target-image <image>     Image that caused the snapshot.
   -t, --target-tag <tag>         Tag that caused the snapshot.
   -s, --target-sha256 <sha256>   SHA256 that caused the snapshot.
+  -C, --commit-sha1 <sha1>       SHA1 of the git commit that caused the snapshot. If not provided, the current git commit is used.
   -c, --target-container <name>  Container that caused the snapshot.
   -p, --snapshot-prefix <prefix> Prefix for the snapshot name (default: '${DEFAULT_SNAPSHOT_PREFIX}').
   -u, --up-after                 Start the stack after taking the snapshot (default is to keep it stopped).
@@ -48,7 +50,7 @@ check_requirements() {
   fi
 
   # Check if the required commands are available
-  local commands=("jq" "docker" "zfs")
+  local commands=("jq" "docker" "zfs" "git")
   for command in "${commands[@]}"; do
     if ! command -v "${command}" &>/dev/null; then
       echo "Error: '${command}' is not installed."
@@ -128,8 +130,9 @@ snapshot_volume() {
   local target_image="${2}"
   local target_tag="${3}"
   local target_sha256="${4}"
-  local volume_dataset="${5}"
-  local snapshot_name="${6}"
+  local commit_sha1="${5}"
+  local volume_dataset="${6}"
+  local snapshot_name="${7}"
 
   local snapshot="${volume_dataset}@${snapshot_name}"
 
@@ -140,6 +143,7 @@ snapshot_volume() {
     [[ -n "${target_image}" ]] && log "[DRY RUN] Would set property '${KEY_TARGET_IMAGE}' to '${target_image}' for snapshot '${snapshot}'" "DEBUG"
     [[ -n "${target_tag}" ]] && log "[DRY RUN] Would set property '${KEY_TARGET_TAG}' to '${target_tag}' for snapshot '${snapshot}'" "DEBUG"
     [[ -n "${target_sha256}" ]] && log "[DRY RUN] Would set property '${KEY_TARGET_SHA256}' to '${target_sha256}' for snapshot '${snapshot}'" "DEBUG"
+    [[ -n "${commit_sha1}" ]] && log "[DRY RUN] Would set property '${KEY_GIT_COMMIT_SHA1}' to '${commit_sha1}' for snapshot '${snapshot}'" "DEBUG"
     return
   fi
 
@@ -156,6 +160,8 @@ snapshot_volume() {
   [[ -n "${target_tag}" ]] && zfs set "${KEY_TARGET_TAG}=${target_tag}" "${snapshot}"
   [[ -n "${target_sha256}" ]] && log "Setting property '${KEY_TARGET_SHA256}' to '${target_sha256}' for snapshot '${snapshot}'" "DEBUG"
   [[ -n "${target_sha256}" ]] && zfs set "${KEY_TARGET_SHA256}=${target_sha256}" "${snapshot}"
+  [[ -n "${commit_sha1}" ]] && log "Setting property '${KEY_GIT_COMMIT_SHA1}' to '${commit_sha1}' for snapshot '${snapshot}'" "DEBUG"
+  [[ -n "${commit_sha1}" ]] && zfs set "${KEY_GIT_COMMIT_SHA1}=${commit_sha1}" "${snapshot}"
 }
 
 # Extract bind mount volumes from Docker Compose config
@@ -206,9 +212,10 @@ snapshot_volumes() {
   local target_image="${3}"
   local target_tag="${4}"
   local target_sha256="${5}"
-  local snapshot_name="${6}"
+  local commit_sha1="${6}"
+  local snapshot_name="${7}"
   # Take the rest of the arguments as base datasets
-  local base_dataset_array=("${@:7}")
+  local base_dataset_array=("${@:8}")
 
   local docker_compose_file
   local docker_compose_json
@@ -240,7 +247,7 @@ snapshot_volumes() {
       log "Skipping volume '${volume_dataset}' as it does not start with any of the base datasets" "VERBOSE"
       continue
     fi
-    snapshot_volume "${stack_name}" "${target_image}" "${target_tag}" "${target_sha256}" "${volume_dataset}" "${snapshot_name}"
+    snapshot_volume "${stack_name}" "${target_image}" "${target_tag}" "${target_sha256}" "${commit_sha1}" "${volume_dataset}" "${snapshot_name}"
   done
 }
 
@@ -254,6 +261,7 @@ main() {
   local target_image
   local target_tag
   local target_sha256
+  local commit_sha1
   local target_container
   local snapshot_prefix
   local base_dataset_array
@@ -282,6 +290,10 @@ main() {
         ;;
       -s|--target-sha256)
         target_sha256="${2}"
+        shift
+        ;;
+      -C|--commit-sha1)
+        commit_sha1="${2}"
         shift
         ;;
       -c|--target-container)
@@ -356,6 +368,13 @@ main() {
   # If the base datasets are empty, use the default base datasets
   if [ "${#base_dataset_array[@]}" -eq 0 ]; then
     base_dataset_array=("docker/config" "docker/data")
+  fi
+
+  # If the git commit sha1 is empty, get the current git commit sha1
+  if [ -z "${commit_sha1}" ]; then
+    log "Extracting git commit sha1 from the current git commit" "DEBUG"
+    commit_sha1="$(git rev-parse HEAD)"
+    log "Extracted git commit sha1: ${commit_sha1}" "VERBOSE"
   fi
 
   # If a target container is provided, extract the target image, tag and sha256 (if missing)
@@ -435,6 +454,7 @@ main() {
     log "Target image: ${target_image}" "VERBOSE"
     log "Target tag: ${target_tag}" "VERBOSE"
     log "Target sha256: ${target_sha256}" "VERBOSE"
+    log "Git commit sha1: ${commit_sha1}" "VERBOSE"
     log "Snapshot prefix: ${snapshot_prefix}" "VERBOSE"
     log "Base datasets: ${base_dataset_array[*]}" "VERBOSE"
     log "Up after: ${UP_AFTER}" "VERBOSE"
@@ -479,7 +499,7 @@ main() {
   log "Using snapshot name: '${snapshot_name}'" "DEBUG"
 
   # Snapshot the volumes of the stack
-  snapshot_volumes "${stacks_dir}" "${stack_name}" "${target_image}" "${target_tag}" "${target_sha256}" "${snapshot_name}" "${base_dataset_array[@]}"
+  snapshot_volumes "${stacks_dir}" "${stack_name}" "${target_image}" "${target_tag}" "${target_sha256}" "${commit_sha1}" "${snapshot_name}" "${base_dataset_array[@]}"
 
   # Start the stack if the up-after flag is set (if not in dry run mode)
   if [ "${UP_AFTER}" -eq 1 ]; then
