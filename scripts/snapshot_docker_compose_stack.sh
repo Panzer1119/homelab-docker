@@ -162,28 +162,30 @@ snapshot_volume() {
 extract_volume_datasets() {
   local docker_compose_json="${1}"
 
-#  local top_level_volumes_json
+  local top_level_volumes_array_json
   local service_volumes_json
-  local volumes_json
+  local service_volume_array_json
   local volume_array_json
   local volume_source_array_json
   local volume_dataset_array_json
 
-#  # Extract top-level volumes
-#  top_level_volumes_json="$(echo "${docker_compose_json}" | jq -r '.volumes // {}')"
+  # Extract top-level volumes of driver local and with driver_opts "o" of bind
+  top_level_volumes_array_json="$(echo "${docker_compose_json}" | jq -r '.volumes // {} | map(select(.driver == "local" and .driver_opts.o == "bind"))')"
 #  log "Found $(echo "${volumes_json}" | jq -r 'length') top-level volumes" "DEBUG"
+
+  # Convert the top-level volumes to an array of objects with source (driver_opts.device) (and target set to null)
+  top_level_volumes_array_json="$(echo "${top_level_volumes_array_json}" | jq -r 'map({source: .driver_opts.device, target: null})')"
 
   # Extract service-level volumes of type bind
   service_volumes_json="$(echo "${docker_compose_json}" | jq -r '.services[].volumes[]? | select(.type == "bind")')"
 #  log "Found $(echo "${service_volumes_json}" | jq -r 'length') service-level volumes" "VERBOSE"
 
-  # Combine top-level and service-level volumes
-  volumes_json="${service_volumes_json}"
-#  log "Found $(echo "${volumes_json}" | jq -r 'length') total volumes" "DEBUG"
-
   # Convert the new line separated volume objects into an json array and preserve only the source and target
-  volume_array_json="$(echo "${volumes_json}" | jq -s '.' | jq -r 'map({source: .source, target: .target})')"
+  service_volume_array_json="$(echo "${service_volumes_json}" | jq -s '.' | jq -r 'map({source: .source, target: .target})')"
 #  log "Converted volume array to json" "VERBOSE"
+
+  # Combine top-level and service-level volumes
+  volume_array_json="$(echo "${top_level_volumes_array_json} ${service_volume_array_json}" | jq -s '. | add')"
 
   # Extract the source of the volumes, sort them and remove duplicates. Remove all relative paths.
   volume_source_array_json="$(echo "${volume_array_json}" | jq -r 'map(.source) | sort | unique')"
