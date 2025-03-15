@@ -221,6 +221,7 @@ snapshot_volumes() {
   # Iterate over the volume datasets and snapshot them
   log "Snapshotting volumes of stack '${stack_name}' as '${snapshot_name}'" "INFO"
   for volume_dataset in "${volume_dataset_array[@]}"; do
+    log "Processing volume '${volume_dataset}'" "VERBOSE"
     # Skip if the volume dataset does not start with any of the base datasets
     if ! echo "${volume_dataset}" | grep -qE "^$(IFS=\|; echo "${base_dataset_array[*]}")"; then
       log "Skipping volume '${volume_dataset}' as it does not start with any of the base datasets" "VERBOSE"
