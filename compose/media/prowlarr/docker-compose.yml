@@ -1,7 +1,7 @@
 ---
 services:
   prowlarr:
-    image: ghcr.io/linuxserver/prowlarr:1.30.2@sha256:33a605960120eff07b4713f094a4588ce048e8e3aa7a1599f41224cb67122ba5
+    image: ghcr.io/linuxserver/prowlarr:1.31.2@sha256:2100d2cee89da16e7ce4a1169406c7718e6508c86ddc497dfbfdb7d6be2ea0c2
     container_name: prowlarr
     hostname: prowlarr
     environment:
