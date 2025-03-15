@@ -2,9 +2,9 @@
 
 # Constants
 KEY_STACK_NAME="de.panzer1119.docker:stack_name"
-KEY_STACK_IMAGE="de.panzer1119.docker:target_image"
-KEY_STACK_TAG="de.panzer1119.docker:target_tag"
-KEY_STACK_SHA="de.panzer1119.docker:target_sha"
+KEY_TARGET_IMAGE="de.panzer1119.docker:target_image"
+KEY_TARGET_TAG="de.panzer1119.docker:target_tag"
+KEY_TARGET_SHA="de.panzer1119.docker:target_sha"
 
 # Default values
 DEFAULT_SNAPSHOT_PREFIX="stack-checkpoint"
@@ -137,9 +137,9 @@ snapshot_volume() {
   if [ "${DRY_RUN}" -eq 1 ]; then
     log "[DRY RUN] Would take snapshot '${snapshot}' of zfs dataset '${volume_dataset}'" "INFO"
     log "[DRY RUN] Would set property '${KEY_STACK_NAME}' to '${stack_name}' for snapshot '${snapshot}'" "DEBUG"
-    [[ -n "${target_image}" ]] && log "[DRY RUN] Would set property '${KEY_STACK_IMAGE}' to '${target_image}' for snapshot '${snapshot}'" "DEBUG"
-    [[ -n "${target_tag}" ]] && log "[DRY RUN] Would set property '${KEY_STACK_TAG}' to '${target_tag}' for snapshot '${snapshot}'" "DEBUG"
-    [[ -n "${target_sha}" ]] && log "[DRY RUN] Would set property '${KEY_STACK_SHA}' to '${target_sha}' for snapshot '${snapshot}'" "DEBUG"
+    [[ -n "${target_image}" ]] && log "[DRY RUN] Would set property '${KEY_TARGET_IMAGE}' to '${target_image}' for snapshot '${snapshot}'" "DEBUG"
+    [[ -n "${target_tag}" ]] && log "[DRY RUN] Would set property '${KEY_TARGET_TAG}' to '${target_tag}' for snapshot '${snapshot}'" "DEBUG"
+    [[ -n "${target_sha}" ]] && log "[DRY RUN] Would set property '${KEY_TARGET_SHA}' to '${target_sha}' for snapshot '${snapshot}'" "DEBUG"
     return
   fi
 
@@ -150,12 +150,12 @@ snapshot_volume() {
   # Set the snapshot properties
   log "Setting property '${KEY_STACK_NAME}' to '${stack_name}' for snapshot '${snapshot}'" "DEBUG"
   zfs set "${KEY_STACK_NAME}=${stack_name}" "${snapshot}"
-  [[ -n "${target_image}" ]] && log "Setting property '${KEY_STACK_IMAGE}' to '${target_image}' for snapshot '${snapshot}'" "DEBUG"
-  [[ -n "${target_image}" ]] && zfs set "${KEY_STACK_IMAGE}=${target_image}" "${snapshot}"
-  [[ -n "${target_tag}" ]] && log "Setting property '${KEY_STACK_TAG}' to '${target_tag}' for snapshot '${snapshot}'" "DEBUG"
-  [[ -n "${target_tag}" ]] && zfs set "${KEY_STACK_TAG}=${target_tag}" "${snapshot}"
-  [[ -n "${target_sha}" ]] && log "Setting property '${KEY_STACK_SHA}' to '${target_sha}' for snapshot '${snapshot}'" "DEBUG"
-  [[ -n "${target_sha}" ]] && zfs set "${KEY_STACK_SHA}=${target_sha}" "${snapshot}"
+  [[ -n "${target_image}" ]] && log "Setting property '${KEY_TARGET_IMAGE}' to '${target_image}' for snapshot '${snapshot}'" "DEBUG"
+  [[ -n "${target_image}" ]] && zfs set "${KEY_TARGET_IMAGE}=${target_image}" "${snapshot}"
+  [[ -n "${target_tag}" ]] && log "Setting property '${KEY_TARGET_TAG}' to '${target_tag}' for snapshot '${snapshot}'" "DEBUG"
+  [[ -n "${target_tag}" ]] && zfs set "${KEY_TARGET_TAG}=${target_tag}" "${snapshot}"
+  [[ -n "${target_sha}" ]] && log "Setting property '${KEY_TARGET_SHA}' to '${target_sha}' for snapshot '${snapshot}'" "DEBUG"
+  [[ -n "${target_sha}" ]] && zfs set "${KEY_TARGET_SHA}=${target_sha}" "${snapshot}"
 }
 
 # Extract bind mount volumes from Docker Compose config
