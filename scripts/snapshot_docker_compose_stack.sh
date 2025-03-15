@@ -174,23 +174,23 @@ extract_volume_datasets() {
 
   # Extract service-level volumes of type bind
   service_volumes_json="$(echo "${docker_compose_json}" | jq -r '.services[].volumes[]? | select(.type == "bind")')"
-  log "Found $(echo "${service_volumes_json}" | jq -r 'length') service-level volumes" "VERBOSE"
+#  log "Found $(echo "${service_volumes_json}" | jq -r 'length') service-level volumes" "VERBOSE"
 
   # Combine top-level and service-level volumes
   volumes_json="${service_volumes_json}"
-  log "Found $(echo "${volumes_json}" | jq -r 'length') total volumes" "DEBUG"
+#  log "Found $(echo "${volumes_json}" | jq -r 'length') total volumes" "DEBUG"
 
   # Convert the new line separated volume objects into an json array and preserve only the source and target
   volume_array_json="$(echo "${volumes_json}" | jq -s '.' | jq -r 'map({source: .source, target: .target})')"
-  log "Converted volume array to json" "VERBOSE"
+#  log "Converted volume array to json" "VERBOSE"
 
   # Extract the source of the volumes, sort them and remove duplicates. Remove all relative paths.
   volume_source_array_json="$(echo "${volume_array_json}" | jq -r 'map(.source) | sort | unique')"
-  log "Extracted volume sources" "VERBOSE"
+#  log "Extracted volume sources" "VERBOSE"
 
   # Remove all relative paths from the volume sources and remove the leading slash
   volume_dataset_array_json="$(echo "${volume_source_array_json}" | jq -r 'map(select(test("^/"))) | map(ltrimstr("/"))')"
-  log "Removed relative paths from volume sources" "VERBOSE"
+#  log "Removed relative paths from volume sources" "VERBOSE"
 
   # Return the volume dataset array
   echo "${volume_dataset_array_json}"
