@@ -28,6 +28,7 @@ Options:
   -i, --target-image <image>     Image that caused the snapshot.
   -t, --target-tag <tag>         Tag that caused the snapshot.
   -s, --target-sha <sha>         SHA that caused the snapshot.
+  -c, --target-container <name>  Container that caused the snapshot.
   -p, --snapshot-prefix <prefix> Prefix for the snapshot name (default: '${DEFAULT_SNAPSHOT_PREFIX}').
   -u, --up-after                 Start the stack after taking the snapshot (default is to keep it stopped).
   -D, --debug                    Debug mode. Print debug information.
@@ -251,6 +252,7 @@ main() {
   local target_image
   local target_tag
   local target_sha
+  local target_container
   local snapshot_prefix
   local base_dataset_array
 
@@ -278,6 +280,10 @@ main() {
         ;;
       -s|--target-sha)
         target_sha="${2}"
+        shift
+        ;;
+      -c|--target-container)
+        target_container="${2}"
         shift
         ;;
       -p|--snapshot-prefix)
@@ -348,6 +354,70 @@ main() {
   # If the base datasets are empty, use the default base datasets
   if [ "${#base_dataset_array[@]}" -eq 0 ]; then
     base_dataset_array=("docker/config" "docker/data")
+  fi
+
+  # If a target container is provided, extract the target image, tag and sha (if missing)
+  if [ -n "${target_container}" ]; then
+    log "Extracting target image, tag and sha from container '${target_container}'" "DEBUG"
+    # Get the image, tag and sha of the target container
+    local docker_image
+    docker_image="$(docker inspect --format '{{.Config.Image}}' "${target_container}")"
+    # Extract the docker image sha if present
+    local docker_image_sha=""
+    if [[ "${docker_image}" =~ @sha256:([a-f0-9]+) ]]; then
+      docker_image_sha="${BASH_REMATCH[1]}"
+      # Remove the sha part from the docker image
+      docker_image="${docker_image%@sha256:*}"
+    fi
+    # Extract the docker image tag if present
+    local docker_image_tag="latest"
+    if [[ "${docker_image}" =~ :([^:]+)$ ]]; then
+      docker_image_tag="${BASH_REMATCH[1]}"
+      # Remove the tag part from the docker image
+      docker_image="${docker_image%:*}"
+    fi
+    # Extract docker image repository, user, and name
+    local docker_image_repository=""
+    local docker_image_user=""
+    local docker_image_name="${docker_image}"
+    if [[ "${docker_image}" =~ / ]]; then
+      local repo_part="${docker_image%%/*}"
+      local rest="${docker_image#*/}"
+      # If the repo part contains a dot or a colon, it is the repository, else it is the user
+      if [[ "${repo_part}" =~ [.:] ]]; then
+        docker_image_repository="${repo_part}"
+        if [[ "${rest}" =~ / ]]; then
+          docker_image_user="${rest%%/*}"
+          docker_image_name="${rest#*/}"
+        else
+          docker_image_user=""
+          docker_image_name="${rest}"
+        fi
+      else
+        docker_image_user="${repo_part}"
+        docker_image_name="${rest}"
+      fi
+    fi
+    # If docker image repository is empty, set it to "docker.io"
+    if [ -z "${docker_image_repository}" ]; then
+      docker_image_repository="docker.io"
+    fi
+    # If docker image user is empty, set it to "_"
+    if [ -z "${docker_image_user}" ]; then
+      docker_image_user="_"
+    fi
+    # If no target image is provided, use the extracted image repository, user, and name
+    if [ -z "${target_image}" ]; then
+      target_image="${docker_image_repository}/${docker_image_user}/${docker_image_name}"
+    fi
+    # If no target tag is provided, use the extracted image tag
+    if [ -z "${target_tag}" ]; then
+      target_tag="${docker_image_tag}"
+    fi
+    # If no target sha is provided, use the extracted image sha
+    if [ -z "${target_sha}" ]; then
+      target_sha="${docker_image_sha}"
+    fi
   fi
 
   # If running in verbose mode, print the options
