@@ -208,12 +208,15 @@ snapshot_volumes() {
 
   # Parse the docker compose file as JSON
   docker_compose_json="$(docker compose -f "${docker_compose_file}" config --format json --dry-run)"
+  log "Parsed docker compose file as JSON" "VERBOSE"
 
   # Extract the volume datasets from the docker compose file
   volume_dataset_array_json="$(extract_volume_datasets "${docker_compose_json}")"
+  log "Extracted volume datasets from docker compose file" "VERBOSE"
 
   # Convert the json volume dataset array to a bash array
   mapfile -t volume_dataset_array < <(echo "${volume_dataset_array_json}" | jq -r '.[]')
+  log "Converted volume dataset array to bash array" "VERBOSE"
 
   # Iterate over the volume datasets and snapshot them
   log "Snapshotting volumes of stack '${stack_name}' as '${snapshot_name}'" "INFO"
