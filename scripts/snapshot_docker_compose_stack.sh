@@ -445,10 +445,26 @@ main() {
     log "Stopping stack '${stack_name}'" "DEBUG"
     docker compose -f "${docker_compose_file}" down
 
-    while docker compose -f "${docker_compose_file}" ps -q | xargs docker inspect --format '{{.State.Status}}' | grep -q "running"; do
-      log "Stack '${stack_name}' is still running. Waiting..." "VERBOSE"
-      sleep 5
+    local container_ids
+    while true; do
+        # Get the container ids of the stack
+        container_ids="$(docker compose -f "${docker_compose_file}" ps -q)"
+
+        # If no container ids are returned, the stack is stopped
+        if [ -z "${container_ids}" ]; then
+            break
+        fi
+
+        # Check if the containers are still running
+        # shellcheck disable=SC2086
+        if docker inspect --format '{{.State.Status}}' ${container_ids} | grep -q "running"; then
+            log "Stack '${stack_name}' is still running. Waiting..." "VERBOSE"
+            sleep 5
+        else
+            break
+        fi
     done
+    log "Stack '${stack_name}' is stopped" "DEBUG"
   fi
 
   # Generate the snapshot name
