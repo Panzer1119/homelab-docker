@@ -4,7 +4,6 @@
 KEY_STACK_NAME="de.panzer1119.docker:stack_name"
 KEY_STACK_IMAGE="de.panzer1119.docker:target_image"
 KEY_STACK_TAG="de.panzer1119.docker:target_tag"
-DOCKER_ZFS_PLUGIN_SERVICE_FILE="/etc/systemd/system/docker-zfs-plugin.service"
 
 # Default values
 DEFAULT_SNAPSHOT_PREFIX="stack-checkpoint"
@@ -20,7 +19,7 @@ QUIET=0
 usage() {
 cat << EOF
 Usage: $(basename "${0}") [options]
-Snapshot a Docker Compose stack using ZFS.
+Snapshot bind mount volumes of a Docker Compose stack using ZFS.
 
 Options:
   -d, --directory <directory>    Directory containing the Docker Compose stacks (required).
@@ -30,7 +29,7 @@ Options:
   -p, --snapshot-prefix <prefix> Prefix for the snapshot name (default: '${DEFAULT_SNAPSHOT_PREFIX}').
   -u, --up-after                 Start the stack after taking the snapshot (default is to keep it stopped).
   -D, --debug                    Debug mode. Print debug information.
-  -N, --dry-run                  Dry run. Print the actions that would be taken without actually executing them.
+  -N, --dry-run                  Dry run. Print actions without executing them.
   -v, --verbose                  Verbose mode. Print additional information (also enables logging of debug messages).
   -q, --quiet                    Quiet mode. Only print errors.
   -h, --help                     Display this help message.
@@ -56,13 +55,13 @@ check_requirements() {
 
   # Check if we are allowed to run docker commands
   if ! docker ps &>/dev/null; then
-    echo "Error: Unable to run docker commands. Please make sure that the current user is in the 'docker' group."
+    echo "Error: Unable to run docker commands. Ensure the current user has access."
     exit 1
   fi
 
   # Check if we are allowed to run zfs commands
   if ! zfs list &>/dev/null; then
-    echo "Error: Unable to run zfs commands. Please make sure that the current user is in the 'zfs' group."
+    echo "Error: Unable to run zfs commands. Ensure the current user has access."
     exit 1
   fi
 }
@@ -125,15 +124,14 @@ snapshot_volume() {
   local stack_name="${1}"
   local target_image="${2}"
   local target_tag="${3}"
-  local base_dataset="${4}"
-  local relative_dataset="${5}"
-  local snapshot_name="${6}"
+  local volume_dataset="${4}"
+  local snapshot_name="${5}"
 
-  local snapshot="${base_dataset}/${relative_dataset}@${snapshot_name}"
+  local snapshot="${volume_dataset}@${snapshot_name}"
 
   # Check if the dry run flag is set
   if [ "${DRY_RUN}" -eq 1 ]; then
-    log "[DRY RUN] Would take snapshot '${snapshot}' of docker zfs volume '${relative_dataset}'" "INFO"
+    log "[DRY RUN] Would take snapshot '${snapshot}' of zfs dataset '${volume_dataset}'" "INFO"
     log "[DRY RUN] Would set property '${KEY_STACK_NAME}' to '${stack_name}' for snapshot '${snapshot}'" "DEBUG"
     [[ -n "${target_image}" ]] && log "[DRY RUN] Would set property '${KEY_STACK_IMAGE}' to '${target_image}' for snapshot '${snapshot}'" "DEBUG"
     [[ -n "${target_tag}" ]] && log "[DRY RUN] Would set property '${KEY_STACK_TAG}' to '${target_tag}' for snapshot '${snapshot}'" "DEBUG"
@@ -141,7 +139,7 @@ snapshot_volume() {
   fi
 
   # Take a snapshot of the volume
-  log "Taking snapshot '${snapshot}' of docker zfs volume '${relative_dataset}'" "INFO"
+  log "Taking snapshot '${snapshot}' of zfs dataset '${volume_dataset}'" "INFO"
   zfs snapshot "${snapshot}"
 
   # Set the snapshot properties
@@ -153,21 +151,56 @@ snapshot_volume() {
   [[ -n "${target_tag}" ]] && zfs set "${KEY_STACK_TAG}=${target_tag}" "${snapshot}"
 }
 
+# Extract bind mount volumes from Docker Compose config
+extract_volume_datasets() {
+  local docker_compose_json="${1}"
+
+#  local top_level_volumes_json
+  local service_volumes_json
+  local volumes_json
+  local volume_array_json
+  local volume_source_array_json
+  local volume_dataset_array_json
+
+#  # Extract top-level volumes
+#  top_level_volumes_json="$(echo "${docker_compose_json}" | jq -r '.volumes // {}')"
+#  log "Found $(echo "${volumes_json}" | jq -r 'length') top-level volumes" "DEBUG"
+
+  # Extract service-level volumes of type bind
+  service_volumes_json="$(echo "${docker_compose_json}" | jq -r '.services[].volumes[]? | select(.type == "bind")')"
+  log "Found $(echo "${service_volumes_json}" | jq -r 'length') service-level volumes" "DEBUG"
+
+  # Combine top-level and service-level volumes
+  volumes_json="${service_volumes_json}"
+  log "Found $(echo "${volumes_json}" | jq -r 'length') total volumes" "DEBUG"
+
+  # Convert the new line separated volume objects into an json array and preserve only the source and target
+  volume_array_json="$(echo "${volumes_json}" | jq -s '.' | jq -r 'map({source: .source, target: .target})')"
+
+  # Extract the source of the volumes, sort them and remove duplicates. Remove all relative paths.
+  volume_source_array_json="$(echo "${volume_array_json}" | jq -r 'map(.source) | sort | unique')"
+
+  # Remove all relative paths from the volume sources and remove the leading slash
+  volume_dataset_array_json="$(echo "${volume_source_array_json}" | jq -r 'map(select(test("^/"))) | map(ltrimstr("/"))')"
+
+  # Return the volume dataset array
+  echo "${volume_dataset_array_json}"
+}
+
 # Snapshot the volumes of the given stack
 snapshot_volumes() {
   local stacks_dir="${1}"
   local stack_name="${2}"
   local target_image="${3}"
   local target_tag="${4}"
-  local base_dataset="${5}"
-  local snapshot_name="${6}"
+  local snapshot_name="${5}"
+  # Take the rest of the arguments as base datasets
+  local base_dataset_array=("${@:6}")
 
   local docker_compose_file
   local docker_compose_json
-  local volumes_json
-  local volume_array_json
-  local relative_dataset_array_json
-  local relative_dataset_array
+  local volume_dataset_array_json
+  local volume_dataset_array
 
   # Get the docker compose file for the given stack
   docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
@@ -176,54 +209,22 @@ snapshot_volumes() {
   # Parse the docker compose file as JSON
   docker_compose_json="$(docker compose -f "${docker_compose_file}" config --format json --dry-run)"
 
-  # Get the volumes section of the docker compose file
-  volumes_json="$(echo "${docker_compose_json}" | jq -r '.volumes')"
-  log "Found $(echo "${volumes_json}" | jq -r 'length') volumes" "DEBUG"
+  # Extract the volume datasets from the docker compose file
+  volume_dataset_array_json="$(extract_volume_datasets "${docker_compose_json}")"
 
-  # Get all volume objects that are using the zfs driver and convert them to an array
-  volume_array_json="$(echo "${volumes_json}" | jq -r 'map(select(.driver == "zfs"))')"
+  # Convert the json volume dataset array to a bash array
+  mapfile -t volume_dataset_array < <(echo "${volume_dataset_array_json}" | jq -r '.[]')
 
-  # Get the zfs datasets for the volumes (simply the name of the volume)
-  relative_dataset_array_json="$(echo "${volume_array_json}" | jq -r 'map(.name)')"
-  log "Found relative zfs datasets: ${relative_dataset_array_json}" "DEBUG"
-
-  # Convert the relative dataset array to a bash array
-  mapfile -t relative_dataset_array < <(echo "${relative_dataset_array_json}" | jq -r '.[]')
-
-  # Iterate over the zfs datasets and snapshot them
+  # Iterate over the volume datasets and snapshot them
   log "Snapshotting volumes of stack '${stack_name}' as '${snapshot_name}'" "INFO"
-  for relative_dataset in "${relative_dataset_array[@]}"; do
-    snapshot_volume "${stack_name}" "${target_image}" "${target_tag}" "${base_dataset}" "${relative_dataset}" "${snapshot_name}"
+  for volume_dataset in "${volume_dataset_array[@]}"; do
+    # Skip if the volume dataset does not start with any of the base datasets
+    if ! echo "${volume_dataset}" | grep -qE "^$(IFS=\|; echo "${base_dataset_array[*]}")"; then
+      log "Skipping volume '${volume_dataset}' as it does not start with any of the base datasets" "VERBOSE"
+      continue
+    fi
+    snapshot_volume "${stack_name}" "${target_image}" "${target_tag}" "${volume_dataset}" "${snapshot_name}"
   done
-}
-
-# Get the base zfs dataset of the zfs docker volume plugin
-get_base_dataset() {
-  local base_dataset
-
-  # Check if the docker zfs plugin service file exists
-  if [ ! -f "${DOCKER_ZFS_PLUGIN_SERVICE_FILE}" ]; then
-    log "Docker zfs plugin service file not found: '${DOCKER_ZFS_PLUGIN_SERVICE_FILE}'" "ERROR"
-    exit 1
-  fi
-
-  # Get the base dataset from the docker zfs plugin service file
-  base_dataset="$(grep -oP '(?<=--dataset-name )\S+' "${DOCKER_ZFS_PLUGIN_SERVICE_FILE}")"
-
-  # Check if the base dataset is empty
-  if [ -z "${base_dataset}" ]; then
-    log "Base dataset not found in docker zfs plugin service file: '${DOCKER_ZFS_PLUGIN_SERVICE_FILE}'" "ERROR"
-    exit 1
-  fi
-
-  # Check if the base dataset exists
-  if [ -z "${base_dataset}" ]; then
-    log "Base dataset '${base_dataset}' found in docker zfs plugin service file: '${DOCKER_ZFS_PLUGIN_SERVICE_FILE}' does not exist" "ERROR"
-    exit 1
-  fi
-
-  # Return the base dataset
-  echo "${base_dataset}"
 }
 
 # Main function
@@ -236,6 +237,7 @@ main() {
   local target_image
   local target_tag
   local snapshot_prefix
+  local base_dataset_array
 
   local docker_compose_file
   local snapshot_name
@@ -283,7 +285,7 @@ main() {
         exit 0
         ;;
       *)
-        echo "Error: Invalid option: '${1}'"
+        echo "Error: Invalid option '${1}'"
         usage
         exit 1
         ;;
@@ -313,9 +315,20 @@ main() {
   # Get the docker compose file for the given stack
   docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
 
+  # Check if the Docker Compose file exists
+  if [ ! -f "${docker_compose_file}" ]; then
+    echo "Error: Docker Compose file not found at '${docker_compose_file}'"
+    exit 1
+  fi
+
   # If the snapshot prefix is empty, use the default prefix
   if [ -z "${snapshot_prefix}" ]; then
     snapshot_prefix="${DEFAULT_SNAPSHOT_PREFIX}"
+  fi
+
+  # If the base datasets are empty, use the default base datasets
+  if [ "${#base_dataset_array[@]}" -eq 0 ]; then
+    base_dataset_array=("docker/config" "docker/data")
   fi
 
   # If running in verbose mode, print the options
@@ -326,6 +339,7 @@ main() {
     log "Target image: ${target_image}" "VERBOSE"
     log "Target tag: ${target_tag}" "VERBOSE"
     log "Snapshot prefix: ${snapshot_prefix}" "VERBOSE"
+    log "Base datasets: ${base_dataset_array[*]}" "VERBOSE"
     log "Up after: ${UP_AFTER}" "VERBOSE"
     log "Debug: ${DEBUG}" "VERBOSE"
     log "Dry run: ${DRY_RUN}" "VERBOSE"
@@ -351,12 +365,8 @@ main() {
   snapshot_name="$(generate_snapshot_name "${snapshot_prefix}")"
   log "Using snapshot name: '${snapshot_name}'" "DEBUG"
 
-  # Get the base dataset of the zfs docker volume plugin
-  base_dataset="$(get_base_dataset)"
-  log "Using base dataset: '${base_dataset}'" "DEBUG"
-
   # Snapshot the volumes of the stack
-  snapshot_volumes "${stacks_dir}" "${stack_name}" "${target_image}" "${target_tag}" "${base_dataset}" "${snapshot_name}"
+  snapshot_volumes "${stacks_dir}" "${stack_name}" "${target_image}" "${target_tag}" "${snapshot_name}" "${base_dataset_array[@]}"
 
   # Start the stack if the up-after flag is set (if not in dry run mode)
   if [ "${UP_AFTER}" -eq 1 ]; then
