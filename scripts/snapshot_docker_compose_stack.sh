@@ -30,7 +30,7 @@ Options:
   -t, --target-tag <tag>         Tag that caused the snapshot.
   -s, --target-sha256 <sha256>   SHA256 that caused the snapshot.
   -C, --commit-sha1 <sha1>       SHA1 of the git commit that caused the snapshot. If not provided, the current git commit is used.
-  -c, --target-container <name>  Container that caused the snapshot.
+  -c, --target-container <name>  Container that caused the snapshot (use placeholder '-' to use the stack name as the target container).
   -p, --snapshot-prefix <prefix> Prefix for the snapshot name (default: '${DEFAULT_SNAPSHOT_PREFIX}').
   -u, --up-after                 Start the stack after taking the snapshot (default is to keep it stopped).
   -D, --debug                    Debug mode. Print debug information.
@@ -350,6 +350,12 @@ main() {
     stacks_dir="$(dirname "${stacks_dir}")"
     log "Stack name not provided. Using directory name: '${stack_name}'" "DEBUG"
     log "Setting stacks directory to parent directory: '${stacks_dir}'" "DEBUG"
+  fi
+
+  # If the target container is provided, check if it is the placeholder '-'
+  if [ "${target_container}" == "-" ]; then
+    target_container="${stack_name}"
+    log "Using stack name as target container: '${target_container}'" "DEBUG"
   fi
 
   # Get the docker compose file for the given stack
