@@ -392,6 +392,15 @@ main() {
     log "Extracted git commit sha1: ${commit_sha1}" "VERBOSE"
   fi
 
+  # If a target container is provided, check if it exists
+  if [ -n "${target_container}" ]; then
+    log "Checking if target container '${target_container}' exists" "VERBOSE"
+    if ! docker ps -a --format '{{.Names}}' | grep -q "^${target_container}$"; then
+      echo "Error: Target container '${target_container}' not found"
+      exit 1
+    fi
+  fi
+
   # If a target container is provided, extract the target image, tag and sha256 (if missing)
   if [ -n "${target_container}" ]; then
     log "Extracting target image, tag, and sha256 from container '${target_container}'" "DEBUG"
