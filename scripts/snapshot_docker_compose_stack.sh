@@ -25,7 +25,7 @@ Snapshot bind mount volumes of a Docker Compose stack using ZFS.
 
 Options:
   -d, --directory <directory>    Directory containing the Docker Compose stacks (required).
-  -n, --name <name>              Name of the Docker Compose stack to snapshot (required).
+  -n, --name <name>              Name of the Docker Compose stack to snapshot. If not provided, the directory's name is used and the directory gets set it to its parent.
   -i, --target-image <image>     Image that caused the snapshot.
   -t, --target-tag <tag>         Tag that caused the snapshot.
   -s, --target-sha256 <sha256>   SHA256 that caused the snapshot.
@@ -339,16 +339,17 @@ main() {
     exit 1
   fi
 
-  # Check if the stack name is provided
-  if [ -z "${stack_name}" ]; then
-    log "Stack name not provided." "ERROR"
-    usage
-    exit 1
-  fi
-
   # If running in dry run mode, print a message
   if [ "${DRY_RUN}" -eq 1 ]; then
     log "Running in dry run mode. No changes will be made." "INFO"
+  fi
+
+  # If the stack name is not provided, set it to the directory name and set the directory to its parent
+  if [ -z "${stack_name}" ]; then
+    stack_name="$(basename "${stacks_dir}")"
+    stacks_dir="$(dirname "${stacks_dir}")"
+    log "Stack name not provided. Using directory name: '${stack_name}'" "DEBUG"
+    log "Setting stacks directory to parent directory: '${stacks_dir}'" "DEBUG"
   fi
 
   # Get the docker compose file for the given stack
