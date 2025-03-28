@@ -24,7 +24,7 @@ Usage: $(basename "${0}") [options]
 Snapshot bind mount volumes of a Docker Compose stack using ZFS.
 
 Options:
-  -d, --directory <directory>    Directory containing the Docker Compose stacks (required).
+  -d, --directory <directory>    Directory containing the Docker Compose stacks (default is the current directory).
   -n, --name <name>              Name of the Docker Compose stack to snapshot. If not provided, the directory's name is used and the directory gets set it to its parent.
   -i, --target-image <image>     Image that caused the snapshot.
   -t, --target-tag <tag>         Tag that caused the snapshot.
@@ -332,16 +332,15 @@ main() {
     shift
   done
 
-  # Check if the stacks directory is provided
-  if [ -z "${stacks_dir}" ]; then
-    log "Stacks directory not provided." "ERROR"
-    usage
-    exit 1
-  fi
-
   # If running in dry run mode, print a message
   if [ "${DRY_RUN}" -eq 1 ]; then
     log "Running in dry run mode. No changes will be made." "INFO"
+  fi
+
+  # If the stacks directory is empty, set it to the current directory
+  if [ -z "${stacks_dir}" ]; then
+    stacks_dir="$(pwd)"
+    log "Stacks directory not provided. Using current directory: '${stacks_dir}'" "DEBUG"
   fi
 
   # Get the absolute path of the stacks directory
