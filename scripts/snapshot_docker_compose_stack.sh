@@ -344,6 +344,15 @@ main() {
     log "Running in dry run mode. No changes will be made." "INFO"
   fi
 
+  # Get the absolute path of the stacks directory
+  stacks_dir="$(realpath "${stacks_dir}")"
+
+  # Check if the stacks directory exists
+  if [ ! -d "${stacks_dir}" ]; then
+    echo "Error: Stacks directory not found at '${stacks_dir}'"
+    exit 1
+  fi
+
   # If the stack name is not provided, set it to the directory name and set the directory to its parent
   if [ -z "${stack_name}" ]; then
     stack_name="$(basename "${stacks_dir}")"
