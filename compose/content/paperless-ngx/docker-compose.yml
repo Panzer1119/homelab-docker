@@ -54,7 +54,7 @@ services:
       service: logging-gelf
 
   gotenberg:
-    image: gotenberg/gotenberg:8.18@sha256:f4c19ea0ce65e7b7ec0ece865dbfc61e8be864cc54b2aba17501883ec78c92aa
+    image: gotenberg/gotenberg:8.19@sha256:c928ee7ed5215733248657001ded3070798a2971911ebbea82189759c273901a
     # The gotenberg chromium route is used to convert .eml files. We do not
     # want to allow external content like tracking pixels or even javascript.
     command:
