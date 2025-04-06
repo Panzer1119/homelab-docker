@@ -7,7 +7,12 @@ services:
     env_file:
       - hoarder.env
     volumes:
-      - /docker/data/hoarder-app/data:/data
+      - data:/data
+    labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Hoarder/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Hoarder/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Hoarder/CIFS/Password"
+      - "de.panzer1119.docker.volume.hoarder_data.cifs.share=op://Docker/Hoarder/CIFS/Share_Hoarder_Data"
     ports:
       - "3038:3000"
     restart: unless-stopped
@@ -39,3 +44,9 @@ services:
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
+
+volumes:
+  data:
+    name: hoarder_data
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
