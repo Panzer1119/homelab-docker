@@ -3,7 +3,7 @@ name: immich
 
 services:
   immich-server:
-    image: ghcr.io/immich-app/immich-server:v1.131.3
+    image: ghcr.io/immich-app/immich-server:v1.131.3@sha256:7e5b6729b12b5e5cc5d98bcc6f7c27f723fabae4ee77696855808ebd5200bbf8
     container_name: immich_server
     depends_on:
       - redis
@@ -35,7 +35,7 @@ services:
   immich-machine-learning:
     # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
     # Example tag: ${IMMICH_VERSION:-release}-cuda
-    image: ghcr.io/immich-app/immich-machine-learning:v1.131.3
+    image: ghcr.io/immich-app/immich-machine-learning:v1.131.3@sha256:d6f07b454c0ec7e4ba3a5926fff2482f8fd1a9922b489122dec33b11a4f37bdd
     container_name: immich_machine_learning
     # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml
