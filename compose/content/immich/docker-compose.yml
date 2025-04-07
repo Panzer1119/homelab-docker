@@ -14,8 +14,8 @@ services:
     env_file:
       - immich.env
     volumes:
-      - upload:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
+      - upload:/usr/src/app/upload
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Immich/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Immich/CIFS/Username"
