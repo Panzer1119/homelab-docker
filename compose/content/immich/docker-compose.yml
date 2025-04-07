@@ -16,11 +16,13 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - upload:/usr/src/app/upload
+      - nsfw:/mnt/media/nsfw:ro
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Immich/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Immich/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Immich/CIFS/Password"
       - "de.panzer1119.docker.volume.immich_upload.cifs.share=op://Docker/Immich/CIFS/Share_Upload"
+      - "de.panzer1119.docker.volume.immich_nsfw.cifs.share=op://Docker/Immich/CIFS/Share_NSFW"
     ports:
       - '2283:2283'
     healthcheck:
@@ -83,5 +85,9 @@ volumes:
   model-cache:
   upload:
     name: immich_upload
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  nsfw:
+    name: immich_nsfw
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
