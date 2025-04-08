@@ -145,7 +145,12 @@ services:
     #    environment:
     #      - INIT_COLLECTION=archivebox
     volumes:
-      - data:/archivebox:ro
+      - webarchive:/webarchive:ro
+    labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/ArchiveBox/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/ArchiveBox/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/ArchiveBox/CIFS/Password"
+      - "de.panzer1119.docker.volume.archivebox_webarchive.cifs.share=op://Docker/ArchiveBox/CIFS/Share_Webarchive"
     ports:
       - "8686:8080"
     restart: unless-stopped
@@ -188,5 +193,9 @@ services:
 volumes:
   data:
     name: archivebox_data
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  webarchive:
+    name: archivebox_webarchive
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
