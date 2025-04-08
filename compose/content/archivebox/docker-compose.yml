@@ -19,7 +19,7 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/ArchiveBox/CIFS/Password"
       - "de.panzer1119.docker.volume.archivebox_data.cifs.share=op://Docker/ArchiveBox/CIFS/Share_Data"
     ports:
-      - "8000:8000"
+      - "8024:8000"
     # For ad-blocking during archiving, uncomment this section and the pihole service below
     # networks:
     #   - dns
@@ -152,7 +152,7 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/ArchiveBox/CIFS/Password"
       - "de.panzer1119.docker.volume.archivebox_webarchive.cifs.share=op://Docker/ArchiveBox/CIFS/Share_Webarchive"
     ports:
-      - "8686:8080"
+      - "8025:8080"
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
