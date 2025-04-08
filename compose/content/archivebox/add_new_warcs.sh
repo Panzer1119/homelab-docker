@@ -7,6 +7,12 @@ IMPORT_DIR="/webarchive/import"
 # Directory where the WARC files are stored
 ARCHIVE_DIR="/archivebox/archive"
 
+# Check required commands
+if ! command -v wb-manager &> /dev/null; then
+  echo "Error: wb-manager not found in PATH"
+  exit 1
+fi
+
 echo "START $(date --iso-8601=seconds)"
 
 # Ensure required paths exist
@@ -29,7 +35,6 @@ for warc_file in "${warc_files[@]}"; do
   new_warc="${IMPORT_DIR}/${relative_path//\//_}"  # Replace '/' with '_'
 
   # Copy the WARC file to the import directory
-  cp "${warc_file}" "${new_warc}"
   if ! cp "${warc_file}" "${new_warc}" 2>/dev/null; then
     echo "Failed to copy ${warc_file} to ${new_warc}"
     continue
