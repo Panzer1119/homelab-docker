@@ -1,0 +1,84 @@
+---
+name: stash
+
+services:
+  stash:
+    image: stashapp/stash:v0.28.1
+    container_name: stash
+    hostname: stash
+    depends_on:
+      - headless-shell
+    env_file:
+      - stash.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      ## Adjust below paths (the left part) to your liking.
+      ## E.g. you can change ./config:/root/.stash to ./stash:/root/.stash
+      ## Keep configs, scrapers, and plugins here.
+      - /docker/config/stash:/root/.stash
+      ## This is where your stash's metadata lives
+      - /docker/data/stash/metadata:/metadata
+      ## Any other cache content.
+      - /docker/cache/stash:/cache
+      ## Where to store generated content (screenshots,previews,transcodes,sprites)
+      - /docker/data/stash/generated:/generated
+      #### Binary data filesystem path
+      - /docker/data/stash/binary-data:/binary-data
+
+      ## Point this at your collection.
+      - nsfw:/data/nsfw:ro
+      - nsfw_videos:/data/videos:ro
+      - nsfw_images:/data/images:ro
+      - nsfw_instaloader:/data/instagram:ro
+      - nsfw_reddit:/data/reddit:ro
+      #- secret_nsfw_instagram:/media/instagram:ro
+    labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Stash/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Stash/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Stash/CIFS/Password"
+      - "de.panzer1119.docker.volume.stash_nsfw.cifs.share=op://Docker/Stash/CIFS/Share_NSFW"
+      - "de.panzer1119.docker.volume.stash_nsfw_videos.cifs.share=op://Docker/Stash/CIFS/Share_NSFW_Videos"
+      - "de.panzer1119.docker.volume.stash_nsfw_images.cifs.share=op://Docker/Stash/CIFS/Share_NSFW_Images"
+      - "de.panzer1119.docker.volume.stash_nsfw_instaloader.cifs.share=op://Docker/Stash/CIFS/Share_NSFW_Instaloader"
+      - "de.panzer1119.docker.volume.stash_nsfw_reddit.cifs.share=op://Docker/Stash/CIFS/Share_NSFW_Reddit"
+    ## the container's port must be the same with the STASH_PORT in the environment section
+    ports:
+      - "9999:9999"
+    ## If you intend to use stash's DLNA functionality uncomment the below network mode and comment out the above ports section
+    #network_mode: host
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  headless-shell:
+    image: chromedp/headless-shell:137.0.7106.2
+    container_name: stash_headless-shell
+    ports:
+      - "9222:9222"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+volumes:
+  nsfw:
+    name: stash_nsfw
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  nsfw_videos:
+    name: stash_nsfw_videos
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  nsfw_images:
+    name: stash_nsfw_images
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  nsfw_instaloader:
+    name: stash_nsfw_instaloader
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  nsfw_reddit:
+    name: stash_nsfw_reddit
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true

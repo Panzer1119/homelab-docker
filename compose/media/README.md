@@ -16,3 +16,4 @@ This contains Docker compose projects for media services.
 - [Readarr](./readarr/README.md) #TODO
 - [Sonarr](./sonarr/README.md)
 - [SABnzbd](./sabnzbd/README.md)
+- [Stash](./stash/README.md)
