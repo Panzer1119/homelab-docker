@@ -3,7 +3,7 @@ name: archivebox
 
 services:
   archivebox:
-    image: ghcr.io/archivebox/archivebox:0.7.3
+    image: ghcr.io/archivebox/archivebox:0.7.3@sha256:fdf2936192aa1e909b0c3f286f60174efa24078555be4b6b90a07f2cef1d4909
     container_name: archivebox
     hostname: archivebox
     depends_on:
@@ -70,7 +70,7 @@ services:
   # https://github.com/ArchiveBox/ArchiveBox/wiki/Setting-up-Search
 
   sonic:
-    image: archivebox/sonic:1.4.9
+    image: archivebox/sonic:1.4.9@sha256:452064bfdab535fb8a6019937f1d753e0dfb2c94d2a87ebd166e2d556de78692
     container_name: archivebox_sonic
     env_file:
       - sonic.env
@@ -139,7 +139,7 @@ services:
   ### Example: Run PYWB in parallel and auto-import WARCs from ArchiveBox
 
   pywb:
-    image: webrecorder/pywb:2.8.3
+    image: webrecorder/pywb:2.8.3@sha256:4cbb0e6a608e7e7513f5fc7dc8dc91b7df8a32b0b48e31a49683571b98b5bc2f
     container_name: archivebox_pywb
     #    entrypoint: /bin/sh -c '(wb-manager init default || test $$? -eq 2) && wb-manager add default /archivebox/archive/*/warc/*.warc.gz; wayback;'
     #    environment:
