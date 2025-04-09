@@ -3,7 +3,7 @@ name: stash
 
 services:
   stash:
-    image: stashapp/stash:v0.28.1
+    image: stashapp/stash:v0.28.1@sha256:645f6c15b079410d50d488dbeb247c92f25534094dad4e15d886e47648b897f7
     container_name: stash
     hostname: stash
     depends_on:
@@ -52,7 +52,7 @@ services:
       service: logging-gelf
 
   headless-shell:
-    image: chromedp/headless-shell:137.0.7106.2
+    image: chromedp/headless-shell:137.0.7106.2@sha256:43db3cd8e5a75002a0494106821749cd63e5017a76669e05f17759f1f11d9c6f
     container_name: stash_headless-shell
     ports:
       - "9222:9222"
