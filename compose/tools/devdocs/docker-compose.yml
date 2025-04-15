@@ -1,0 +1,13 @@
+---
+services:
+  freecodecamp:
+    image: ghcr.io/freecodecamp/devdocs:20250401
+    container_name: devdocs
+    hostname: devdocs
+    network_mode: bridge
+    ports:
+      - "9292:9292"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
