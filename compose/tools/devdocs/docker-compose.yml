@@ -1,7 +1,7 @@
 ---
 services:
   freecodecamp:
-    image: ghcr.io/freecodecamp/devdocs:20250401
+    image: ghcr.io/freecodecamp/devdocs:20250401@sha256:d46e910eec15e6cfbacc4759ec61d07225068438bd76a5f71e54025bc515258d
     container_name: devdocs
     hostname: devdocs
     network_mode: bridge
