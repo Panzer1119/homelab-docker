@@ -1,0 +1,19 @@
+---
+services:
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.3.21
+    container_name: flaresolverr
+    hostname: flaresolverr
+    environment:
+#      - LOG_LEVEL=info
+#      - LOG_HTML=false
+#      - CAPTCHA_SOLVER=none
+      - TZ=Europe/Berlin
+#      - LANG=en_US
+    network_mode: bridge
+    ports:
+      - "8191:8191"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
