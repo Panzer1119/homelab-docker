@@ -1,8 +1,8 @@
 [Up](../README.md)
 
-# Infrastructure Docker VM
+# Infrastructure
 
-This contains Docker compose projects for infrastructure services.
+Apps that help to manage the homelab itself (deployment, sync, orchestration, etc.)
 
 ## Projects
 

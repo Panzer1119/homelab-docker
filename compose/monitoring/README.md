@@ -1,12 +1,12 @@
 [Up](../README.md)
 
-# Monitoring Docker VM
+# Monitoring
 
-This contains Docker compose projects for monitoring services.
+Tracking performance, logging, usage, health, etc.
 
 ## Projects
 
-- [Checkmk Raw](check-mk-raw/README.md)
+- [Checkmk Raw](./check-mk-raw/README.md)
 - [Graylog](./graylog/README.md)
 - [Scrutiny](./scrutiny/README.md)
 - [InfluxDB](./influxdb/README.md)

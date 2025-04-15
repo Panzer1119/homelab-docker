@@ -1,8 +1,8 @@
 [Up](../README.md)
 
-# Content Docker VM
+# Content
 
-This contains Docker compose projects for content services.
+High-volume data managers that aren't media: archives, docs, photos, web pages
 
 ## Projects
 

@@ -1,8 +1,8 @@
 [Up](../README.md)
 
-# Media Docker VM
+# Media
 
-This contains Docker compose projects for media services.
+Apps for downloading, enriching, and managing movies, shows, etc.
 
 ## Projects
 
