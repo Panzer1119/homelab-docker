@@ -18,7 +18,7 @@ services:
       service: logging-gelf
 
   postgres:
-    image: postgres:15@sha256:8f4ef1599ded16a2b0dbdaea19c4c9f1e1ba781946fcc25f05a66ea60e48cac5
+    image: postgres:15@sha256:8f6fbd24a12304d2adc332a2162ee9ff9d6044045a0b07f94d6e53e73125e11c
     env_file:
       - db.env
     volumes:
