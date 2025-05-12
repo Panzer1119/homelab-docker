@@ -1,7 +1,7 @@
 ---
 services:
   semaphore:
-    image: semaphoreui/semaphore:v2.13.15@sha256:6aab27c814b4a43c5bed554674831a5ca68e3eeb669dc027cfc1d015f16bddcc
+    image: semaphoreui/semaphore:v2.14.10@sha256:9064ecf7c1d2a316c6a93dd18ee7d15e562c9d541ed245cbd8591173dea26137
     container_name: semaphore
     hostname: semaphore
     env_file:
