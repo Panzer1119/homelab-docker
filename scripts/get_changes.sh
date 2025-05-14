@@ -188,7 +188,7 @@ compare_images() {
   local all_keys
   all_keys=("${!old_images[@]}" "${!new_images[@]}")
   local unique_keys
-  unique_keys=($(printf "%s\n" "${all_keys[@]}" | sort -u))
+  mapfile -t unique_keys < <(printf "%s\n" "${all_keys[@]}" | sort -u)
 
   local containers_json="[]"
   for container in "${unique_keys[@]}"; do
