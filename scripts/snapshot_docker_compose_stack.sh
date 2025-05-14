@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Constants
+KEY_SECTION_NAME="de.panzer1119.docker:section_name"
 KEY_STACK_NAME="de.panzer1119.docker:stack_name"
 KEY_TARGET_IMAGE="de.panzer1119.docker:target_image"
 KEY_TARGET_TAG="de.panzer1119.docker:target_tag"
@@ -25,6 +26,7 @@ Snapshot bind mount volumes of a Docker Compose stack using ZFS.
 
 Options:
   -d, --directory <directory>    Directory containing the Docker Compose stacks (default is the current directory).
+  -S, --section <section>        Section of Docker Compose stack. If not provided, the directory's name is used and the directory gets set it to its parent.
   -n, --name <name>              Name of the Docker Compose stack to snapshot. If not provided, the directory's name is used and the directory gets set it to its parent.
   -i, --target-image <image>     Image that caused the snapshot.
   -t, --target-tag <tag>         Tag that caused the snapshot.
@@ -106,9 +108,10 @@ log() {
 
 # Get the docker compose file for the given stack
 get_docker_compose_file() {
-  local stacks_dir="${1}"
-  local stack_name="${2}"
-  echo "${stacks_dir}/${stack_name}/docker-compose.yml"
+  local directory="${1}"
+  local section_name="${2}"
+  local stack_name="${3}"
+  echo "${directory}/${section_name}/${stack_name}/docker-compose.yml"
 }
 
 # Generate the snapshot name for the given stack
@@ -126,19 +129,21 @@ generate_snapshot_name() {
 
 # Snapshot the given volume
 snapshot_volume() {
-  local stack_name="${1}"
-  local target_image="${2}"
-  local target_tag="${3}"
-  local target_sha256="${4}"
-  local commit_sha1="${5}"
-  local volume_dataset="${6}"
-  local snapshot_name="${7}"
+  local section_name="${1}"
+  local stack_name="${2}"
+  local target_image="${3}"
+  local target_tag="${4}"
+  local target_sha256="${5}"
+  local commit_sha1="${6}"
+  local volume_dataset="${7}"
+  local snapshot_name="${8}"
 
   local snapshot="${volume_dataset}@${snapshot_name}"
 
   # Check if the dry run flag is set
   if [ "${DRY_RUN}" -eq 1 ]; then
     log "[DRY RUN] Would take snapshot '${snapshot}' of zfs dataset '${volume_dataset}'" "INFO"
+    log "[DRY RUN] Would set property '${KEY_SECTION_NAME}' to '${section_name}' for snapshot '${snapshot}'" "DEBUG"
     log "[DRY RUN] Would set property '${KEY_STACK_NAME}' to '${stack_name}' for snapshot '${snapshot}'" "DEBUG"
     [[ -n "${target_image}" ]] && log "[DRY RUN] Would set property '${KEY_TARGET_IMAGE}' to '${target_image}' for snapshot '${snapshot}'" "DEBUG"
     [[ -n "${target_tag}" ]] && log "[DRY RUN] Would set property '${KEY_TARGET_TAG}' to '${target_tag}' for snapshot '${snapshot}'" "DEBUG"
@@ -152,6 +157,8 @@ snapshot_volume() {
   zfs snapshot "${snapshot}"
 
   # Set the snapshot properties
+  log "Setting property '${KEY_SECTION_NAME}' to '${section_name}' for snapshot '${snapshot}'" "DEBUG"
+  zfs set "${KEY_SECTION_NAME}=${section_name}" "${snapshot}"
   log "Setting property '${KEY_STACK_NAME}' to '${stack_name}' for snapshot '${snapshot}'" "DEBUG"
   zfs set "${KEY_STACK_NAME}=${stack_name}" "${snapshot}"
   [[ -n "${target_image}" ]] && log "Setting property '${KEY_TARGET_IMAGE}' to '${target_image}' for snapshot '${snapshot}'" "DEBUG"
@@ -207,15 +214,16 @@ extract_volume_datasets() {
 
 # Snapshot the volumes of the given stack
 snapshot_volumes() {
-  local stacks_dir="${1}"
-  local stack_name="${2}"
-  local target_image="${3}"
-  local target_tag="${4}"
-  local target_sha256="${5}"
-  local commit_sha1="${6}"
-  local snapshot_name="${7}"
+  local directory="${1}"
+  local section_name="${2}"
+  local stack_name="${3}"
+  local target_image="${4}"
+  local target_tag="${5}"
+  local target_sha256="${6}"
+  local commit_sha1="${7}"
+  local snapshot_name="${8}"
   # Take the rest of the arguments as base datasets
-  local base_dataset_array=("${@:8}")
+  local base_dataset_array=("${@:9}")
 
   local docker_compose_file
   local docker_compose_json
@@ -223,7 +231,7 @@ snapshot_volumes() {
   local volume_dataset_array
 
   # Get the docker compose file for the given stack
-  docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
+  docker_compose_file="$(get_docker_compose_file "${directory}" "${section_name}" "${stack_name}")"
   log "Using docker compose file: '${docker_compose_file}'" "DEBUG"
 
   # Parse the docker compose file as JSON
@@ -247,7 +255,7 @@ snapshot_volumes() {
       log "Skipping volume '${volume_dataset}' as it does not start with any of the base datasets" "VERBOSE"
       continue
     fi
-    snapshot_volume "${stack_name}" "${target_image}" "${target_tag}" "${target_sha256}" "${commit_sha1}" "${volume_dataset}" "${snapshot_name}"
+    snapshot_volume "${section_name}" "${stack_name}" "${target_image}" "${target_tag}" "${target_sha256}" "${commit_sha1}" "${volume_dataset}" "${snapshot_name}"
   done
 }
 
@@ -256,7 +264,8 @@ main() {
   # Check requirements
   check_requirements
 
-  local stacks_dir
+  local directory
+  local section_name
   local stack_name
   local target_image
   local target_tag
@@ -273,7 +282,11 @@ main() {
   while [[ $# -gt 0 ]]; do
     case "${1}" in
       -d|--directory)
-        stacks_dir="${2}"
+        directory="${2}"
+        shift
+        ;;
+      -S|--section)
+        section_name="${2}"
         shift
         ;;
       -n|--name)
@@ -337,27 +350,35 @@ main() {
     log "Running in dry run mode. No changes will be made." "INFO"
   fi
 
-  # If the stacks directory is empty, set it to the current directory
-  if [ -z "${stacks_dir}" ]; then
-    stacks_dir="$(pwd)"
-    log "Stacks directory not provided. Using current directory: '${stacks_dir}'" "DEBUG"
+  # If the directory is empty, set it to the current directory
+  if [ -z "${directory}" ]; then
+    directory="$(pwd)"
+    log "Directory not provided. Using current directory: '${directory}'" "DEBUG"
   fi
 
-  # Get the absolute path of the stacks directory
-  stacks_dir="$(realpath "${stacks_dir}")"
+  # Get the absolute path of the directory
+  directory="$(realpath "${directory}")"
 
-  # Check if the stacks directory exists
-  if [ ! -d "${stacks_dir}" ]; then
-    echo "Error: Stacks directory not found at '${stacks_dir}'"
+  # Check if the directory exists
+  if [ ! -d "${directory}" ]; then
+    echo "Error: Directory not found at '${directory}'"
     exit 1
   fi
 
   # If the stack name is not provided, set it to the directory name and set the directory to its parent
   if [ -z "${stack_name}" ]; then
-    stack_name="$(basename "${stacks_dir}")"
-    stacks_dir="$(dirname "${stacks_dir}")"
+    stack_name="$(basename "${directory}")"
+    directory="$(dirname "${directory}")"
     log "Stack name not provided. Using directory name: '${stack_name}'" "DEBUG"
-    log "Setting stacks directory to parent directory: '${stacks_dir}'" "DEBUG"
+    log "Setting directory to parent directory: '${directory}'" "DEBUG"
+  fi
+
+  # If the section name is not provided, set it to the directory name and set the directory to its parent
+  if [ -z "${section_name}" ]; then
+    section_name="$(basename "${directory}")"
+    directory="$(dirname "${directory}")"
+    log "Section name not provided. Using directory name: '${section_name}'" "DEBUG"
+    log "Setting directory to parent directory: '${directory}'" "DEBUG"
   fi
 
   # If the target container is provided, check if it is the placeholder '-'
@@ -367,7 +388,7 @@ main() {
   fi
 
   # Get the docker compose file for the given stack
-  docker_compose_file="$(get_docker_compose_file "${stacks_dir}" "${stack_name}")"
+  docker_compose_file="$(get_docker_compose_file "${directory}" "${section_name}" "${stack_name}")"
 
   # Check if the Docker Compose file exists
   if [ ! -f "${docker_compose_file}" ]; then
@@ -473,7 +494,8 @@ main() {
   # If running in verbose mode, print the options
   if [ "${VERBOSE}" -eq 1 ]; then
     log "Options:" "VERBOSE"
-    log "Stacks directory: ${stacks_dir}" "VERBOSE"
+    log "Directory: ${directory}" "VERBOSE"
+    log "Section name: ${section_name}" "VERBOSE"
     log "Stack name: ${stack_name}" "VERBOSE"
     log "Target image: ${target_image}" "VERBOSE"
     log "Target tag: ${target_tag}" "VERBOSE"
@@ -523,7 +545,7 @@ main() {
   log "Using snapshot name: '${snapshot_name}'" "DEBUG"
 
   # Snapshot the volumes of the stack
-  snapshot_volumes "${stacks_dir}" "${stack_name}" "${target_image}" "${target_tag}" "${target_sha256}" "${commit_sha1}" "${snapshot_name}" "${base_dataset_array[@]}"
+  snapshot_volumes "${directory}" "${section_name}" "${stack_name}" "${target_image}" "${target_tag}" "${target_sha256}" "${commit_sha1}" "${snapshot_name}" "${base_dataset_array[@]}"
 
   # Start the stack if the up-after flag is set (if not in dry run mode)
   if [ "${UP_AFTER}" -eq 1 ]; then
