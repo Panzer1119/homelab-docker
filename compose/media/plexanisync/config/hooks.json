@@ -1,0 +1,29 @@
+[
+    {
+        "id": "plexanisync",
+        "execute-command": "docker",
+        "command-working-directory": "/usr/bin",
+        "pass-arguments-to-command": [
+            {
+                "source": "string",
+                "name": "exec"
+            },
+            {
+                "source": "string",
+                "name": "plexanisync"
+            },
+            {
+                "source": "string",
+                "name": "python"
+            },
+            {
+                "source": "string",
+                "name": "TautulliSyncHelper.py"
+            },
+            {
+                "source": "payload",
+                "name": "show_name"
+            }
+        ]
+    }
+]

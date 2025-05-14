@@ -9,6 +9,7 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "${PWD}/config/custom_mappings.yaml:/plexanisync/custom_mappings.yaml" #FIXME "PWD" might not work in all environments
+      - "${PWD}/config/TautulliSyncHelper.py:/plexanisync/TautulliSyncHelper.py" #FIXME "PWD" might not work in all environments
     network_mode: bridge
     restart: unless-stopped
     extends:
