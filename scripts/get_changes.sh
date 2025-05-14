@@ -86,6 +86,7 @@ process_project_file_change() {
   local CHANGE_TYPE
   local OLD_CONTENT="" NEW_CONTENT=""
 
+  # shellcheck disable=SC2034
   declare -A OLD_IMAGES NEW_IMAGES
 
   case "${STATUS}" in
@@ -134,6 +135,7 @@ extract_images_from_compose() {
       cname="${project}-${name}-1"
     fi
 
+    # shellcheck disable=SC2034
     ref["${cname}"]="${image}"
   done
 }
@@ -153,14 +155,17 @@ parse_image() {
   out_tag=""
   out_sha=""
 
+  # shellcheck disable=SC2034
   [[ "${image_str}" == *"@"* ]] && out_sha="${image_str##*@}"
   local no_sha="${image_str%%@*}"
 
+  # shellcheck disable=SC2034
   [[ "${no_sha}" == *":"* ]] && out_tag="${no_sha##*:}" || out_tag=""
   local no_tag="${no_sha%%:*}"
 
   IFS='/' read -r -a parts <<< "${no_tag}"
 
+  # shellcheck disable=SC2034
   if [ "${#parts[@]}" -eq 3 ]; then
     out_repo="${parts[0]}"
     out_user="${parts[1]}"
