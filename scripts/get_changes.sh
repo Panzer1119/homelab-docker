@@ -109,7 +109,7 @@ process_project_file_change() {
     extract_images_from_compose "${NEW_CONTENT}" "${PROJECT}" NEW_IMAGES
   fi
 
-  compare_images "${PROJECT}" "${CHANGE_TYPE}" OLD_IMAGES NEW_IMAGES
+  compare_images "${SECTION}" "${PROJECT}" "${CHANGE_TYPE}" OLD_IMAGES NEW_IMAGES
 }
 
 extract_images_from_compose() {
@@ -172,10 +172,11 @@ parse_image() {
 }
 
 compare_images() {
-  local project=${1}
-  local change_type=${2}
-  declare -n old_images=${3}
-  declare -n new_images=${4}
+  local section=${1}
+  local project=${2}
+  local change_type=${3}
+  declare -n old_images=${4}
+  declare -n new_images=${5}
 
   local all_keys
   all_keys=("${!old_images[@]}" "${!new_images[@]}")
@@ -222,11 +223,12 @@ compare_images() {
   [ "${count}" -eq 0 ] && return
 
   jq -n \
+    --arg section "${section}" \
     --arg project "${project}" \
     --arg type "${change_type}" \
     --argjson count "${count}" \
     --argjson containers "${containers_json}" \
-    '{project: $project, change_type: $type, changed_images: $count, containers: $containers}'
+    '{section: $section, project: $project, change_type: $type, changed_images: $count, containers: $containers}'
 }
 
 main
