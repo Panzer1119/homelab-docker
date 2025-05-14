@@ -11,6 +11,9 @@ BRANCH="${BRANCH:-main}"
 command -v yq >/dev/null || { echo "yq is required but not installed." >&2; exit 1; }
 command -v jq >/dev/null || { echo "jq is required but not installed." >&2; exit 1; }
 
+#TODO How do we handle different containers in the same stack that all gets the same update (like Radarr and Sonarr)?
+# Should it create multiple ZFS Snapshots that contain identical data?
+
 main() {
   if [ ! -d "${REPO_DIR}/.git" ]; then
     echo "Not a git repository: ${REPO_DIR}" >&2
