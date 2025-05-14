@@ -79,8 +79,10 @@ process_project_file_change() {
   local STATUS=${2}
   local FILEPATH=${3}
 
-  local SECTION=$(echo "${FILEPATH}" | cut -d'/' -f2)
-  local PROJECT=$(echo "${FILEPATH}" | cut -d'/' -f3)
+  local SECTION
+  SECTION=$(echo "${FILEPATH}" | cut -d'/' -f2)
+  local PROJECT
+  PROJECT=$(echo "${FILEPATH}" | cut -d'/' -f3)
   local CHANGE_TYPE
   local OLD_CONTENT="" NEW_CONTENT=""
 
