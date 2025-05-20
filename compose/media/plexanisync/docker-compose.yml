@@ -1,7 +1,7 @@
 ---
 services:
   plexanisync:
-    image: ghcr.io/rickdb/plexanisync:1.4@sha256:c766bbda61d2942de133d6b34fe2e11c99caf739ab911925a3bdf3ee0056c917
+    image: ghcr.io/rickdb/plexanisync:1.4@sha256:f2868085ece87af82867b708c20206626794d559ca6f7e592a36924d4b07fd82
     container_name: plexanisync
     hostname: plexanisync
     env_file:
