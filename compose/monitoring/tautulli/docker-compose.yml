@@ -1,7 +1,7 @@
 ---
 services:
   tautulli:
-    image: ghcr.io/linuxserver/tautulli:version-v2.15.2@sha256:8b550f3f2615318546efedd6e850f1549551be9d4cb540e4c3ac664200c03bf7
+    image: ghcr.io/linuxserver/tautulli:version-v2.15.2@sha256:1bb2b36757c4ee8057e585a2adbb730f0bc6cc04b05ce6cc035ca39135efb88a
     container_name: tautulli
     hostname: tautulli
     environment:
