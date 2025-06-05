@@ -404,7 +404,7 @@ main() {
 
   # If the base datasets are empty, use the default base datasets
   if [ "${#base_dataset_array[@]}" -eq 0 ]; then
-    base_dataset_array=("docker/config" "docker/data")
+    base_dataset_array=("docker/config" "docker/data" "docker/volumes/config" "docker/volumes/data")
   fi
 
   # If the git commit sha1 is empty, get the current git commit sha1
