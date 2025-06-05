@@ -1,7 +1,7 @@
 ---
 services:
   webserver:
-    image: ghcr.io/paperless-ngx/paperless-ngx:2.15.3@sha256:39b337e73c978238f0b529baf42f1b59b65d17eed35cd61bc1ccbbf779b5d58b
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.16.2@sha256:2096725a544b81d07d35ac123aca079bcb859e03c73d03acb0105dd2629b3dea
     container_name: paperless-ngx
     hostname: paperless-ngx
     depends_on:
