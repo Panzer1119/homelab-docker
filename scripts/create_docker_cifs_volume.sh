@@ -64,7 +64,7 @@ fi
 
 # Build Docker volume create command
 #TODO Add option nobrl?
-DOCKER_CMD="docker volume create --driver local --name '${VOLUME_NAME}' --opt type=cifs --opt 'device=//${ADDRESS}/${SHARE_NAME}' --opt 'o=addr=${ADDRESS},username=${USERNAME},password=${PASSWORD},noperm,file_mode=0777,dir_mode=0777,vers=${SMB_VERSION}'"
+DOCKER_CMD="docker volume create --driver local --name '${VOLUME_NAME}' --opt type=cifs --opt 'device=//${ADDRESS}/${SHARE_NAME}' --opt 'o=addr=${ADDRESS},username=${USERNAME},password=${PASSWORD},noperm,file_mode=0777,dir_mode=0777,vers=${SMB_VERSION}"
 
 # Add optional parameters if provided
 if [[ -n ${USER_ID} ]]; then
@@ -74,6 +74,9 @@ fi
 if [[ -n ${GROUP_ID} ]]; then
   DOCKER_CMD="${DOCKER_CMD},gid=${GROUP_ID}"
 fi
+
+# Close the options string
+DOCKER_CMD="${DOCKER_CMD}'"
 
 # If quiet is disabled, display the message
 if [[ ${QUIET} -eq 0 ]]; then
