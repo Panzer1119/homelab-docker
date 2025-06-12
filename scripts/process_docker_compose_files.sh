@@ -181,6 +181,16 @@ create_rclone_volume() {
     return
   fi
 
+  # If a value is null, set it to empty
+  [ "${type}" == "null" ] && type=""
+  [ "${host}" == "null" ] && host=""
+  [ "${port}" == "null" ] && port=""
+  [ "${path}" == "null" ] && path=""
+  [ "${username}" == "null" ] && username=""
+  [ "${password}" == "null" ] && password=""
+  [ "${ssh_key}" == "null" ] && ssh_key=""
+  [ "${ssh_key_file_ref}" == "null" ] && ssh_key_file_ref=""
+
   # Check each required Rclone value
   check_value "${type}" "Rclone Type"
   check_value "${host}" "Rclone Host"
@@ -207,6 +217,7 @@ create_rclone_volume() {
   if [ -n "${ssh_key}" ]; then
     # Create a temporary file
     ssh_key_file=$(mktemp "/tmp/rclone_ssh_key_${volume_name}_XXXXXX")
+    [ "${VERBOSE}" -eq 1 ] && echo "Writing SSH key to temporary file '${ssh_key_file}'"
     # Write the SSH key to the temporary file
     echo "${ssh_key}" > "${ssh_key_file}"
     # Set the permissions of the SSH key file
@@ -218,6 +229,7 @@ create_rclone_volume() {
   if [ -n "${ssh_key_file_ref}" ]; then
     # Create a temporary file
     ssh_key_file=$(mktemp "/tmp/rclone_ssh_key_file_${volume_name}_XXXXXX")
+    [ "${VERBOSE}" -eq 1 ] && echo "Reading SSH key file from reference '${ssh_key_file_ref}' into temporary file '${ssh_key_file}'"
     # Read the SSH key file from the reference
     if ! op read "${ssh_key_file_ref}" > "${ssh_key_file}"; then
       echo "Error: Failed to read SSH key file from reference '${ssh_key_file_ref}'"
@@ -251,6 +263,7 @@ create_rclone_volume() {
   if ! "${command[@]}"; then
     # Delete the temporary SSH key file if it was created
     if [ -n "${ssh_key_file}" ]; then
+      [ "${VERBOSE}" -eq 1 ] && echo "Deleting temporary SSH key file '${ssh_key_file}'"
       rm -f "${ssh_key_file}"
     fi
     exit 1
@@ -258,6 +271,7 @@ create_rclone_volume() {
 
   # Delete the temporary SSH key file if it was created
   if [ -n "${ssh_key_file}" ]; then
+    [ "${VERBOSE}" -eq 1 ] && echo "Deleting temporary SSH key file '${ssh_key_file}'"
     rm -f "${ssh_key_file}"
   fi
 }
