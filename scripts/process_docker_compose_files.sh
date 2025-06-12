@@ -156,15 +156,16 @@ create_rclone_volume() {
   local volume_name="${1}"
   local volume_dictionary="${2}"
 
-  local type host port path username password ssh_key_file_ref ssh_key_file
+  local type host port path username password ssh_key ssh_key_file_ref ssh_key_file
 
-  # Get the type, host, port, path, username, password, and ssh_key_file ref from the volume dictionaries
+  # Get the type, host, port, path, username, password, ssh_key, and ssh_key_file ref from the volume dictionaries
   type=$(echo "${volume_dictionary}" | jq -r ".type")
   host=$(echo "${volume_dictionary}" | jq -r ".host")
   port=$(echo "${volume_dictionary}" | jq -r ".port")
   path=$(echo "${volume_dictionary}" | jq -r ".path")
   username=$(echo "${volume_dictionary}" | jq -r ".username")
   password=$(echo "${volume_dictionary}" | jq -r ".password")
+  ssh_key=$(echo "${volume_dictionary}" | jq -r ".ssh_key")
   ssh_key_file_ref=$(echo "${volume_dictionary}" | jq -r ".ssh_key_file")
   ssh_key_file=""
 
@@ -175,6 +176,7 @@ create_rclone_volume() {
      { [ -z "${path}" ] || [ "${path}" == "null" ]; } &&
      { [ -z "${username}" ] || [ "${username}" == "null" ]; } &&
      { [ -z "${password}" ] || [ "${password}" == "null" ]; } &&
+     { [ -z "${ssh_key}" ] || [ "${ssh_key}" == "null" ]; } &&
      { [ -z "${ssh_key_file_ref}" ] || [ "${ssh_key_file_ref}" == "null" ]; }; then
     return
   fi
@@ -201,6 +203,17 @@ create_rclone_volume() {
   # Add the password if provided
   [ -n "${password}" ] && command+=("-P" "${password}")
 
+  # Add the SSH key if provided
+  if [ -n "${ssh_key}" ]; then
+    # Create a temporary file
+    ssh_key_file=$(mktemp "/tmp/rclone_ssh_key_${volume_name}_XXXXXX")
+    # Write the SSH key to the temporary file
+    echo "${ssh_key}" > "${ssh_key_file}"
+    # Set the permissions of the SSH key file
+    chmod 600 "${ssh_key_file}"
+    command+=("-S" "${ssh_key_file}")
+  fi
+
   # Add the SSH key file if provided
   if [ -n "${ssh_key_file_ref}" ]; then
     # Create a temporary file
@@ -210,6 +223,8 @@ create_rclone_volume() {
       echo "Error: Failed to read SSH key file from reference '${ssh_key_file_ref}'"
       exit 1
     fi
+    # Set the permissions of the SSH key file
+    chmod 600 "${ssh_key_file}"
     command+=("-S" "${ssh_key_file}")
   fi
 
@@ -373,16 +388,16 @@ process_docker_compose() {
       [ -z "${volume_label_value}" ] || [ "${volume_label_value}" == "null" ] && continue
 
       # Extract the volume name from the volume label key (the first part after "de.panzer1119.docker.volume.")
-      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password)$/\1/')
+      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password|ssh_key|ssh_key_file)$/\1/')
 
       # If the volume name is empty or null, skip
       [ -z "${volume_name}" ] || [ "${volume_name}" == "null" ] && continue
 
       # Extract the driver from the volume label key (the second part after "de.panzer1119.docker.volume.")
-      volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password)$/\2/')
+      volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password|ssh_key|ssh_key_file)$/\2/')
 
       # Extract the key from the volume label key (the third part after "de.panzer1119.docker.volume.")
-      key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password)$/\3/')
+      key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password|ssh_key|ssh_key_file)$/\3/')
 
       # If the key is empty or null, skip
       [ -z "${key}" ] || [ "${key}" == "null" ] && continue
