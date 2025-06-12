@@ -156,15 +156,17 @@ create_rclone_volume() {
   local volume_name="${1}"
   local volume_dictionary="${2}"
 
-  local type host port path username password
+  local type host port path username password ssh_key_file_ref ssh_key_file
 
-  # Get the type, host, port, path, username, and password from the volume dictionaries
+  # Get the type, host, port, path, username, password, and ssh_key_file ref from the volume dictionaries
   type=$(echo "${volume_dictionary}" | jq -r ".type")
   host=$(echo "${volume_dictionary}" | jq -r ".host")
   port=$(echo "${volume_dictionary}" | jq -r ".port")
   path=$(echo "${volume_dictionary}" | jq -r ".path")
   username=$(echo "${volume_dictionary}" | jq -r ".username")
   password=$(echo "${volume_dictionary}" | jq -r ".password")
+  ssh_key_file_ref=$(echo "${volume_dictionary}" | jq -r ".ssh_key_file")
+  ssh_key_file=""
 
   # If all values are empty or null, skip
   if { [ -z "${type}" ] || [ "${type}" == "null" ]; } &&
@@ -172,7 +174,8 @@ create_rclone_volume() {
      { [ -z "${port}" ] || [ "${port}" == "null" ]; } &&
      { [ -z "${path}" ] || [ "${path}" == "null" ]; } &&
      { [ -z "${username}" ] || [ "${username}" == "null" ]; } &&
-     { [ -z "${password}" ] || [ "${password}" == "null" ]; }; then
+     { [ -z "${password}" ] || [ "${password}" == "null" ]; } &&
+     { [ -z "${ssh_key_file_ref}" ] || [ "${ssh_key_file_ref}" == "null" ]; }; then
     return
   fi
 
@@ -198,6 +201,18 @@ create_rclone_volume() {
   # Add the password if provided
   [ -n "${password}" ] && command+=("-P" "${password}")
 
+  # Add the SSH key file if provided
+  if [ -n "${ssh_key_file_ref}" ]; then
+    # Create a temporary file
+    ssh_key_file=$(mktemp "/tmp/rclone_ssh_key_file_${volume_name}_XXXXXX")
+    # Read the SSH key file from the reference
+    if ! op read "${ssh_key_file_ref}" > "${ssh_key_file}"; then
+      echo "Error: Failed to read SSH key file from reference '${ssh_key_file_ref}'"
+      exit 1
+    fi
+    command+=("-S" "${ssh_key_file}")
+  fi
+
   # Add verbose option if enabled
   [ "${VERBOSE}" -eq 1 ] && command+=("-v")
 
@@ -219,7 +234,16 @@ create_rclone_volume() {
 
   # Create the Rclone volume
   if ! "${command[@]}"; then
+    # Delete the temporary SSH key file if it was created
+    if [ -n "${ssh_key_file}" ]; then
+      rm -f "${ssh_key_file}"
+    fi
     exit 1
+  fi
+
+  # Delete the temporary SSH key file if it was created
+  if [ -n "${ssh_key_file}" ]; then
+    rm -f "${ssh_key_file}"
   fi
 }
 
