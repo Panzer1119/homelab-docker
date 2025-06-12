@@ -168,7 +168,7 @@ if [[ -n "${RCLONE_SSH_KEY_FILE}" ]]; then
 fi
 
 # Build Docker volume create command
-DOCKER_CMD="docker volume create --driver rclone --name '${DOCKER_VOLUME_NAME}'"
+DOCKER_CMD="docker volume create --driver rclone --name '${DOCKER_VOLUME_NAME}' --opt 'allow-other=true'"
 
 # Add the type option if provided
 if [[ -n ${RCLONE_TYPE} ]]; then
