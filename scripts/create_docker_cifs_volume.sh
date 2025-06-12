@@ -103,5 +103,10 @@ eval "${DOCKER_CMD}"
 
 # Display success message if not in quiet mode
 if [[ ${QUIET} -eq 0 ]]; then
+  # Check if the volume was created successfully
+  if ! docker volume inspect "${VOLUME_NAME}" &> /dev/null; then
+    echo "Error: Failed to create Docker Rclone volume '${VOLUME_NAME}'."
+    exit 1
+  fi
   echo "Docker CIFS volume '${VOLUME_NAME}' created successfully."
 fi
