@@ -199,7 +199,7 @@ create_rclone_volume() {
   [ "${QUIET}" -eq 0 ] && echo "Found Rclone volume '${volume_name}' in '${file}'"
 
   # Build the command to create the Rclone volume
-  local command=("bash" "${CREATE_RCLONE_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-t" "${type}" "-h" "${host}")
+  local command=("bash" "${CREATE_RCLONE_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-t" "${type}" "-h" "${host}" "-e")
 
   # Add the port if provided
   [ -n "${port}" ] && command+=("-p" "${port}")
