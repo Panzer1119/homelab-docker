@@ -29,7 +29,7 @@ Usage: ${0} [-v] [-q] [-n] [-D] <directory>
   -v: Optional. Verbose mode
   -q: Optional. Quiet mode
   -n: Optional. Dry run
-  -D: Optional. Delete the CIFS/SSHFS volumes (only requires -d)
+  -D: Optional. Delete the existing volumes (only requires -d)
 EOF
 #TODO WTF should this mean? -d is not even an option
   exit 1
