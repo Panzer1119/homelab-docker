@@ -12,14 +12,18 @@ services:
       - backup:/config/backups
       - /docker/cache/tautulli:/cache
       - /docker/config/tautulli:/config
-      #TODO Somehow get the logs from the plex container?
-      #- /docker/data/tautulli/plex_logs:/logs:ro
-      #- /docker/data/tautulli/plex_logs:/plex_logs:ro
+      - plex_logs:/logs:ro
+      - plex_logs:/plex_logs:ro
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Tautulli/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Tautulli/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/Tautulli/CIFS/Password"
       - "de.panzer1119.docker.volume.tautulli_backup.cifs.share=op://Docker/Tautulli/CIFS/Share_Backup"
+      - "de.panzer1119.docker.volume.tautulli_plex_logs.rclone.type=sftp"
+      - "de.panzer1119.docker.volume.tautulli_plex_logs.rclone.host=op://Docker/Tautulli/SFTP/Host-Plex"
+      - "de.panzer1119.docker.volume.tautulli_plex_logs.rclone.username=op://Docker/Tautulli/SFTP/Username"
+      - "de.panzer1119.docker.volume.tautulli_plex_logs.rclone.ssh_key=op://Docker/Tautulli/SFTP/plex-ct_tautulli.key"
+      - "de.panzer1119.docker.volume.tautulli_plex_logs.rclone.path=op://Docker/Tautulli/SFTP/Share_Plex_Logs"
     network_mode: bridge
     ports:
       - "8181:8181"
@@ -32,4 +36,8 @@ volumes:
   backup:
     name: tautulli_backup
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  plex_logs:
+    name: tautulli_plex_logs
+    # Because this is a rclone volume, and it needs credentials, it is created outside of this file
     external: true
