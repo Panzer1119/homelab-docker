@@ -98,7 +98,7 @@ def generate_html(data):
                 </div>'''
 
             if containers_html:
-                project_html = f'<div class="project" data-change-type="{project["change_type"]}"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>{containers_html}</div>'
+                project_html = f'<div class="project" data-change-type="{project["change_type"]}"><strong>Section:</strong> <code>{project["section"]}</code><br><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>{containers_html}</div>'
                 project_htmls.append(project_html)
 
         if project_htmls:
