@@ -32,31 +32,38 @@ def generate_html(data):
             const selectedUpdateTypes = Array.from(document.querySelectorAll('input[name="updateType"]:checked')).map(cb => cb.value);
             const selectedChangeTypes = Array.from(document.querySelectorAll('input[name="changeType"]:checked')).map(cb => cb.value);
 
-            document.querySelectorAll('.commit').forEach(commit => {
-                let visibleProject = false;
+            const allProjects = document.querySelectorAll('.project');
+            const allContainers = document.querySelectorAll('.container');
+            const allCommits = document.querySelectorAll('.commit');
+            const allProjectDividers = document.querySelectorAll('.project-divider');
+            const allSectionDividers = document.querySelectorAll('.section-divider');
 
-                commit.querySelectorAll('.project').forEach(project => {
-                    const projectChangeType = project.getAttribute('data-change-type');
-                    const matchChange = selectedChangeTypes.includes(projectChangeType);
+            allContainers.forEach(container => {
+                const updateTypes = container.getAttribute('data-update-types').split(',');
+                const matchUpdate = selectedUpdateTypes.some(val => updateTypes.includes(val));
+                container.style.display = matchUpdate ? 'block' : 'none';
+            });
 
-                    let visibleContainer = false;
+            allProjects.forEach(project => {
+                const changeType = project.getAttribute('data-change-type');
+                const matchChange = selectedChangeTypes.includes(changeType);
+                const visibleContainers = Array.from(project.querySelectorAll('.container')).some(c => c.style.display !== 'none');
+                project.style.display = matchChange && visibleContainers ? 'block' : 'none';
+            });
 
-                    if (matchChange) {
-                        project.querySelectorAll('.container').forEach(container => {
-                            const updateTypes = container.getAttribute('data-update-types').split(',');
-                            const matchUpdate = selectedUpdateTypes.some(val => updateTypes.includes(val));
+            allCommits.forEach(commit => {
+                const visibleProjects = Array.from(commit.querySelectorAll('.project')).some(p => p.style.display !== 'none');
+                commit.style.display = visibleProjects ? 'block' : 'none';
+            });
 
-                            const visible = matchUpdate;
-                            container.style.display = visible ? 'block' : 'none';
-                            if (visible) visibleContainer = true;
-                        });
-                    }
+            allProjectDividers.forEach(divider => {
+                const visibleProjects = Array.from(divider.querySelectorAll('.project')).some(p => p.style.display !== 'none');
+                divider.style.display = visibleProjects ? 'block' : 'none';
+            });
 
-                    project.style.display = (matchChange && visibleContainer) ? 'block' : 'none';
-                    if (matchChange && visibleContainer) visibleProject = true;
-                });
-
-                commit.style.display = visibleProject ? 'block' : 'none';
+            allSectionDividers.forEach(divider => {
+                const visibleProjects = Array.from(divider.querySelectorAll('.project')).some(p => p.style.display !== 'none');
+                divider.style.display = visibleProjects ? 'block' : 'none';
             });
         }
 
@@ -64,6 +71,7 @@ def generate_html(data):
             const mode = document.getElementById('viewMode').value;
             document.getElementById('commitView').style.display = mode === 'commitView' ? 'block' : 'none';
             document.getElementById('sectionView').style.display = mode === 'sectionView' ? 'block' : 'none';
+            applyFilters();
         }
 
         function copyToClipboard(text) {
