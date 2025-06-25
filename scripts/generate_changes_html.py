@@ -24,6 +24,8 @@ def generate_html(data):
         .created { color: green; font-weight: bold; }
         .updated { color: blue; font-weight: bold; }
         .deleted { color: red; font-weight: bold; }
+        .section-divider { border-top: 2px solid #000; margin-top: 30px; padding-top: 10px; }
+        .project-divider { border-left: 4px solid #ccc; margin-left: 10px; padding-left: 10px; margin-bottom: 20px; }
     </style>
     <script>
         function applyFilters() {
@@ -134,14 +136,13 @@ def generate_html(data):
             })
 
     for section in sorted(section_map.keys()):
-        section_html += f'<h2>Section: <code>{section}</code></h2>'
-        # Group by project name within section
+        section_html += f'<div class="section-divider"><h2>Section: <code>{section}</code></h2>'
         project_groups = defaultdict(list)
         for item in section_map[section]:
             project_groups[item['project']['project']].append(item)
 
         for project_name in sorted(project_groups.keys()):
-            section_html += f'<h3>Project: <code>{project_name}</code></h3>'
+            section_html += f'<div class="project-divider"><h3>Project: <code>{project_name}</code></h3>'
             for item in project_groups[project_name]:
                 project = item['project']
                 containers_html = ''
@@ -159,6 +160,9 @@ def generate_html(data):
                         <strong>Change Type:</strong> <span class="{project['change_type']}">{project['change_type']}</span>
                         {containers_html}
                     </div>'''
+            section_html += '</div>'
+        section_html += '</div>'
+
     section_html += '</div>'
 
     html += section_html
