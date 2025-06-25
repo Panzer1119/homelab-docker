@@ -4,7 +4,7 @@ INPUT_JSON = 'commits.json'
 OUTPUT_HTML = 'commits.html'
 
 UPDATE_TYPES = ["repo", "user", "image", "tag", "sha"]
-CHANGE_TYPES = ["created", "updated"]
+CHANGE_TYPES = ["created", "updated", "deleted"]
 
 def generate_html(data):
     html = '''
@@ -19,6 +19,11 @@ def generate_html(data):
         .commit { margin-bottom: 20px; }
         .project { margin-left: 20px; margin-bottom: 10px; }
         .container { margin-left: 40px; }
+        .change-created { color: green; font-weight: bold; }
+        .change-updated { color: blue; font-weight: bold; }
+        .change-deleted { color: red; font-weight: bold; }
+        select[multiple] { width: 200px; height: 100px; }
+        option:checked { background-color: #007BFF; color: white; }
     </style>
     <script>
         function applyFilters() {
@@ -96,7 +101,8 @@ def generate_html(data):
                 </div>'''
 
             if containers_html:
-                project_html = f'<div class="project"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong>Change Type:</strong> {project["change_type"]}{containers_html}</div>'
+                change_class = f"change-{project['change_type']}"
+                project_html = f'<div class="project"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong class="{change_class}">Change Type:</strong> {project["change_type"]}{containers_html}</div>'
                 project_htmls.append(project_html)
 
         if project_htmls:
