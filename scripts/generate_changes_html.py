@@ -60,25 +60,22 @@ def generate_html(data):
 '''
 
     for commit_entry in data:
-        html += f'<div class="commit">
-        <strong>Commit:</strong> <code>{commit_entry["commit"]}</code>'
-    for project in commit_entry['projects']:
-        html += f'<div class="project">
-        <strong>Project:</strong> {project["project"]} <em>({project["section"]})</em><br>
-        <strong>Change Type:</strong> {project["change_type"]}'
-    for container in project['containers']:
-        update_types = ','.join(container['update_types'])
-        html += f'''<div class="container" data-update-types="{update_types}" data-change-type="{project['change_type']}">
-                            <strong>Container:</strong> {container['container_name']}<br>
-                            <strong>Old Image:</strong> {container['old_image']}<br>
-                            <strong>New Image:</strong> {container['new_image']}<br>
-                            <strong>Update Types:</strong> {', '.join(container['update_types'])}
-                        </div>'''
-    html += '</div>'
-html += '</div>'
+        html += f'<div class="commit"><strong>Commit:</strong> <code>{commit_entry["commit"]}</code>'
+        for project in commit_entry['projects']:
+            html += f'<div class="project"><strong>Project:</strong> {project["project"]} <em>({project["section"]})</em><br><strong>Change Type:</strong> {project["change_type"]}'
+            for container in project['containers']:
+                update_types = ','.join(container['update_types'])
+                html += f'''<div class="container" data-update-types="{update_types}" data-change-type="{project['change_type']}">
+                    <strong>Container:</strong> {container['container_name']}<br>
+                    <strong>Old Image:</strong> {container['old_image']}<br>
+                    <strong>New Image:</strong> {container['new_image']}<br>
+                    <strong>Update Types:</strong> {', '.join(container['update_types'])}
+                </div>'''
+            html += '</div>'  # close project div
+        html += '</div>'  # close commit div
 
-html += '</body>\n</html>'
-return html
+    html += '</body>\n</html>'
+    return html
 
 def main():
     with open(INPUT_JSON, 'r') as f:
