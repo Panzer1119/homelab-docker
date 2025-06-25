@@ -13,7 +13,7 @@ def generate_html(data):
     <title>Commit Container Updates</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        code { background-color: #f4f4f4; padding: 2px 5px; border-radius: 4px; }
+        code { background-color: #f4f4f4; padding: 2px 5px; border-radius: 4px; cursor: pointer; }
         .commit { margin-bottom: 20px; }
         .project { margin-left: 20px; margin-bottom: 10px; }
         .container { margin-left: 40px; }
@@ -35,6 +35,20 @@ def generate_html(data):
                 container.style.display = (matchesUpdate && matchesChange) ? 'block' : 'none';
             });
         }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard: ' + text);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('code').forEach(code => {
+                code.addEventListener('click', () => {
+                    copyToClipboard(code.textContent);
+                });
+            });
+        });
     </script>
 </head>
 <body>
@@ -62,13 +76,13 @@ def generate_html(data):
     for commit_entry in data:
         html += f'<div class="commit"><strong>Commit:</strong> <code>{commit_entry["commit"]}</code>'
         for project in commit_entry['projects']:
-            html += f'<div class="project"><strong>Project:</strong> {project["project"]} <em>({project["section"]})</em><br><strong>Change Type:</strong> {project["change_type"]}'
+            html += f'<div class="project"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong>Change Type:</strong> {project["change_type"]}'
             for container in project['containers']:
                 update_types = ','.join(container['update_types'])
                 html += f'''<div class="container" data-update-types="{update_types}" data-change-type="{project['change_type']}">
-                    <strong>Container:</strong> {container['container_name']}<br>
-                    <strong>Old Image:</strong> {container['old_image']}<br>
-                    <strong>New Image:</strong> {container['new_image']}<br>
+                    <strong>Container:</strong> <code>{container['container_name']}</code><br>
+                    <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
+                    <strong>New Image:</strong> <code>{container['new_image']}</code><br>
                     <strong>Update Types:</strong> {', '.join(container['update_types'])}
                 </div>'''
             html += '</div>'  # close project div
