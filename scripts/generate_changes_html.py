@@ -8,6 +8,14 @@ OUTPUT_HTML = os.getenv('OUTPUT_HTML', 'commits.html')
 UPDATE_TYPES = ["repo", "user", "image", "tag", "sha"]
 CHANGE_TYPES = ["created", "updated", "deleted"]
 
+UPDATE_TYPE_CLASSES = {
+    "repo": "ut-repo",
+    "user": "ut-repo",
+    "image": "ut-image",
+    "tag": "ut-tag",
+    "sha": "ut-sha",
+}
+
 COMMAND_TEMPLATE = (
     "cd /home/panzer1119/repositories/git/homelab-docker/compose/{section}/{project} && "
     "CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD) && "
@@ -37,6 +45,10 @@ def generate_html(data):
         .deleted { color: red; font-weight: bold; }
         .section-divider { border-top: 3px solid #444; margin-top: 20px; padding-top: 10px; }
         .project-divider { border-top: 2px dashed #999; margin-top: 15px; padding-top: 5px; }
+        .ut-repo { color: red; font-weight: bold; }
+        .ut-image { color: orange; font-weight: bold; }
+        .ut-tag { color: green; font-weight: bold; }
+        .ut-sha { color: blue; font-weight: bold; }
     </style>
     <script>
         function applyFilters() {
@@ -129,11 +141,14 @@ def generate_html(data):
             for container in project['containers']:
                 update_types = ','.join(container['update_types'])
                 command = format_command(project['section'], project['project'], container['container_name'], commit_entry['commit'])
+                styled_updates = ' '.join([
+                    f'<span class="{UPDATE_TYPE_CLASSES.get(t, '')}">{t}</span>' for t in container['update_types']
+                ])
                 containers_html += f'''<div class="container" data-update-types="{update_types}">
                     <strong>Container:</strong> <code>{container['container_name']}</code><br>
                     <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
                     <strong>New Image:</strong> <code>{container['new_image']}</code><br>
-                    <strong>Update Types:</strong> {', '.join(container['update_types'])}<br>
+                    <strong>Update Types:</strong> {styled_updates}<br>
                     <strong>Command:</strong> <code>{command}</code>
                 </div>'''
 
@@ -171,11 +186,14 @@ def generate_html(data):
                 for container in project['containers']:
                     update_types = ','.join(container['update_types'])
                     command = format_command(project['section'], project['project'], container['container_name'], item['commit'])
+                    styled_updates = ' '.join([
+                        f'<span class="{UPDATE_TYPE_CLASSES.get(t, '')}">{t}</span>' for t in container['update_types']
+                    ])
                     containers_html += f'''<div class="container" data-update-types="{update_types}">
                         <strong>Container:</strong> <code>{container['container_name']}</code><br>
                         <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
                         <strong>New Image:</strong> <code>{container['new_image']}</code><br>
-                        <strong>Update Types:</strong> {', '.join(container['update_types'])}<br>
+                        <strong>Update Types:</strong> {styled_updates}<br>
                         <strong>Command:</strong> <code>{command}</code>
                     </div>'''
                 if containers_html:
