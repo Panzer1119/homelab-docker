@@ -135,25 +135,30 @@ def generate_html(data):
 
     for section in sorted(section_map.keys()):
         section_html += f'<h2>Section: <code>{section}</code></h2>'
-        sorted_projects = sorted(section_map[section], key=lambda x: x['project']['project'])
-        for item in sorted_projects:
-            project = item['project']
-            containers_html = ''
-            for container in project['containers']:
-                update_types = ','.join(container['update_types'])
-                containers_html += f'''<div class="container" data-update-types="{update_types}">
-                    <strong>Container:</strong> <code>{container['container_name']}</code><br>
-                    <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
-                    <strong>New Image:</strong> <code>{container['new_image']}</code><br>
-                    <strong>Update Types:</strong> {', '.join(container['update_types'])}
-                </div>'''
-            if containers_html:
-                section_html += f'''<div class="project" data-change-type="{project['change_type']}">
-                    <strong>Commit:</strong> <code>{item['commit']}</code><br>
-                    <strong>Project:</strong> <code>{project['project']}</code><br>
-                    <strong>Change Type:</strong> <span class="{project['change_type']}">{project['change_type']}</span>
-                    {containers_html}
-                </div>'''
+        # Group by project name within section
+        project_groups = defaultdict(list)
+        for item in section_map[section]:
+            project_groups[item['project']['project']].append(item)
+
+        for project_name in sorted(project_groups.keys()):
+            section_html += f'<h3>Project: <code>{project_name}</code></h3>'
+            for item in project_groups[project_name]:
+                project = item['project']
+                containers_html = ''
+                for container in project['containers']:
+                    update_types = ','.join(container['update_types'])
+                    containers_html += f'''<div class="container" data-update-types="{update_types}">
+                        <strong>Container:</strong> <code>{container['container_name']}</code><br>
+                        <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
+                        <strong>New Image:</strong> <code>{container['new_image']}</code><br>
+                        <strong>Update Types:</strong> {', '.join(container['update_types'])}
+                    </div>'''
+                if containers_html:
+                    section_html += f'''<div class="project" data-change-type="{project['change_type']}">
+                        <strong>Commit:</strong> <code>{item['commit']}</code><br>
+                        <strong>Change Type:</strong> <span class="{project['change_type']}">{project['change_type']}</span>
+                        {containers_html}
+                    </div>'''
     section_html += '</div>'
 
     html += section_html
