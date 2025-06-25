@@ -1,7 +1,9 @@
 import json
 
-INPUT_JSON = 'commits.json'
-OUTPUT_HTML = 'commits.html'
+import os
+
+INPUT_JSON = os.getenv('INPUT_JSON', 'commits.json')
+OUTPUT_HTML = os.getenv('OUTPUT_HTML', 'commits.html')
 
 UPDATE_TYPES = ["repo", "user", "image", "tag", "sha"]
 CHANGE_TYPES = ["created", "updated", "deleted"]
