@@ -8,6 +8,11 @@ OUTPUT_HTML = os.getenv('OUTPUT_HTML', 'commits.html')
 UPDATE_TYPES = ["repo", "user", "image", "tag", "sha"]
 CHANGE_TYPES = ["created", "updated", "deleted"]
 
+COMMAND_TEMPLATE = "cd /home/panzer1119/repositories/git/homelab-docker/compose/{section}/{project} && sudo bash ../../../scripts/snapshot_docker_compose_stack.sh -v -c {container} -u -D -C {commit} -N"
+
+def format_command(section, project, container, commit):
+    return COMMAND_TEMPLATE.format(section=section, project=project, container=container, commit=commit)
+
 def generate_html(data):
     html = '<!DOCTYPE html>'
     html += '''
@@ -117,11 +122,13 @@ def generate_html(data):
             containers_html = ''
             for container in project['containers']:
                 update_types = ','.join(container['update_types'])
+                command = format_command(project['section'], project['project'], container['container_name'], commit_entry['commit'])
                 containers_html += f'''<div class="container" data-update-types="{update_types}">
                     <strong>Container:</strong> <code>{container['container_name']}</code><br>
                     <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
                     <strong>New Image:</strong> <code>{container['new_image']}</code><br>
-                    <strong>Update Types:</strong> {', '.join(container['update_types'])}
+                    <strong>Update Types:</strong> {', '.join(container['update_types'])}<br>
+                    <strong>Command:</strong> <code>{command}</code>
                 </div>'''
 
             if containers_html:
@@ -157,11 +164,13 @@ def generate_html(data):
                 containers_html = ''
                 for container in project['containers']:
                     update_types = ','.join(container['update_types'])
+                    command = format_command(project['section'], project['project'], container['container_name'], item['commit'])
                     containers_html += f'''<div class="container" data-update-types="{update_types}">
                         <strong>Container:</strong> <code>{container['container_name']}</code><br>
                         <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
                         <strong>New Image:</strong> <code>{container['new_image']}</code><br>
-                        <strong>Update Types:</strong> {', '.join(container['update_types'])}
+                        <strong>Update Types:</strong> {', '.join(container['update_types'])}<br>
+                        <strong>Command:</strong> <code>{command}</code>
                     </div>'''
                 if containers_html:
                     section_html += f'''<div class="project" data-change-type="{project['change_type']}">
@@ -173,7 +182,6 @@ def generate_html(data):
         section_html += '</div>'
 
     section_html += '</div>'
-
     html += section_html
     html += '</body>\n</html>'
     return html
