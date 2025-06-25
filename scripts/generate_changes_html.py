@@ -19,18 +19,14 @@ def generate_html(data):
         .commit { margin-bottom: 20px; }
         .project { margin-left: 20px; margin-bottom: 10px; }
         .container { margin-left: 40px; }
-        .change-created { color: green; font-weight: bold; }
-        .change-updated { color: blue; font-weight: bold; }
-        .change-deleted { color: red; font-weight: bold; }
-        select[multiple] { width: 200px; height: 100px; }
-        option:checked { background-color: #007BFF; color: white; }
+        .created { color: green; font-weight: bold; }
+        .updated { color: blue; font-weight: bold; }
+        .deleted { color: red; font-weight: bold; }
     </style>
     <script>
         function applyFilters() {
-            const updateSelect = document.getElementById('updateTypeFilter');
-            const changeSelect = document.getElementById('changeTypeFilter');
-            const selectedUpdateTypes = Array.from(updateSelect.selectedOptions).map(o => o.value);
-            const selectedChangeTypes = Array.from(changeSelect.selectedOptions).map(o => o.value);
+            const selectedUpdateTypes = Array.from(document.querySelectorAll('input[name="updateType"]:checked')).map(cb => cb.value);
+            const selectedChangeTypes = Array.from(document.querySelectorAll('input[name="changeType"]:checked')).map(cb => cb.value);
 
             document.querySelectorAll('.commit').forEach(commit => {
                 let visibleProject = false;
@@ -73,14 +69,14 @@ def generate_html(data):
 <body>
 <h1>Commit Container Updates</h1>
 <div>
-    <label for="updateTypeFilter">Filter by update_type:</label>
-    <select id="updateTypeFilter" multiple onchange="applyFilters()">
-''' + '\n'.join([f'<option value="{t}">{t}</option>' for t in UPDATE_TYPES]) + '''
-    </select>
-    <label for="changeTypeFilter">Filter by change_type:</label>
-    <select id="changeTypeFilter" multiple onchange="applyFilters()">
-''' + '\n'.join([f'<option value="{t}">{t}</option>' for t in CHANGE_TYPES]) + '''
-    </select>
+    <fieldset>
+        <legend>Filter by update_type:</legend>
+''' + '\n'.join([f'<label><input type="checkbox" name="updateType" value="{t}" checked onchange="applyFilters()"> {t}</label><br>' for t in UPDATE_TYPES]) + '''
+    </fieldset>
+    <fieldset>
+        <legend>Filter by change_type:</legend>
+''' + '\n'.join([f'<label><input type="checkbox" name="changeType" value="{t}" checked onchange="applyFilters()"> {t}</label><br>' for t in CHANGE_TYPES]) + '''
+    </fieldset>
 </div>
 <hr>
 '''
@@ -101,8 +97,7 @@ def generate_html(data):
                 </div>'''
 
             if containers_html:
-                change_class = f"change-{project['change_type']}"
-                project_html = f'<div class="project"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong class="{change_class}">Change Type:</strong> {project["change_type"]}{containers_html}</div>'
+                project_html = f'<div class="project"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>{containers_html}</div>'
                 project_htmls.append(project_html)
 
         if project_htmls:
