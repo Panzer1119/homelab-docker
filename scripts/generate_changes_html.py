@@ -1,8 +1,10 @@
 import json
 
-# Input: JSON file path and output HTML file path
 INPUT_JSON = 'commits.json'
 OUTPUT_HTML = 'commits.html'
+
+UPDATE_TYPES = ["repo", "user", "image", "tag", "sha"]
+CHANGE_TYPES = ["created", "updated"]
 
 def generate_html(data):
     html = '''
@@ -17,36 +19,48 @@ def generate_html(data):
         .commit { margin-bottom: 20px; }
         .project { margin-left: 20px; margin-bottom: 10px; }
         .container { margin-left: 40px; }
-        .hidden { display: none; }
     </style>
     <script>
         function applyFilters() {
-            const updateType = document.getElementById('updateTypeFilter').value;
-            const changeType = document.getElementById('changeTypeFilter').value;
-            const containers = document.querySelectorAll('.container');
+            const updateSelect = document.getElementById('updateTypeFilter');
+            const changeSelect = document.getElementById('changeTypeFilter');
+            const selectedUpdateTypes = Array.from(updateSelect.selectedOptions).map(o => o.value);
+            const selectedChangeTypes = Array.from(changeSelect.selectedOptions).map(o => o.value);
 
-            containers.forEach(container => {
-                const updateTypes = container.getAttribute('data-update-types').split(',');
-                const changeTypeValue = container.getAttribute('data-change-type');
+            document.querySelectorAll('.commit').forEach(commit => {
+                let visibleProject = false;
 
-                const matchesUpdate = !updateType || updateTypes.includes(updateType);
-                const matchesChange = !changeType || changeTypeValue === changeType;
+                commit.querySelectorAll('.project').forEach(project => {
+                    let visibleContainer = false;
 
-                container.style.display = (matchesUpdate && matchesChange) ? 'block' : 'none';
+                    project.querySelectorAll('.container').forEach(container => {
+                        const updateTypes = container.getAttribute('data-update-types').split(',');
+                        const changeType = container.getAttribute('data-change-type');
+
+                        const matchUpdate = selectedUpdateTypes.length === 0 || selectedUpdateTypes.some(val => updateTypes.includes(val));
+                        const matchChange = selectedChangeTypes.length === 0 || selectedChangeTypes.includes(changeType);
+
+                        const visible = matchUpdate && matchChange;
+                        container.style.display = visible ? 'block' : 'none';
+
+                        if (visible) visibleContainer = true;
+                    });
+
+                    project.style.display = visibleContainer ? 'block' : 'none';
+                    if (visibleContainer) visibleProject = true;
+                });
+
+                commit.style.display = visibleProject ? 'block' : 'none';
             });
         }
 
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Copied to clipboard: ' + text);
-            });
+            navigator.clipboard.writeText(text);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('code').forEach(code => {
-                code.addEventListener('click', () => {
-                    copyToClipboard(code.textContent);
-                });
+                code.addEventListener('click', () => copyToClipboard(code.textContent));
             });
         });
     </script>
@@ -55,38 +69,39 @@ def generate_html(data):
 <h1>Commit Container Updates</h1>
 <div>
     <label for="updateTypeFilter">Filter by update_type:</label>
-    <select id="updateTypeFilter" onchange="applyFilters()">
-        <option value="">All</option>
-        <option value="repo">repo</option>
-        <option value="user">user</option>
-        <option value="image">image</option>
-        <option value="tag">tag</option>
-        <option value="sha">sha</option>
+    <select id="updateTypeFilter" multiple onchange="applyFilters()">
+''' + '\n'.join([f'<option value="{t}">{t}</option>' for t in UPDATE_TYPES]) + '''
     </select>
     <label for="changeTypeFilter">Filter by change_type:</label>
-    <select id="changeTypeFilter" onchange="applyFilters()">
-        <option value="">All</option>
-        <option value="created">created</option>
-        <option value="updated">updated</option>
+    <select id="changeTypeFilter" multiple onchange="applyFilters()">
+''' + '\n'.join([f'<option value="{t}">{t}</option>' for t in CHANGE_TYPES]) + '''
     </select>
 </div>
 <hr>
 '''
 
     for commit_entry in data:
-        html += f'<div class="commit"><strong>Commit:</strong> <code>{commit_entry["commit"]}</code>'
+        commit_html = f'<div class="commit"><strong>Commit:</strong> <code>{commit_entry["commit"]}</code>'
+        project_htmls = []
+
         for project in commit_entry['projects']:
-            html += f'<div class="project"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong>Change Type:</strong> {project["change_type"]}'
+            containers_html = ''
             for container in project['containers']:
                 update_types = ','.join(container['update_types'])
-                html += f'''<div class="container" data-update-types="{update_types}" data-change-type="{project['change_type']}">
+                containers_html += f'''<div class="container" data-update-types="{update_types}" data-change-type="{project['change_type']}">
                     <strong>Container:</strong> <code>{container['container_name']}</code><br>
                     <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
                     <strong>New Image:</strong> <code>{container['new_image']}</code><br>
                     <strong>Update Types:</strong> {', '.join(container['update_types'])}
                 </div>'''
-            html += '</div>'  # close project div
-        html += '</div>'  # close commit div
+
+            if containers_html:
+                project_html = f'<div class="project"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong>Change Type:</strong> {project["change_type"]}{containers_html}</div>'
+                project_htmls.append(project_html)
+
+        if project_htmls:
+            commit_html += ''.join(project_htmls) + '</div>'
+            html += commit_html
 
     html += '</body>\n</html>'
     return html
