@@ -6,6 +6,7 @@ set -euo pipefail
 REPO_DIR="$(pwd)"
 REMOTE="${REMOTE:-origin}"
 BRANCH="${BRANCH:-main}"
+TAG_LAST="${TAG:-update/last}"
 
 # Check for required tools
 command -v yq >/dev/null || { echo "yq is required but not installed." >&2; exit 1; }
@@ -22,14 +23,15 @@ main() {
 
   cd "${REPO_DIR}"
   git fetch "${REMOTE}" "${BRANCH}" --quiet
+  git fetch --force --tags "${REMOTE}" "${BRANCH}" --quiet
 
-  LOCAL_HEAD=$(git rev-parse HEAD)
+  LAST_COMMIT=$(git rev-parse "${TAG_LAST}" 2>/dev/null || echo "")
   REMOTE_HEAD=$(git rev-parse "${REMOTE}/${BRANCH}")
-  COMMITS=$(git rev-list --reverse "${LOCAL_HEAD}..${REMOTE_HEAD}")
+  COMMITS=$(git rev-list --reverse "${LAST_COMMIT}..${REMOTE_HEAD}")
 
   [ -z "${COMMITS}" ] && { echo "No new commits to process."; exit 0; }
 
-  commit_count=$(git rev-list --count "${LOCAL_HEAD}..${REMOTE_HEAD}")
+  commit_count=$(git rev-list --count "${LAST_COMMIT}..${REMOTE_HEAD}")
   echo "Processing ${commit_count} new commit(s)" >&2
 
   local full_output="[]"
