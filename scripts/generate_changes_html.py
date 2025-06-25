@@ -19,13 +19,13 @@ def generate_html(data):
         body { font-family: Arial, sans-serif; margin: 20px; }
         code { background-color: #f4f4f4; padding: 2px 5px; border-radius: 4px; cursor: pointer; }
         .commit { margin-bottom: 20px; }
-        .project { margin-left: 20px; margin-bottom: 10px; }
+        .project { margin-left: 20px; margin-bottom: 10px; padding-left: 10px; border-left: 2px solid #ccc; }
         .container { margin-left: 40px; }
         .created { color: green; font-weight: bold; }
         .updated { color: blue; font-weight: bold; }
         .deleted { color: red; font-weight: bold; }
-        .section-divider { border-top: 2px solid #000; margin-top: 30px; padding-top: 10px; }
-        .project-divider { border-left: 4px solid #ccc; margin-left: 10px; padding-left: 10px; margin-bottom: 20px; }
+        .section-divider { border-top: 3px solid #444; margin-top: 20px; padding-top: 10px; }
+        .project-divider { border-top: 2px dashed #999; margin-top: 15px; padding-top: 5px; }
     </style>
     <script>
         function applyFilters() {
@@ -74,6 +74,7 @@ def generate_html(data):
             document.querySelectorAll('code').forEach(code => {
                 code.addEventListener('click', () => copyToClipboard(code.textContent));
             });
+            toggleView();
         });
     </script>
 </head>
@@ -83,13 +84,13 @@ def generate_html(data):
     <label for="viewMode">View mode:</label>
     <select id="viewMode" onchange="toggleView()">
         <option value="commitView">Chronologically</option>
-        <option value="sectionView">Grouped by Section</option>
+        <option value="sectionView" selected>Grouped by Section</option>
     </select>
 </div>
 <div>
     <fieldset>
         <legend>Filter by update_type:</legend>
-''' + '\n'.join([f'<label><input type="checkbox" name="updateType" value="{t}" checked onchange="applyFilters()"> {t}</label><br>' for t in UPDATE_TYPES]) + '''
+''' + '\n'.join([f'<label><input type="checkbox" name="updateType" value="{t}" ' + ('' if t == 'sha' else 'checked') + f' onchange="applyFilters()"> {t}</label><br>' for t in UPDATE_TYPES]) + '''
     </fieldset>
     <fieldset>
         <legend>Filter by change_type:</legend>
@@ -97,7 +98,7 @@ def generate_html(data):
     </fieldset>
 </div>
 <hr>
-<div id="commitView">
+<div id="commitView" style="display:none">
 '''
 
     for commit_entry in data:
@@ -125,7 +126,7 @@ def generate_html(data):
 
     html += '</div>'
 
-    section_html = '<div id="sectionView" style="display:none">'
+    section_html = '<div id="sectionView">'
     section_map = defaultdict(list)
 
     for entry in data:
