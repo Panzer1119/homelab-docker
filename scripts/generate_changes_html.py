@@ -32,23 +32,24 @@ def generate_html(data):
                 let visibleProject = false;
 
                 commit.querySelectorAll('.project').forEach(project => {
+                    const projectChangeType = project.getAttribute('data-change-type');
+                    const matchChange = selectedChangeTypes.includes(projectChangeType);
+
                     let visibleContainer = false;
 
-                    project.querySelectorAll('.container').forEach(container => {
-                        const updateTypes = container.getAttribute('data-update-types').split(',');
-                        const changeType = container.getAttribute('data-change-type');
+                    if (matchChange) {
+                        project.querySelectorAll('.container').forEach(container => {
+                            const updateTypes = container.getAttribute('data-update-types').split(',');
+                            const matchUpdate = selectedUpdateTypes.some(val => updateTypes.includes(val));
 
-                        const matchUpdate = selectedUpdateTypes.length === 0 || selectedUpdateTypes.some(val => updateTypes.includes(val));
-                        const matchChange = selectedChangeTypes.length === 0 || selectedChangeTypes.includes(changeType);
+                            const visible = matchUpdate;
+                            container.style.display = visible ? 'block' : 'none';
+                            if (visible) visibleContainer = true;
+                        });
+                    }
 
-                        const visible = matchUpdate && matchChange;
-                        container.style.display = visible ? 'block' : 'none';
-
-                        if (visible) visibleContainer = true;
-                    });
-
-                    project.style.display = visibleContainer ? 'block' : 'none';
-                    if (visibleContainer) visibleProject = true;
+                    project.style.display = (matchChange && visibleContainer) ? 'block' : 'none';
+                    if (matchChange && visibleContainer) visibleProject = true;
                 });
 
                 commit.style.display = visibleProject ? 'block' : 'none';
@@ -89,7 +90,7 @@ def generate_html(data):
             containers_html = ''
             for container in project['containers']:
                 update_types = ','.join(container['update_types'])
-                containers_html += f'''<div class="container" data-update-types="{update_types}" data-change-type="{project['change_type']}">
+                containers_html += f'''<div class="container" data-update-types="{update_types}">
                     <strong>Container:</strong> <code>{container['container_name']}</code><br>
                     <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
                     <strong>New Image:</strong> <code>{container['new_image']}</code><br>
@@ -97,7 +98,7 @@ def generate_html(data):
                 </div>'''
 
             if containers_html:
-                project_html = f'<div class="project"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>{containers_html}</div>'
+                project_html = f'<div class="project" data-change-type="{project["change_type"]}"><strong>Project:</strong> <code>{project["project"]}</code> <em>({project["section"]})</em><br><strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>{containers_html}</div>'
                 project_htmls.append(project_html)
 
         if project_htmls:
