@@ -345,6 +345,7 @@ process_docker_compose() {
   local services service_keys
 
   # Extract top-level services element
+  #FIXME Use "docker compose -f "${docker_compose_file}" config --format json --dry-run" so we can use overrides
   services=$(yq '.services' "${file}")
 
   # If the services element is empty or null, skip
@@ -514,6 +515,7 @@ process_docker_compose() {
 export -f process_docker_compose
 
 # Find all docker-compose.yml files
+#FIXME What is with .yaml files?
 files=$(find "${DIRECTORY}" -type f -name "*docker-compose.yml")
 
 # If no files are found, exit
