@@ -522,22 +522,22 @@ main() {
   # If running in verbose mode, print the options
   if [ "${VERBOSE}" -eq 1 ]; then
     log "Options:" "VERBOSE"
-    log "Directory: ${directory}" "VERBOSE"
-    log "Section name: ${section_name}" "VERBOSE"
-    log "Stack name: ${stack_name}" "VERBOSE"
-    log "Target image: ${target_image}" "VERBOSE"
-    log "Target tag: ${target_tag}" "VERBOSE"
-    log "Target sha256: ${target_sha256}" "VERBOSE"
-    log "Git commit sha1: ${commit_sha1}" "VERBOSE"
-    log "Snapshot prefix: ${snapshot_prefix}" "VERBOSE"
+    log "Directory: '${directory}'" "VERBOSE"
+    log "Section name: '${section_name}'" "VERBOSE"
+    log "Stack name: '${stack_name}'" "VERBOSE"
+    log "Target image: '${target_image}'" "VERBOSE"
+    log "Target tag: '${target_tag}'" "VERBOSE"
+    log "Target sha256: '${target_sha256}'" "VERBOSE"
+    log "Git commit sha1: '${commit_sha1}'" "VERBOSE"
+    log "Snapshot prefix: '${snapshot_prefix}'" "VERBOSE"
     log "Base datasets: ${base_dataset_array[*]}" "VERBOSE"
     log "Up after: ${UP_AFTER}" "VERBOSE"
     log "Debug: ${DEBUG}" "VERBOSE"
     log "Dry run: ${DRY_RUN}" "VERBOSE"
     log "Verbose: ${VERBOSE}" "VERBOSE"
     log "Quiet: ${QUIET}" "VERBOSE"
-    log "Docker compose file: ${docker_compose_file}" "VERBOSE"
-    log "Docker compose override file: ${docker_compose_override_file}" "VERBOSE"
+    log "Docker compose file: '${docker_compose_file}'" "VERBOSE"
+    log "Docker compose override file: '${docker_compose_override_file}'" "VERBOSE"
   fi
 
   # Stop the stack (if not in dry run mode)
