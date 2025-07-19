@@ -341,18 +341,34 @@ create_sshfs_volume() {
 
 # Function to process docker-compose.yml files
 process_docker_compose() {
-  local file="${1}"
-  local services service_keys
+  local docker_compose_file="${1}"
+  local docker_compose_override_file="${2}"
+
+  local docker_compose_json
+  local services
+  local service_keys
+
+  # Parse the docker compose file as JSON
+  if [ -n "${docker_compose_override_file}" ]; then
+    # If the override file exists, use it to parse the docker compose file
+    docker_compose_json="$(docker compose -f "${docker_compose_file}" -f "${docker_compose_override_file}" config --format json --dry-run)"
+    # Print a message if verbose mode is enabled
+    [ "${VERBOSE}" -eq 1 ] && echo "Parsed docker compose file with override as JSON"
+  else
+    # If the override file does not exist, parse the docker compose file without it
+    docker_compose_json="$(docker compose -f "${docker_compose_file}" config --format json --dry-run)"
+    # Print a message if verbose mode is enabled
+    [ "${VERBOSE}" -eq 1 ] && echo "Parsed docker compose file as JSON"
+  fi
 
   # Extract top-level services element
-  #FIXME Use "docker compose -f "${docker_compose_file}" config --format json --dry-run" so we can use overrides
-  services=$(yq '.services' "${file}")
+  services=$(echo "${docker_compose_json}" | jq -r '.services')
 
   # If the services element is empty or null, skip
   [ -z "${services}" ] || [ "${services}" == "null" ] && return
 
   # Extract top-level service elements with labels defined (ignore stderr)
-  service_keys=$(yq '.services | to_entries | map(select(.value.labels)) | map(.key) | .[]' "${file}" 2>/dev/null)
+  service_keys=$(echo "${services}" | jq -r 'to_entries | map(select(.value.labels)) | map(.key) | .[]')
 
   # If no service keys are found or the service keys array is empty, skip
   [ -z "${service_keys}" ] || [ "${service_keys}" == "[]" ] && return
@@ -361,14 +377,8 @@ process_docker_compose() {
   for service_key in ${service_keys}; do
     local labels volume_labels volume_dictionaries volume_driver_default_dictionaries
 
-    # Get the labels array for the service
-    labels=$(yq ".services.${service_key}.labels" "${file}")
-
-    # If the labels are an empty array, empty, or null, skip
-    [ "${labels}" == "[]" ] || [ -z "${labels}" ] || [ "${labels}" == "null" ] && continue
-
-    # Convert the labels array to a dictionary
-    labels=$(echo "${labels}" | jq -r '. | map(split("=")) | map({(.[0]): .[1]}) | add')
+    # Get the labels dictionary for the service
+    labels=$(echo "${services}" | jq -r ".\"${service_key}\".labels // []")
 
     # If the labels are an empty dictionary, empty, or null, skip
     if [ "${labels}" == "{}" ] || [ -z "${labels}" ] || [ "${labels}" == "null" ]; then
@@ -515,16 +525,18 @@ process_docker_compose() {
 export -f process_docker_compose
 
 # Find all docker-compose.yml files
-#FIXME What is with .yaml files?
-files=$(find "${DIRECTORY}" -type f -name "*docker-compose.yml")
+docker_compose_files=$(find "${DIRECTORY}" -type f -name "*docker-compose.yml" -o -name "*docker-compose.yaml")
 
-# If no files are found, exit
-[ -z "${files}" ] && exit 0
+# If no docker compose files are found, exit
+[ -z "${docker_compose_files}" ] && exit 0
 
 # Load the default values
 load_defaults
 
 # Process each docker-compose.yml file
-for file in ${files}; do
-  process_docker_compose "${file}"
+for docker_compose_file in ${docker_compose_files}; do
+  # Try to find corresponding docker-compose.override.yml file
+  dir="$(dirname "${docker_compose_file}")"
+  docker_compose_override_file=$(find "${dir}" -maxdepth 1 -type f -name "docker-compose.override.yml" -o -name "docker-compose.override.yaml" | head -n 1)
+  process_docker_compose "${docker_compose_file}" "${docker_compose_override_file}"
 done
