@@ -117,6 +117,17 @@ get_docker_compose_file() {
   echo "${docker_compose_file}"
 }
 
+# Get the docker compose override file for the given stack
+get_docker_compose_override_file() {
+  local directory="${1}"
+  local section_name="${2}"
+  local stack_name="${3}"
+  local docker_compose_override_file
+  # Find the docker compose override file (ending with yaml or yml) in the given section and stack directory
+  docker_compose_override_file="$(find "${directory}/${section_name}/${stack_name}" -maxdepth 1 -type f -name 'docker-compose.override.yml' -o -name 'docker-compose.override.yaml' | head -n 1)"
+  echo "${docker_compose_override_file}"
+}
+
 # Generate the snapshot name for the given stack
 generate_snapshot_name() {
   local snapshot_prefix="${1}"
@@ -229,6 +240,7 @@ snapshot_volumes() {
   local base_dataset_array=("${@:9}")
 
   local docker_compose_file
+  local docker_compose_override_file
   local docker_compose_json
   local volume_dataset_array_json
   local volume_dataset_array
@@ -237,9 +249,19 @@ snapshot_volumes() {
   docker_compose_file="$(get_docker_compose_file "${directory}" "${section_name}" "${stack_name}")"
   log "Using docker compose file: '${docker_compose_file}'" "DEBUG"
 
+  # Get the docker compose override file if it exists
+  docker_compose_override_file="$(get_docker_compose_override_file "${directory}" "${section_name}" "${stack_name}")"
+
   # Parse the docker compose file as JSON
-  docker_compose_json="$(docker compose -f "${docker_compose_file}" config --format json --dry-run)"
-  log "Parsed docker compose file as JSON" "VERBOSE"
+  if [ -n "${docker_compose_override_file}" ]; then
+    # If the override file exists, use it to parse the docker compose file
+    docker_compose_json="$(docker compose -f "${docker_compose_file}" -f "${docker_compose_override_file}" config --format json --dry-run)"
+    log "Parsed docker compose file with override as JSON" "VERBOSE"
+  else
+    # If the override file does not exist, parse the docker compose file without it
+    docker_compose_json="$(docker compose -f "${docker_compose_file}" config --format json --dry-run)"
+    log "Parsed docker compose file as JSON" "VERBOSE"
+  fi
 
   # Extract the volume datasets from the docker compose file
   volume_dataset_array_json="$(extract_volume_datasets "${docker_compose_json}")"
@@ -399,6 +421,9 @@ main() {
     exit 1
   fi
 
+  # Get the docker compose override file if it exists
+  docker_compose_override_file="$(get_docker_compose_override_file "${directory}" "${section_name}" "${stack_name}")"
+
   # If the snapshot prefix is empty, use the default prefix
   if [ -z "${snapshot_prefix}" ]; then
     snapshot_prefix="${DEFAULT_SNAPSHOT_PREFIX}"
@@ -512,6 +537,7 @@ main() {
     log "Verbose: ${VERBOSE}" "VERBOSE"
     log "Quiet: ${QUIET}" "VERBOSE"
     log "Docker compose file: ${docker_compose_file}" "VERBOSE"
+    log "Docker compose override file: ${docker_compose_override_file}" "VERBOSE"
   fi
 
   # Stop the stack (if not in dry run mode)
@@ -519,12 +545,23 @@ main() {
     log "[DRY RUN] Would stop stack '${stack_name}'" "INFO"
   else
     log "Stopping stack '${stack_name}'" "DEBUG"
-    docker compose -f "${docker_compose_file}" down
+    if [ -n "${docker_compose_override_file}" ]; then
+      # If the override file exists, use it to stop the stack
+      docker compose -f "${docker_compose_file}" -f "${docker_compose_override_file}" down
+    else
+      # If the override file does not exist, stop the stack without it
+      docker compose -f "${docker_compose_file}" down
+    fi
 
     local container_ids
     while true; do
-        # Get the container ids of the stack
-        container_ids="$(docker compose -f "${docker_compose_file}" ps -q)"
+        if [ -n "${docker_compose_override_file}" ]; then
+            # If the override file exists, use it to get the container ids
+            container_ids="$(docker compose -f "${docker_compose_file}" -f "${docker_compose_override_file}" ps -q)"
+        else
+            # If the override file does not exist, get the container ids without it
+            container_ids="$(docker compose -f "${docker_compose_file}" ps -q)"
+        fi
 
         # If no container ids are returned, the stack is stopped
         if [ -z "${container_ids}" ]; then
@@ -556,7 +593,13 @@ main() {
       log "[DRY RUN] Would start stack '${stack_name}'" "INFO"
     else
       log "Starting stack '${stack_name}'" "DEBUG"
-      docker compose -f "${docker_compose_file}" up -d
+      if [ -n "${docker_compose_override_file}" ]; then
+        # If the override file exists, use it to start the stack
+        docker compose -f "${docker_compose_file}" -f "${docker_compose_override_file}" up -d
+      else
+        # If the override file does not exist, start the stack without it
+        docker compose -f "${docker_compose_file}" up -d
+      fi
     fi
   fi
 }
