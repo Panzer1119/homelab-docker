@@ -111,8 +111,10 @@ get_docker_compose_file() {
   local directory="${1}"
   local section_name="${2}"
   local stack_name="${3}"
-  #FIXME What if the docker compose file ends with .yaml?
-  echo "${directory}/${section_name}/${stack_name}/docker-compose.yml"
+  local docker_compose_file
+  # Find the docker compose file (ending with yaml or yml) in the given section and stack directory
+  docker_compose_file="$(find "${directory}/${section_name}/${stack_name}" -maxdepth 1 -type f -name 'docker-compose.yml' -o -name 'docker-compose.yaml' | head -n 1)"
+  echo "${docker_compose_file}"
 }
 
 # Generate the snapshot name for the given stack
