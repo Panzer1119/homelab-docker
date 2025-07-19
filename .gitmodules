@@ -1,3 +1,6 @@
 [submodule "compose/monitoring/graylog"]
 	path = compose/monitoring/graylog
 	url = https://github.com/Panzer1119/docker-compose-graylog.git
+[submodule "compose/infrastructure/netbox"]
+	path = compose/infrastructure/netbox
+	url = https://github.com/Panzer1119/homelab-netbox-docker.git
