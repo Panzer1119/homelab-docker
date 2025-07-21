@@ -52,7 +52,7 @@ process_commit() {
   local COMMIT=${1}
   echo "Processing commit ${COMMIT}" >&2
   local FILES
-  FILES=$(git diff --name-status "${COMMIT}^" "${COMMIT}" | grep -E 'compose/.*/.*/docker-compose\.ya?ml' || true)
+  FILES=$(git diff --name-status "${COMMIT}^" "${COMMIT}" | grep -E 'compose/.*/.*/docker-compose(\.override)?\.ya?ml' || true)
 
   [ -z "${FILES}" ] && return
 
