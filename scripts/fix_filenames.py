@@ -22,6 +22,17 @@ def fix_encoding(path, dry_run=True, confirm=True):
                             print("⏩ Skipped.")
                             continue
 
+                    # Check for conflict
+                    if os.path.exists(new_path):
+                        if confirm:
+                            conflict_ans = input(f"⚠️  Target already exists. Overwrite/merge? [y/N]: ").strip().lower()
+                            if conflict_ans not in ("y", "yes"):
+                                print("⏩ Skipped due to existing path.")
+                                continue
+                        else:
+                            print(f"⏩ Skipped: target already exists → {new_path}")
+                            continue
+
                     os.rename(old_path, new_path)
                     print("✅ Renamed.")
 
