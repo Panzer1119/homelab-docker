@@ -31,8 +31,24 @@ def move_dir_contents(src_dir, dst_dir):
     for item in os.listdir(src_dir):
         src = os.path.join(src_dir, item)
         dst = os.path.join(dst_dir, item)
-        shutil.move(src, dst)
-    os.rmdir(src_dir)
+
+        try:
+            if os.path.isdir(src):
+                if os.path.exists(dst):
+                    if os.path.isdir(dst):
+                        move_dir_contents(src, dst)  # recursive merge
+                        os.rmdir(src)
+                    else:
+                        os.remove(dst)
+                        shutil.move(src, dst)
+                else:
+                    shutil.move(src, dst)
+            else:
+                if os.path.exists(dst):
+                    os.remove(dst)
+                shutil.move(src, dst)
+        except Exception as e:
+            print(f"❌ Failed to move {safe_path(src)} → {safe_path(dst)}: {e}")
 
 
 def hash_file(filepath, block_size=65536):
