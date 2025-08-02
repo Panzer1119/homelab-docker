@@ -93,11 +93,24 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                         print("⏩ Skipped.")
                         continue
 
+                # If the old directory is empty, just delete it
+                if os.path.isdir(old_path) and not os.listdir(old_path):
+                    print(f"📭 Old directory is empty — removing: {safe_path(old_path)}")
+                    os.rmdir(old_path)
+                    continue
+
                 if os.path.exists(new_path):
                     # List paths if both non-empty dirs
                     if os.path.isdir(old_path) and os.path.isdir(new_path):
                         old_contents = os.listdir(old_path)
                         new_contents = os.listdir(new_path)
+
+                        # Check if old directory is empty
+                        if not old_contents:
+                            print("📂 Old dir is empty — deleting.")
+                            os.rmdir(old_path)
+                            print("✅ Removed old directory.")
+                            continue
 
                         # 📂 Auto-merge into empty target
                         if not new_contents:
