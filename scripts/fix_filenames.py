@@ -60,17 +60,18 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                         old_contents = os.listdir(old_path)
                         new_contents = os.listdir(new_path)
 
-                        if old_contents and new_contents and list_command:
-                            run_list_command(list_command, old_path, new_path)
-
-                        # Auto-merge into empty target
+                        # 📂 Auto-merge into empty target
                         if not new_contents:
                             print("📂 Target dir is empty — auto-merging.")
                             move_dir_contents(old_path, new_path)
                             print("✅ Merged and removed old directory.")
                             continue
 
-                        # Confirm overwrite/merge
+                        # 🧪 Run list command only if NOT auto-merging
+                        if old_contents and new_contents and list_command:
+                            run_list_command(list_command, old_path, new_path)
+
+                        # 🔒 Prompt to confirm actual merge
                         if confirm_overwrite:
                             ow = input("⚠️  Target dir has contents. Merge? [y/N]: ").strip().lower()
                             if ow not in ("y", "yes"):
