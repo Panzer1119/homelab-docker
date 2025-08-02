@@ -167,7 +167,7 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                 print("✅ Renamed.")
 
             except (UnicodeEncodeError, UnicodeDecodeError):
-                print(f"⚠️ Skipping invalid name: {safe_path(name)}")
+                # print(f"⚠️ Skipping invalid name: {safe_path(name)}")
                 continue
             except Exception as e:
                 print(f"❌ Error processing {safe_path(name)}: {e}")
