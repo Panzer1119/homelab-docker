@@ -86,7 +86,16 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                 if dry_run:
                     continue
 
-                # Confirm rename
+                # Skip rename confirmation for files with no conflict
+                if os.path.isfile(old_path) and not os.path.exists(new_path):
+                    try:
+                        os.rename(old_path, new_path)
+                        print("✅ Renamed (file, no conflict).")
+                    except Exception as e:
+                        print(f"❌ Error renaming {safe_path(old_path)}: {e}")
+                    continue
+
+                # Otherwise, prompt for rename confirmation
                 if confirm_rename:
                     answer = input("Rename? [Y/n]: ").strip().lower()
                     if answer not in ("", "y", "yes"):
