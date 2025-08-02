@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 
 
 def safe_path(p):
@@ -9,7 +10,18 @@ def safe_path(p):
         return str(p).encode("utf-8", "backslashreplace").decode("utf-8")
 
 
-def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True):
+def run_list_command(cmd_template, old_path, new_path):
+    if not cmd_template.strip():
+        return  # No command provided — skip listing
+    try:
+        full_cmd = f"{cmd_template} '{old_path}' '{new_path}'"
+        print(f"📁 Listing both paths: {full_cmd}")
+        subprocess.run(full_cmd, shell=True)
+    except Exception as e:
+        print(f"⚠️ Failed to run list command: {e}")
+
+
+def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True, list_command=None):
     for root, dirs, files in os.walk(path, topdown=False):  # bottom-up walk
         for name in dirs + files:
             try:
@@ -35,16 +47,21 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                     # Check for conflict
                     if os.path.exists(new_path):
                         if os.path.isdir(old_path) and os.path.isdir(new_path):
-                            # 🧠 Smart auto-merge if target dir is empty
-                            if not os.listdir(new_path):
+                            old_contents = os.listdir(old_path)
+                            new_contents = os.listdir(new_path)
+
+                            # 🧠 Auto-merge if new dir is empty
+                            if not new_contents:
                                 print("📂 Target dir exists but is empty — auto-merging contents.")
-                                for item in os.listdir(old_path):
-                                    src = os.path.join(old_path, item)
-                                    dst = os.path.join(new_path, item)
-                                    shutil.move(src, dst)
+                                for item in old_contents:
+                                    shutil.move(os.path.join(old_path, item), os.path.join(new_path, item))
                                 os.rmdir(old_path)
                                 print("✅ Merged and removed old directory.")
                                 continue
+
+                            # 🧪 Run list command if both dirs contain files
+                            if old_contents and new_contents and list_command:
+                                run_list_command(list_command, old_path, new_path)
 
                         if confirm_overwrite:
                             conflict_ans = input("⚠️  Target already exists. Overwrite/merge? [y/N]: ").strip().lower()
@@ -72,6 +89,7 @@ if __name__ == "__main__":
     dry_run = parse_env_bool("DRY_RUN", default=True)
     confirm_rename = parse_env_bool("CONFIRM_RENAME", default=True)
     confirm_overwrite = parse_env_bool("CONFIRM_OVERWRITE", default=True)
+    list_command = os.environ.get("LIST_COMMAND", "find")
 
     if not target_path:
         print("❌ TARGET_PATH environment variable not set.")
@@ -81,5 +99,6 @@ if __name__ == "__main__":
         path=target_path,
         dry_run=dry_run,
         confirm_rename=confirm_rename,
-        confirm_overwrite=confirm_overwrite
+        confirm_overwrite=confirm_overwrite,
+        list_command=list_command
     )
