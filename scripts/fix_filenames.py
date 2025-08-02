@@ -2,6 +2,13 @@ import os
 import shutil
 
 
+def safe_path(p):
+    try:
+        return repr(p)
+    except Exception:
+        return str(p).encode("utf-8", "backslashreplace").decode("utf-8")
+
+
 def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True):
     for root, dirs, files in os.walk(path, topdown=False):  # bottom-up walk
         for name in dirs + files:
@@ -10,7 +17,9 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                 if fixed_name != name:
                     old_path = os.path.join(root, name)
                     new_path = os.path.join(root, fixed_name)
-                    print(f"\n{'DRY RUN:' if dry_run else 'Found:'}\n  From: {old_path}\n    To: {new_path}")
+                    print(f"\n{'DRY RUN:' if dry_run else 'Found:'}")
+                    print(f"  From: {safe_path(old_path)}")
+                    print(f"    To: {safe_path(new_path)}")
 
                     # Dry run — just preview
                     if dry_run:
@@ -43,7 +52,7 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                                 print("⏩ Skipped due to existing path.")
                                 continue
                         else:
-                            print(f"⏩ Skipped: target already exists → {new_path}")
+                            print(f"⏩ Skipped: target already exists → {safe_path(new_path)}")
                             continue
 
                     os.rename(old_path, new_path)
