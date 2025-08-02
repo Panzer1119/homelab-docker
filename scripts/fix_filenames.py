@@ -11,6 +11,30 @@ def safe_path(p):
         return str(p).encode("utf-8", "backslashreplace").decode("utf-8")
 
 
+def parse_env_bool(var_name, default=True):
+    val = os.environ.get(var_name, str(default)).strip().lower()
+    return val in ("1", "true", "yes")
+
+
+def run_list_command(cmd_template, old_path, new_path):
+    if not cmd_template.strip():
+        return
+    try:
+        full_cmd = f"{cmd_template} '{old_path}' '{new_path}'"
+        print(f"📁 Listing both paths: {full_cmd}")
+        subprocess.run(full_cmd, shell=True)
+    except Exception as e:
+        print(f"⚠️ Failed to run list command: {e}")
+
+
+def move_dir_contents(src_dir, dst_dir):
+    for item in os.listdir(src_dir):
+        src = os.path.join(src_dir, item)
+        dst = os.path.join(dst_dir, item)
+        shutil.move(src, dst)
+    os.rmdir(src_dir)
+
+
 def hash_file(filepath, block_size=65536):
     hasher = hashlib.sha256()
     with open(filepath, 'rb') as f:
@@ -42,25 +66,6 @@ def dirs_are_identical(dir1, dir2):
             return False
 
     return True
-
-
-def run_list_command(cmd_template, old_path, new_path):
-    if not cmd_template.strip():
-        return  # No command provided — skip listing
-    try:
-        full_cmd = f"{cmd_template} '{old_path}' '{new_path}'"
-        print(f"📁 Listing both paths: {full_cmd}")
-        subprocess.run(full_cmd, shell=True)
-    except Exception as e:
-        print(f"⚠️ Failed to run list command: {e}")
-
-
-def move_dir_contents(src_dir, dst_dir):
-    for item in os.listdir(src_dir):
-        src = os.path.join(src_dir, item)
-        dst = os.path.join(dst_dir, item)
-        shutil.move(src, dst)
-    os.rmdir(src_dir)
 
 
 def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True, list_command=None):
@@ -156,11 +161,6 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
             except Exception as e:
                 print(f"❌ Error processing {safe_path(name)}: {e}")
                 continue
-
-
-def parse_env_bool(var_name, default=True):
-    val = os.environ.get(var_name, str(default)).strip().lower()
-    return val in ("1", "true", "yes")
 
 
 if __name__ == "__main__":
