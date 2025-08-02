@@ -55,8 +55,7 @@ def dirs_are_identical(dir1, dir2):
         path2 = os.path.join(dir2, name)
 
         if os.path.isdir(path1) or os.path.isdir(path2):
-            print(f"🔍 Skipping nested directory comparison: {safe_path(path1)} or {safe_path(path2)}")
-            return False  # skip nested dirs for now
+            return False  # Nested dir comparison not implemented
 
         try:
             if hash_file(path1) != hash_file(path2):
@@ -69,12 +68,12 @@ def dirs_are_identical(dir1, dir2):
 
 
 def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True, list_command=None):
-    for root, dirs, files in os.walk(path, topdown=False):  # bottom-up to handle nested paths
+    for root, dirs, files in os.walk(path, topdown=False):
         for name in dirs + files:
             try:
                 fixed_name = name.encode('latin1').decode('utf-8')
                 if fixed_name == name:
-                    continue  # nothing to fix
+                    continue
 
                 old_path = os.path.join(root, name)
                 new_path = os.path.join(root, fixed_name)
@@ -86,92 +85,90 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                 if dry_run:
                     continue
 
-                # Skip rename confirmation for files with no conflict
-                if os.path.isfile(old_path) and not os.path.exists(new_path):
-                    try:
-                        os.rename(old_path, new_path)
-                        print("✅ Renamed (file, no conflict).")
-                    except Exception as e:
-                        print(f"❌ Error renaming {safe_path(old_path)}: {e}")
+                # 🧹 If old is empty directory, delete it
+                if os.path.isdir(old_path) and not os.listdir(old_path):
+                    print(f"📭 Old directory is empty — removing: {safe_path(old_path)}")
+                    os.rmdir(old_path)
                     continue
 
-                # Otherwise, prompt for rename confirmation
+                # 🚀 If file and new path doesn't exist, rename without asking
+                if os.path.isfile(old_path) and not os.path.exists(new_path):
+                    os.rename(old_path, new_path)
+                    print("✅ Renamed (file, no conflict).")
+                    continue
+
+                # 📁 Directory → Directory handling
+                if os.path.isdir(old_path) and os.path.isdir(new_path):
+                    old_contents = os.listdir(old_path)
+                    new_contents = os.listdir(new_path)
+
+                    if not new_contents:
+                        print("📂 Target dir is empty — auto-merging.")
+                        move_dir_contents(old_path, new_path)
+                        print("✅ Merged and removed old directory.")
+                        continue
+
+                    if old_contents and new_contents and list_command:
+                        run_list_command(list_command, old_path, new_path)
+
+                    if dirs_are_identical(old_path, new_path):
+                        print("📎 Directories have same files with matching content — skipping move.")
+                        os.rmdir(old_path)
+                        print("🗑️  Deleted old directory.")
+                        continue
+
+                    if confirm_overwrite:
+                        ow = input("⚠️  Target dir has contents. Merge? [y/N]: ").strip().lower()
+                        if ow not in ("y", "yes"):
+                            print("⏩ Skipped.")
+                            continue
+                    else:
+                        print("⏩ Skipped: overwrite not allowed.")
+                        continue
+
+                    print("🔁 Merging directory contents...")
+                    move_dir_contents(old_path, new_path)
+                    print("✅ Merged and removed old directory.")
+                    continue
+
+                # 🧪 File → File conflict
+                if os.path.isfile(old_path) and os.path.isfile(new_path):
+                    try:
+                        if hash_file(old_path) == hash_file(new_path):
+                            print("🟰 Files have identical content — skipping.")
+                            os.remove(old_path)
+                            print("🗑️  Deleted duplicate old file.")
+                            continue
+                    except Exception as e:
+                        print(f"⚠️ Hashing failed: {e}")
+
+                    if confirm_overwrite:
+                        ow = input("⚠️  Target file exists. Overwrite? [y/N]: ").strip().lower()
+                        if ow not in ("y", "yes"):
+                            print("⏩ Skipped.")
+                            continue
+                    else:
+                        print("⏩ Skipped: file exists.")
+                        continue
+
+                    try:
+                        os.remove(new_path)
+                        print("🗑️  Deleted existing file before renaming.")
+                    except Exception as e:
+                        print(f"❌ Failed to delete existing file: {safe_path(new_path)} → {e}")
+                        continue
+
+                    os.rename(old_path, new_path)
+                    print("✅ Renamed.")
+                    continue
+
+                # ❓ For everything else, confirm rename
                 if confirm_rename:
                     answer = input("Rename? [Y/n]: ").strip().lower()
                     if answer not in ("", "y", "yes"):
                         print("⏩ Skipped.")
                         continue
 
-                # If the old directory is empty, just delete it
-                if os.path.isdir(old_path) and not os.listdir(old_path):
-                    print(f"📭 Old directory is empty — removing: {safe_path(old_path)}")
-                    os.rmdir(old_path)
-                    continue
-
-                if os.path.exists(new_path):
-                    # List paths if both non-empty dirs
-                    if os.path.isdir(old_path) and os.path.isdir(new_path):
-                        old_contents = os.listdir(old_path)
-                        new_contents = os.listdir(new_path)
-
-                        # Check if old directory is empty
-                        if not old_contents:
-                            print("📂 Old dir is empty — deleting.")
-                            os.rmdir(old_path)
-                            print("✅ Removed old directory.")
-                            continue
-
-                        # 📂 Auto-merge into empty target
-                        if not new_contents:
-                            print("📂 Target dir is empty — auto-merging.")
-                            move_dir_contents(old_path, new_path)
-                            print("✅ Merged and removed old directory.")
-                            continue
-
-                        # 🧪 Run list command only if NOT auto-merging
-                        if old_contents and new_contents and list_command:
-                            run_list_command(list_command, old_path, new_path)
-
-                        if dirs_are_identical(old_path, new_path):
-                            print("📎 Directories have same files with matching content — skipping move.")
-                            os.rmdir(old_path)
-                            print("🗑️  Deleted old directory.")
-                            continue
-
-                        if confirm_overwrite:
-                            ow = input("⚠️  Target dir has contents. Merge? [y/N]: ").strip().lower()
-                            if ow not in ("y", "yes"):
-                                print("⏩ Skipped.")
-                                continue
-                        else:
-                            print("⏩ Skipped: overwrite not allowed.")
-                            continue
-
-                        print("🔁 Merging directory contents...")
-                        move_dir_contents(old_path, new_path)
-                        print("✅ Merged and removed old directory.")
-                        continue
-
-                    else:
-                        # Handle file conflicts
-                        if confirm_overwrite:
-                            ow = input("⚠️  Target file exists. Overwrite? [y/N]: ").strip().lower()
-                            if ow not in ("y", "yes"):
-                                print("⏩ Skipped.")
-                                continue
-                        else:
-                            print("⏩ Skipped: file exists.")
-                            continue
-
-                        # Overwrite the file by deleting the target first
-                        try:
-                            os.remove(new_path)
-                            print("🗑️  Deleted existing file before renaming.")
-                        except Exception as e:
-                            print(f"❌ Failed to delete existing file: {safe_path(new_path)} → {e}")
-                            continue
-
-                # Perform rename
                 os.rename(old_path, new_path)
                 print("✅ Renamed.")
 
@@ -185,14 +182,14 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
 
 if __name__ == "__main__":
     target_path = os.environ.get("TARGET_PATH")
+    if not target_path:
+        print("❌ TARGET_PATH environment variable not set.")
+        exit(1)
+
     dry_run = parse_env_bool("DRY_RUN", True)
     confirm_rename = parse_env_bool("CONFIRM_RENAME", True)
     confirm_overwrite = parse_env_bool("CONFIRM_OVERWRITE", True)
     list_command = os.environ.get("LIST_COMMAND", "find")
-
-    if not target_path:
-        print("❌ TARGET_PATH environment variable not set.")
-        exit(1)
 
     fix_encoding(
         path=target_path,
