@@ -150,6 +150,7 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                 # 🧪 File → File conflict
                 if os.path.isfile(old_path) and os.path.isfile(new_path):
                     try:
+                        print("📂 Both paths are files. Checking contents...")
                         if hash_file(old_path) == hash_file(new_path):
                             print("🟰 Files have identical content — skipping.")
                             os.remove(old_path)
