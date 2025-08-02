@@ -2,6 +2,7 @@
 
 # Default values
 SMB_VERSION="3.0"
+IO_CHARSET="utf8"
 VERBOSE=0
 EXIT_GRACEFULLY_IF_EXISTS=0
 QUIET=0
@@ -9,13 +10,14 @@ QUIET=0
 
 # Function to display usage
 usage() {
-  echo "Usage: ${0} -n <volume_name> -a <address> -s <share_name> -u <username> -p <password> [-V <smb_version>] [-i <uid>] [-g <gid>] [-v] [-N] [-e] [-q]"
+  echo "Usage: ${0} -n <volume_name> -a <address> -s <share_name> -u <username> -p <password> [-V <smb_version>] [-C <io_charset>] [-i <uid>] [-g <gid>] [-v] [-N] [-e] [-q]"
   echo "  -n <volume_name>: Name of the Docker volume to create"
   echo "  -a <address>: Address of the CIFS/SMB server"
   echo "  -s <share_name>: Name of the shared folder on the server"
   echo "  -u <username>: Username for authentication"
   echo "  -p <password>: Password for authentication"
   echo "  -V <smb_version>: Optional. SMB version (default: 3.0)"
+  echo "  -C <io_charset>: Optional. IO charset (default: utf8)"
   echo "  -i <uid>: Optional. UID for file access (default: not set)"
   echo "  -g <gid>: Optional. GID for file access (default: not set)"
   echo "  -v: Optional. Verbose mode"
@@ -26,7 +28,7 @@ usage() {
 }
 
 # Parse options
-while getopts "n:a:s:u:p:V:i:g:vNeq" opt; do
+while getopts "n:a:s:u:p:V:C:i:g:vNeq" opt; do
   case ${opt} in
     n) VOLUME_NAME="${OPTARG}" ;;
     a) ADDRESS="${OPTARG}" ;;
@@ -34,6 +36,7 @@ while getopts "n:a:s:u:p:V:i:g:vNeq" opt; do
     u) USERNAME="${OPTARG}" ;;
     p) PASSWORD="${OPTARG}" ;;
     V) SMB_VERSION="${OPTARG}" ;;
+    C) IO_CHARSET="${OPTARG}" ;;
     i) USER_ID="${OPTARG}" ;;
     g) GROUP_ID="${OPTARG}" ;;
     v) VERBOSE=1 ;;
@@ -64,7 +67,7 @@ fi
 
 # Build Docker volume create command
 #TODO Add option nobrl?
-DOCKER_CMD="docker volume create --driver local --name '${VOLUME_NAME}' --opt type=cifs --opt 'device=//${ADDRESS}/${SHARE_NAME}' --opt 'o=addr=${ADDRESS},username=${USERNAME},password=${PASSWORD},noperm,file_mode=0777,dir_mode=0777,vers=${SMB_VERSION}"
+DOCKER_CMD="docker volume create --driver local --name '${VOLUME_NAME}' --opt type=cifs --opt 'device=//${ADDRESS}/${SHARE_NAME}' --opt 'o=addr=${ADDRESS},username=${USERNAME},password=${PASSWORD},noperm,file_mode=0777,dir_mode=0777,iocharset=${IO_CHARSET},vers=${SMB_VERSION}"
 
 # Add optional parameters if provided
 if [[ -n ${USER_ID} ]]; then
