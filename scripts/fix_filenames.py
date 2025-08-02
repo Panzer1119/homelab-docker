@@ -96,6 +96,14 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                             print("⏩ Skipped: file exists.")
                             continue
 
+                        # Overwrite the file by deleting the target first
+                        try:
+                            os.remove(new_path)
+                            print("🗑️  Deleted existing file before renaming.")
+                        except Exception as e:
+                            print(f"❌ Failed to delete existing file: {safe_path(new_path)} → {e}")
+                            continue
+
                 # Perform rename
                 os.rename(old_path, new_path)
                 print("✅ Renamed.")
