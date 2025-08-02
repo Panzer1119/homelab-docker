@@ -110,7 +110,12 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                         if old_contents and new_contents and list_command:
                             run_list_command(list_command, old_path, new_path)
 
-                        # 🔒 Prompt to confirm actual merge
+                        if dirs_are_identical(old_path, new_path):
+                            print("📎 Directories have same files with matching content — skipping move.")
+                            os.rmdir(old_path)
+                            print("🗑️  Deleted old directory.")
+                            continue
+
                         if confirm_overwrite:
                             ow = input("⚠️  Target dir has contents. Merge? [y/N]: ").strip().lower()
                             if ow not in ("y", "yes"):
@@ -118,13 +123,6 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                                 continue
                         else:
                             print("⏩ Skipped: overwrite not allowed.")
-                            continue
-
-                        # 🧪 Compare contents by hash
-                        if dirs_are_identical(old_path, new_path):
-                            print("📎 Directories have same files with matching content — skipping move.")
-                            os.rmdir(old_path)
-                            print("🗑️  Deleted old directory.")
                             continue
 
                         print("🔁 Merging directory contents...")
