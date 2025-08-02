@@ -1,4 +1,5 @@
 import os
+import shutil
 
 
 def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True):
@@ -15,7 +16,7 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                     if dry_run:
                         continue
 
-                    # Confirm the rename itself
+                    # Confirm rename (if enabled)
                     if confirm_rename:
                         answer = input("Rename? [Y/n]: ").strip().lower()
                         if answer not in ("", "y", "yes"):
@@ -24,6 +25,18 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
 
                     # Check for conflict
                     if os.path.exists(new_path):
+                        if os.path.isdir(old_path) and os.path.isdir(new_path):
+                            # 🧠 Smart auto-merge if target dir is empty
+                            if not os.listdir(new_path):
+                                print("📂 Target dir exists but is empty — auto-merging contents.")
+                                for item in os.listdir(old_path):
+                                    src = os.path.join(old_path, item)
+                                    dst = os.path.join(new_path, item)
+                                    shutil.move(src, dst)
+                                os.rmdir(old_path)
+                                print("✅ Merged and removed old directory.")
+                                continue
+
                         if confirm_overwrite:
                             conflict_ans = input("⚠️  Target already exists. Overwrite/merge? [y/N]: ").strip().lower()
                             if conflict_ans not in ("y", "yes"):
