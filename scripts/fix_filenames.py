@@ -56,7 +56,9 @@ def hash_file(filepath, block_size=65536):
     with open(filepath, 'rb') as f:
         for chunk in iter(lambda: f.read(block_size), b''):
             hasher.update(chunk)
-    return hasher.hexdigest()
+    digest = hasher.hexdigest()
+    print(f"🔑 Hashed {safe_path(filepath)} → {digest}")
+    return digest
 
 
 def dirs_are_identical(dir1, dir2):
@@ -149,35 +151,44 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
 
                 # 🧪 File → File conflict
                 if os.path.isfile(old_path) and os.path.isfile(new_path):
-                    try:
-                        print("📂 Both paths are files. Checking contents...")
-                        if hash_file(old_path) == hash_file(new_path):
-                            print("🟰 Files have identical content — skipping.")
-                            os.remove(old_path)
-                            print("🗑️  Deleted duplicate old file.")
-                            continue
-                    except Exception as e:
-                        print(f"⚠️ Hashing failed: {e}")
-
                     if confirm_overwrite:
-                        ow = input("⚠️  Target file exists. Overwrite? [y/N]: ").strip().lower()
-                        if ow not in ("y", "yes"):
+                        choice = input(
+                            "⚠️  Target file exists. Overwrite? [s]kip / [y]es / [c]heck by hash: ").strip().lower()
+                        if choice == 's':
+                            print("⏩ Skipped.")
+                            continue
+                        elif choice == 'y':
+                            try:
+                                os.remove(new_path)
+                                print("🗑️  Deleted existing file before renaming.")
+                                os.rename(old_path, new_path)
+                                print("✅ Renamed.")
+                            except Exception as e:
+                                print(f"❌ Failed to overwrite: {e}")
+                            continue
+                        elif choice == 'c':
+                            try:
+                                hash_old = hash_file(old_path)
+                                hash_new = hash_file(new_path)
+                                if hash_old == hash_new:
+                                    print("🟰 Files have identical content — skipping.")
+                                    os.remove(old_path)
+                                    print("🗑️  Deleted duplicate old file.")
+                                    continue
+                                else:
+                                    print("❗ Files differ — proceeding to overwrite.")
+                                    os.remove(new_path)
+                                    os.rename(old_path, new_path)
+                                    print("✅ Renamed.")
+                            except Exception as e:
+                                print(f"❌ Failed during hash or rename: {e}")
+                            continue
+                        else:
                             print("⏩ Skipped.")
                             continue
                     else:
-                        print("⏩ Skipped: file exists.")
+                        print("⏩ Skipped: overwrite not allowed.")
                         continue
-
-                    try:
-                        os.remove(new_path)
-                        print("🗑️  Deleted existing file before renaming.")
-                    except Exception as e:
-                        print(f"❌ Failed to delete existing file: {safe_path(new_path)} → {e}")
-                        continue
-
-                    os.rename(old_path, new_path)
-                    print("✅ Renamed.")
-                    continue
 
                 # ❓ For everything else, confirm rename
                 if confirm_rename:
