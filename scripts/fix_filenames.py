@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import hashlib
 
 
 def safe_path(p):
@@ -8,6 +9,39 @@ def safe_path(p):
         return repr(p)
     except Exception:
         return str(p).encode("utf-8", "backslashreplace").decode("utf-8")
+
+
+def hash_file(filepath, block_size=65536):
+    hasher = hashlib.sha256()
+    with open(filepath, 'rb') as f:
+        for chunk in iter(lambda: f.read(block_size), b''):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def dirs_are_identical(dir1, dir2):
+    files1 = sorted(os.listdir(dir1))
+    files2 = sorted(os.listdir(dir2))
+
+    if files1 != files2:
+        return False
+
+    for name in files1:
+        path1 = os.path.join(dir1, name)
+        path2 = os.path.join(dir2, name)
+
+        if os.path.isdir(path1) or os.path.isdir(path2):
+            print(f"🔍 Skipping nested directory comparison: {safe_path(path1)} or {safe_path(path2)}")
+            return False  # skip nested dirs for now
+
+        try:
+            if hash_file(path1) != hash_file(path2):
+                return False
+        except Exception as e:
+            print(f"⚠️ Failed to hash {safe_path(path1)} or {safe_path(path2)}: {e}")
+            return False
+
+    return True
 
 
 def run_list_command(cmd_template, old_path, new_path):
@@ -79,6 +113,13 @@ def fix_encoding(path, dry_run=True, confirm_rename=True, confirm_overwrite=True
                                 continue
                         else:
                             print("⏩ Skipped: overwrite not allowed.")
+                            continue
+
+                        # 🧪 Compare contents by hash
+                        if dirs_are_identical(old_path, new_path):
+                            print("📎 Directories have same files with matching content — skipping move.")
+                            os.rmdir(old_path)
+                            print("🗑️  Deleted old directory.")
                             continue
 
                         print("🔁 Merging directory contents...")
