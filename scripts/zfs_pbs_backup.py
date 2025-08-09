@@ -36,7 +36,6 @@ Public domain / CC0; no warranty. Validate in a non-production environment first
 from __future__ import annotations
 
 import argparse
-import json
 import logging
 import os
 import shlex
