@@ -929,7 +929,7 @@ def pbs_status(
     """
     Check if the Proxmox Backup Server repository is accessible.
     """
-    env = {}
+    env = {"PROXMOX_OUTPUT_FORMAT": "json"}
     if repository:
         env["PBS_REPOSITORY"] = repository
     else:
@@ -951,8 +951,8 @@ def pbs_status(
         debug_log=True,
         check=False
     )
-    logging.debug("PBS repository status:%s",
-                  "\n" + completed_process.stdout.decode().strip() if completed_process.stdout else " No output")
+    logging.debug("PBS repository status: %s",
+                  completed_process.stdout.decode().strip() if completed_process.stdout else " No output")
     if completed_process.returncode != 0:
         error_message: str = completed_process.stderr.decode().strip() if completed_process.stderr else None
         if error_message.lower() == "error: permission check failed":
