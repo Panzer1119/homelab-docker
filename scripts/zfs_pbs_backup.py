@@ -788,6 +788,9 @@ def pbs_backup_dataset_snapshot(
     if namespace:
         cmd += ["--ns", namespace]
 
+    if dry_run:
+        cmd.append("--dry-run")
+
     run_cmd(
         cmd,
         message=f"Back up dataset {quote(dataset)} snapshot {quote(snapshot_name)} "
