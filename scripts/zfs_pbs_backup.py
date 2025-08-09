@@ -948,6 +948,7 @@ def pbs_status(
         dry_run=dry_run,
         read_only=True,
         env=env,
+        debug_log=True,
         check=False
     )
     logging.debug("PBS repository status:%s",
