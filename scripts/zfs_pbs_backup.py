@@ -649,7 +649,7 @@ def create_snapshots_for_plans(
 
     # Step 3: compute descendants-covered set
     def covered_by_recursive(ds: str) -> bool:
-        return any(ds.startswith(root + "/") or ds == root for root in recursive_roots)
+        return any(ds.startswith(recursive_root + "/") or ds == recursive_root for recursive_root in recursive_roots)
 
     non_recursive_candidates = [p.dataset for p in plans if not p.recursive_for_snapshot]
     non_recursive_targets = [ds for ds in non_recursive_candidates if not covered_by_recursive(ds)]
