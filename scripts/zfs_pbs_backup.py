@@ -238,7 +238,8 @@ def zfs_list(
         cmd += ["-t", ",".join(types)]
     if dataset:
         cmd.append(dataset)
-    completed_process = run_cmd(cmd, message=None, dry_run=False, read_only=True)
+    completed_process = run_cmd(cmd, message=None, dry_run=False, read_only=True, message_for_return_codes={
+        1: f"Dataset {quote(dataset)} does not exist or is not a ZFS {"/".join(types)}."})
     output = completed_process.stdout.decode().splitlines()
     return [line.split("\t") for line in output if line.strip()]
 
