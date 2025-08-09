@@ -272,6 +272,7 @@ def check_zfs_datasets_exist(
         *,
         types: Optional[List[str]] = None,
         check_permission: bool = True,
+        cmd: list[str] = None,
 ):
     """
     Check if all ZFS datasets exist and are of the specified type(s).
@@ -284,6 +285,8 @@ def check_zfs_datasets_exist(
             logging.error(f"Dataset {quote(dataset)} does not exist or is not a ZFS {'/'.join(types)}.")
             sys.exit(1)
     if check_permission and not ARE_WE_ROOT:
+        if cmd:
+            logging.error(f"Command: {quote(' '.join(cmd))}")
         logging.error("This operation requires root privileges (uid 0) or ZFS permissions to be set up correctly.")
         sys.exit(1)
 
@@ -322,12 +325,22 @@ def zfs_get(
 def zfs_set(key: str, value: str, target: str, *, dry_run: bool):
     """Set a single ZFS property."""
     cmd = ["zfs", "set", f"{key}={value}", target]
-    run_cmd(
+    completed_process = run_cmd(
         cmd,
         message=f"Set ZFS property {quote(key)}={quote(value)} on {quote(target)}",
         dry_run=dry_run,
         read_only=False,
+        check=False
     )
+    # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+    if completed_process.returncode != 0:
+        check_zfs_datasets_exist([target], cmd=cmd)
+        raise subprocess.CalledProcessError(
+            completed_process.returncode,
+            cmd,
+            output=completed_process.stdout,
+            stderr=completed_process.stderr,
+        )
 
 
 def zfs_snapshot_create(
@@ -347,7 +360,17 @@ def zfs_snapshot_create(
     if recursive:
         cmd.append("-r")
     cmd += [f"{dataset}@{snapshot_name}" for dataset in datasets]
-    run_cmd(cmd, message=f"Create snapshot(s) {quote(snapshot_name)}", dry_run=dry_run, read_only=False)
+    completed_process = run_cmd(cmd, message=f"Create snapshot(s) {quote(snapshot_name)}", dry_run=dry_run,
+                                read_only=False, check=False)
+    # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+    if completed_process.returncode != 0:
+        check_zfs_datasets_exist(datasets, cmd=cmd, types=["filesystem"])
+        raise subprocess.CalledProcessError(
+            completed_process.returncode,
+            cmd,
+            output=completed_process.stdout,
+            stderr=completed_process.stderr,
+        )
 
     # Hold snapshots (optional)
     if hold:
@@ -355,12 +378,23 @@ def zfs_snapshot_create(
         if recursive:
             cmd.append("-r")
         cmd += [hold_name] + [f"{dataset}@{snapshot_name}" for dataset in datasets]
-        run_cmd(
+        completed_process = run_cmd(
             cmd,
             message=f"Hold snapshot(s) {quote(snapshot_name)} with hold name {quote(hold_name)}",
             dry_run=dry_run,
             read_only=False,
+            check=False
         )
+        # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+        if completed_process.returncode != 0:
+            check_zfs_datasets_exist([f"{dataset}@{snapshot_name}" for dataset in datasets], cmd=cmd,
+                                     types=["snapshot"])
+            raise subprocess.CalledProcessError(
+                completed_process.returncode,
+                cmd,
+                output=completed_process.stdout,
+                stderr=completed_process.stderr,
+            )
 
 
 def zfs_holds(snapshot_name: str) -> List[str]:
@@ -391,23 +425,43 @@ def zfs_holds(snapshot_name: str) -> List[str]:
 def zfs_release_hold(snapshot_name: str, hold_name: str, *, dry_run: bool):
     """Release a hold on a snapshot."""
     cmd = ["zfs", "release", hold_name, snapshot_name]
-    run_cmd(
+    completed_process = run_cmd(
         cmd,
         message=f"Release hold {quote(hold_name)} on {quote(snapshot_name)}",
         dry_run=dry_run,
         read_only=False,
+        check=False,
     )
+    # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+    if completed_process.returncode != 0:
+        check_zfs_datasets_exist([snapshot_name], cmd=cmd, types=["snapshot"])
+        raise subprocess.CalledProcessError(
+            completed_process.returncode,
+            cmd,
+            output=completed_process.stdout,
+            stderr=completed_process.stderr,
+        )
 
 
 def zfs_destroy_snapshot(snapshot_name: str, *, dry_run: bool):
     """Destroy a snapshot."""
     cmd = ["zfs", "destroy", snapshot_name]
-    run_cmd(
+    completed_process = run_cmd(
         cmd,
         message=f"Destroy snapshot {quote(snapshot_name)}",
         dry_run=dry_run,
         read_only=False,
+        check=False,
     )
+    # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+    if completed_process.returncode != 0:
+        check_zfs_datasets_exist([snapshot_name], cmd=cmd, types=["snapshot"])
+        raise subprocess.CalledProcessError(
+            completed_process.returncode,
+            cmd,
+            output=completed_process.stdout,
+            stderr=completed_process.stderr,
+        )
 
 
 def get_mountpoints_recursively(root_dataset: str) -> Dict[str, str]:
