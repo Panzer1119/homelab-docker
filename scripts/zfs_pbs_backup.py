@@ -1128,9 +1128,12 @@ def create_and_hold_snapshots(
     recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
 
     # Step 2: snapshot recursive roots
-    logging.debug("Creating snapshots for recursive roots: %s", ", ".join(recursive_roots))
-    zfs_create_and_hold_snapshots(recursive_roots, snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
-                                  hold_name=hold_name, dry_run=dry_run)
+    if recursive_roots:
+        logging.debug("Creating snapshots for recursive roots: %s", ", ".join(recursive_roots))
+        zfs_create_and_hold_snapshots(recursive_roots, snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
+                                      hold_name=hold_name, dry_run=dry_run)
+    else:
+        logging.debug("No recursive roots to snapshot; all datasets are non-recursive.")
 
     # Step 3: compute a descendants-covered set
     def covered_by_recursive(dataset: str) -> bool:
@@ -1175,9 +1178,12 @@ def release_and_destroy_snapshots(
     recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
 
     # Step 2: destroy recursive roots
-    logging.debug("Releasing and destroying snapshots for recursive roots: %s", ", ".join(recursive_roots))
-    zfs_release_and_destroy_snapshots(recursive_roots, snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
-                                      hold_name=hold_name, dry_run=dry_run)
+    if recursive_roots:
+        logging.debug("Releasing and destroying snapshots for recursive roots: %s", ", ".join(recursive_roots))
+        zfs_release_and_destroy_snapshots(recursive_roots, snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
+                                          hold_name=hold_name, dry_run=dry_run)
+    else:
+        logging.debug("No recursive roots to release and destroy; all datasets are non-recursive.")
 
     # Step 3: compute a descendants-covered set
     def covered_by_recursive(dataset: str) -> bool:
