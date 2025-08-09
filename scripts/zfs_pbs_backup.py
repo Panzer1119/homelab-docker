@@ -698,8 +698,10 @@ def zfs_release_and_destroy_snapshots(
         if force_release and (
                 len(snapshots_to_release_by_hold.keys()) > 1 or hold_name not in snapshots_to_release_by_hold):
             # Warn if force release is about to release external holds
-            logging.warning("Force release is enabled, releasing %d hold%s:%s",
+            logging.warning("Force release is enabled, releasing %d hold%s on %d snapshot%s: %s",
                             len(snapshots_to_release_by_hold.keys()), s(len(snapshots_to_release_by_hold.keys())),
+                            sum([len(snapshots) for snapshots in snapshots_to_release_by_hold.values()]),
+                            s(sum([len(snapshots) for snapshots in snapshots_to_release_by_hold.values()])),
                             ", ".join(quote(hold) for hold in snapshots_to_release_by_hold.keys()))
         for hold, snapshots_to_release in snapshots_to_release_by_hold.items():
             zfs_release_snapshots(
