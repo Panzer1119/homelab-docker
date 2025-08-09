@@ -794,6 +794,7 @@ def pbs_backup_dataset_snapshot(
         archive_name_prefix: Optional[str],
         encryption_password: Optional[str],
         fingerprint: Optional[str],
+        pbs_change_detection_mode: Optional[str],
         dry_run: bool,
 ) -> None:
     """
@@ -845,6 +846,12 @@ def pbs_backup_dataset_snapshot(
     ]
     if namespace:
         cmd += ["--ns", namespace]
+
+    if pbs_change_detection_mode:
+        if pbs_change_detection_mode not in {"legacy", "data", "metadata"}:
+            logging.error("Invalid PBS change detection mode: %s", quote(pbs_change_detection_mode))
+            sys.exit(1)
+        cmd += ["--change-detection-mode", pbs_change_detection_mode]
 
     if dry_run:
         cmd.append("--dry-run")
@@ -1069,6 +1076,9 @@ def build_parser() -> argparse.ArgumentParser:
                          help="ID for the backup (defaults to local hostname).")
     g_pbs_b.add_argument("--pbs-archive-name-prefix",
                          help="Prefix added to the archive name (archive name = 'prefix + <dataset with '/' -> '_'>.pxar').")
+    # Change detection mode
+    g_pbs_b.add_argument("--pbs-change-detection-mode", choices=["legacy", "data", "metadata"], default="metadata",
+                         help="Proxmox’s default file-based backups read all data into a pxar archive and check chunks for deduplication, which is slow if most files are unchanged. Switching to metadata-based change detection avoids re-reading files with unchanged metadata by splitting backups into two files (mpxar for metadata and ppxar for contents) for faster lookups. Data mode also creates split archives but re-encodes all file data without using previous metadata.")
 
     # ZFS options (group)
     g_zfs = p.add_argument_group("ZFS options")
@@ -1298,6 +1308,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             archive_name_prefix=args.pbs_archive_name_prefix if args.pbs_archive_name_prefix else None,
             encryption_password=args.pbs_encryption_password if args.pbs_encryption_password else None,
             fingerprint=args.pbs_fingerprint if args.pbs_fingerprint else None,
+            pbs_change_detection_mode=args.pbs_change_detection_mode,
             dry_run=not args.execute,
         )
         # Mark as backed up
