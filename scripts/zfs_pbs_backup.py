@@ -846,14 +846,14 @@ def find_orphan_snapshots(
         snapshot_prefix: str,
         timestamp_current: str,
         property_snapshot_timestamp: str,
-) -> List[Tuple[str, str]]:
+) -> Dict[str, List[str]]:
     """
-    Return a list of (dataset, snapshot_name) for snapshots that match our prefix but
-    do not belong to the current run timestamp.
+    Return a dictionary of orphaned snapshots that match our prefix but do not belong to the current run timestamp.
+    The keys are snapshot names, and the values are lists of datasets that have these snapshots.
     """
-    orphans: List[Tuple[str, str]] = []
+    orphan_datasets_by_snapshot_name: Dict[str, List[str]] = {}
     for dataset_plan in dataset_plans:
-        snapshots = list_snapshots_for_dataset(dataset_plan.dataset, snapshot_prefix)
+        snapshots: List[str] = list_snapshots_for_dataset(dataset_plan.dataset, snapshot_prefix)
         for snapshot in snapshots:
             dataset, snapshot_name = snapshot.split("@", 1)
             properties = zfs_get([snapshot], [property_snapshot_timestamp]).get(snapshot, {})
@@ -863,8 +863,10 @@ def find_orphan_snapshots(
                     suffix = snapshot_name[len(snapshot_prefix):]
                     timestamp = suffix if suffix.isdigit() else ""
             if timestamp != timestamp_current:
-                orphans.append((dataset, snapshot_name))
-    return orphans
+                if snapshot_name not in orphan_datasets_by_snapshot_name:
+                    orphan_datasets_by_snapshot_name[snapshot_name] = []
+                orphan_datasets_by_snapshot_name[snapshot_name].append(dataset)
+    return orphan_datasets_by_snapshot_name
 
 
 # =============================================================================
@@ -1190,27 +1192,36 @@ def cleanup_orphans_if_any(
         timestamp_current: str,
         property_snapshot_timestamp: str,
         remove_orphans: str,  # "true" | "false" | "ask" | "only"
-        holding_enabled: bool,
+        hold_snapshots: bool,
         hold_name: str,
         dry_run: bool,
 ) -> None:
-    """Find and optionally remove orphan snapshots from previous runs."""
-    orphans = find_orphan_snapshots(dataset_plans, snapshot_prefix=snapshot_prefix, timestamp_current=timestamp_current,
-                                    property_snapshot_timestamp=property_snapshot_timestamp)
-    if not orphans:
+    """
+    Check for orphaned snapshots and remove them if requested.
+    """
+    # Find orphaned snapshots
+    orphan_datasets_by_snapshot_name: Dict[str, List[str]] = find_orphan_snapshots(
+        dataset_plans,
+        snapshot_prefix=snapshot_prefix,
+        timestamp_current=timestamp_current,
+        property_snapshot_timestamp=property_snapshot_timestamp
+    )
+    if not orphan_datasets_by_snapshot_name:
         return
+
+    orphan_snapshot_length: int = sum([len(dataset) for dataset in orphan_datasets_by_snapshot_name.keys()])
 
     if remove_orphans == "false":
         logging.warning(
             "Found %d orphaned snapshot%s with prefix %s; not removing (--remove-orphans=false).",
-            len(orphans), s(orphans), quote(snapshot_prefix),
+            orphan_snapshot_length, s(orphan_snapshot_length), quote(snapshot_prefix),
         )
         return
 
     if remove_orphans == "ask":
         logging.warning(
             "Found %d orphaned snapshot%s with prefix %s. There might be another instance using them.",
-            len(orphans), s(orphans), quote(snapshot_prefix),
+            orphan_snapshot_length, s(orphan_snapshot_length), quote(snapshot_prefix),
         )
         answer = input("Remove orphaned snapshots now? [y/N]: ").strip().lower()
         if answer != "y":
@@ -1224,15 +1235,17 @@ def cleanup_orphans_if_any(
         )
         sys.exit(1)
     logging.info("Removing %d orphaned snapshot%s with prefix %s.",
-                 len(orphans), s(orphans), quote(snapshot_prefix))
+                 orphan_snapshot_length, s(orphan_snapshot_length), quote(snapshot_prefix))
 
-    for dataset, snapshot_name in orphans:
-        destroy_snapshot_helper(
-            dataset,
+    # Release holds and destroy orphaned snapshots
+    for snapshot_name, datasets in orphan_datasets_by_snapshot_name:
+        zfs_release_and_destroy_snapshots(
+            datasets,
             snapshot_name,
-            holding_enabled=holding_enabled,
-            our_hold_name=hold_name,
-            dry_run=dry_run,
+            recursive=False,
+            hold_snapshots=hold_snapshots,
+            hold_name=hold_name,
+            dry_run=dry_run
         )
 
 
@@ -1425,7 +1438,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         timestamp_current=timestamp_current,
         property_snapshot_timestamp=args.zfs_snapshot_timestamp_property,
         remove_orphans=args.remove_orphans,
-        holding_enabled=args.hold_snapshots,
+        hold_snapshots=args.hold_snapshots,
         hold_name=args.zfs_hold_name,
         dry_run=not args.execute,
     )
