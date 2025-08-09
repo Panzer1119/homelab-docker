@@ -543,23 +543,26 @@ def zfs_destroy_snapshots(snapshots: List[str], *, recursive: bool, dry_run: boo
         logging.error("Abort destroying snapshots: Some snapshots do not contain an '@' character: %s",
                       ", ".join(quote(snapshot) for snapshot in snapshots))
         sys.exit(1)
-    # Build the command
-    cmd: List[str] = ["zfs", "destroy"]
-    if recursive:
-        cmd.append("-r")
-    cmd += snapshots
 
-    # Run the command
-    completed_process: subprocess.CompletedProcess = run_cmd(
-        cmd,
-        message=f"Destroy {len(snapshots)} snapshot{s(snapshots)}" + " recursively" if recursive else "",
-        dry_run=dry_run,
-        read_only=False,
-        check=False,
-    )
-    # If the command failed, it's either because the datasets do not exist or we don't have enough permissions.
-    if completed_process.returncode != 0:
-        check_zfs_datasets_exist(snapshots, completed_process, cmd=cmd, types=["snapshot"])
+    # Destroy each snapshot
+    for snapshot in snapshots:
+        # Build the command
+        cmd: List[str] = ["zfs", "destroy"]
+        if recursive:
+            cmd.append("-r")
+        cmd += [snapshot]
+
+        # Run the command
+        completed_process: subprocess.CompletedProcess = run_cmd(
+            cmd,
+            message=f"Destroy snapshot {quote(snapshot)}" + " recursively" if recursive else "",
+            dry_run=dry_run,
+            read_only=False,
+            check=False,
+        )
+        # If the command failed, it's either because the datasets do not exist or we don't have enough permissions.
+        if completed_process.returncode != 0:
+            check_zfs_datasets_exist([snapshot], completed_process, cmd=cmd, types=["snapshot"])
 
 
 # =============================================================================
