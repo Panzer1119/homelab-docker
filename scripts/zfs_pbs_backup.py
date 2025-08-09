@@ -1009,7 +1009,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         plans = filter_plans_for_existing_unbacked(plans, snapshot_name=snapshot_name,
                                                    property_snapshot_done=args.zfs_snapshot_done_property)
         if not plans:
-            logging.info("Nothing to back up (already done?).")
+            if args.execute:
+                logging.info("Nothing to back up (already done?).")
+            else:
+                logging.info("Nothing to back up (dry-run mode).")
             return 0
 
     # Backup loop
