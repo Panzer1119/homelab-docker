@@ -905,7 +905,8 @@ def check_permissions():
     if ARE_WE_ROOT:
         logging.info("Running as root; ensure you trust this script and its source.")
     else:
-        logging.warning("Not running as root; ensure you have sufficient permissions to read ZFS datasets.")
+        logging.warning(
+            "Not running as root; ensure you have sufficient permissions to create/destroy/hold/mount/release/set ZFS snapshots.")
 
 
 def secure_prompt(prompt_text: str) -> str:
