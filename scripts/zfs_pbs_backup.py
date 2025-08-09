@@ -333,6 +333,7 @@ def zfs_set(key: str, value: str, target: str, *, dry_run: bool):
         message=f"Set ZFS property {quote(key)}={quote(value)} on {quote(target)}",
         dry_run=dry_run,
         read_only=False,
+        debug_log=True,
         check=False
     )
     # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
