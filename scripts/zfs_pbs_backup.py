@@ -734,6 +734,53 @@ def pbs_build_repository_string(
     return "".join(repo_parts)
 
 
+def pbs_status(
+        *,
+        repository: str,
+        secret: Optional[str],  # password/token
+        dry_run: bool = True,
+) -> None:
+    """
+    Check if the Proxmox Backup Server repository is accessible.
+    """
+    env = {}
+    if repository:
+        env["PBS_REPOSITORY"] = repository
+    else:
+        logging.error("PBS repository must be specified.")
+        sys.exit(1)
+    if secret:
+        env["PBS_PASSWORD"] = secret
+    else:
+        logging.error("PBS secret (password or token) must be specified.")
+        sys.exit(1)
+
+    cmd = ["proxmox-backup-client", "status"]
+    completed_process = run_cmd(
+        cmd,
+        message="Check PBS repository status",
+        dry_run=dry_run,
+        read_only=True,
+        env=env,
+        check=False
+    )
+    logging.debug("PBS repository status:%s",
+                  "\n" + completed_process.stdout.decode().strip() if completed_process.stdout else " No output")
+    if completed_process.returncode != 0:
+        error_message: str = completed_process.stderr.decode().strip() if completed_process.stderr else None
+        if error_message.lower() == "error: permission check failed":
+            logging.error(
+                "PBS repository %s is not accessible: permission check failed. "
+                "Check your username, token, and repository settings.",
+                quote(repository)
+            )
+        elif error_message.lower() == "error: unable to get (default) repository":
+            logging.error("PBS repository string not properly passed to the command. ")
+        else:
+            logging.error("PBS repository status check failed %s:\n%s", quote(repository), error_message)
+        sys.exit(1)
+
+
 def pbs_backup_dataset_snapshot(
         *,
         dataset: str,
@@ -811,6 +858,8 @@ def pbs_backup_dataset_snapshot(
         env=env,
         check=False
     )
+    logging.debug("PBS backup:%s",
+                  "\n" + completed_process.stdout.decode().strip() if completed_process.stdout else " No output")
     if completed_process.returncode != 0:
         # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
         logging.error(
@@ -1223,6 +1272,13 @@ def main(argv: Optional[List[str]] = None) -> int:
             port=args.pbs_port,
             datastore=args.pbs_datastore,
         )
+
+    # Check PBS repository status
+    pbs_status(
+        repository=pbs_repository,
+        secret=pbs_secret if pbs_secret else None,
+        dry_run=not args.execute,
+    )
 
     # Backup loop
     for plan in plans:
