@@ -53,7 +53,6 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 DEFAULT_PROPERTY_INCLUDE = "zfs-pbs-backup:include"  # "true" | "false" | "recursive" | "children"
 DEFAULT_PROPERTY_SNAPSHOT_TIMESTAMP = "zfs-pbs-backup:unix_timestamp"  # snapshot property storing unix timestamp
-DEFAULT_PROPERTY_SNAPSHOT_DONE = "zfs-pbs-backup:backed_up"  # snapshot property: "true" after successful backup
 DEFAULT_SNAPSHOT_PREFIX = "zfs-pbs-backup_"
 DEFAULT_SNAPSHOT_HOLD_NAME = "zfs-pbs-backup"
 
@@ -1297,8 +1296,6 @@ def build_parser() -> argparse.ArgumentParser:
                          help="ZFS dataset property controlling include mode: true/false/recursive/children.")
     g_zfs_l.add_argument("--zfs-snapshot-timestamp-property", default=DEFAULT_PROPERTY_SNAPSHOT_TIMESTAMP,
                          help="ZFS snapshot property storing the unix timestamp for this run.")
-    g_zfs_l.add_argument("--zfs-snapshot-done-property", default=DEFAULT_PROPERTY_SNAPSHOT_DONE,
-                         help="ZFS snapshot property set to 'true' after a successful backup.")
 
     # Resume & run behavior
     p.add_argument("-C", "--resume", action=argparse.BooleanOptionalAction, default=False,
@@ -1410,9 +1407,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         timestamp_current = timestamp_newest
         logging.warning("Resuming: skipping snapshot creation and using existing timestamp %s (snapshot %s).",
                         timestamp_newest, quote(snapshot_name))
-        # Only process datasets that have this snapshot and are not marked done
-        dataset_plans = filter_plans_for_existing_unbacked(dataset_plans, snapshot_name=snapshot_name,
-                                                           property_snapshot_done=args.zfs_snapshot_done_property)
         if not dataset_plans:
             logging.info("Nothing to do after resume filtering.")
             return 0
@@ -1453,26 +1447,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         # Stamp timestamp
         mark_snapshot_timestamp(
             dataset_plans,
-            dataset_filter_self_only=True,
+            timestamp_current,
             snapshot_name=snapshot_name,
             property_snapshot_timestamp=args.zfs_snapshot_timestamp_property,
-            property_snapshot_done=args.zfs_snapshot_done_property,
-            timestamp=timestamp_current,
             dry_run=not args.execute,
         )
     else:
         logging.info("Snapshot creation skipped due to resume mode.")
-
-    # Filter to actionable items (existing snapshot and not done)
-    if not args.resume:
-        dataset_plans = filter_plans_for_existing_unbacked(dataset_plans, snapshot_name=snapshot_name,
-                                                           property_snapshot_done=args.zfs_snapshot_done_property)
-        if not dataset_plans:
-            if args.execute:
-                logging.info("Nothing to back up (already done?).")
-            else:
-                logging.info("Nothing to back up (dry-run mode).")
-            return 0
 
     # Build the PBS repository string
     pbs_repository = args.pbs_repository
