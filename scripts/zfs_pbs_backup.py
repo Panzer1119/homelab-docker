@@ -481,14 +481,14 @@ def zfs_holds(snapshots: List[str], *, recursive: bool, dry_run: bool) -> Dict[s
         check_zfs_datasets_exist(snapshots, completed_process, cmd=cmd, types=["snapshot"])
 
     # Parse the output
-    holds_by_snapshot: Dict[str, List[str]] = {}
+    holds_by_snapshot: Dict[str, List[str]] = {snapshot: [] for snapshot in snapshots}
     for line in completed_process.stdout.decode().splitlines():
         if not line.strip():
             continue
         # <snapshot>\t<tag>\t<timestamp>
         snapshot, tag, timestamp = line.split("\t", 2)
-        if snapshot not in holds_by_snapshot:
-            holds_by_snapshot[snapshot] = []
+        # if snapshot not in holds_by_snapshot:
+        #     holds_by_snapshot[snapshot] = []
         holds_by_snapshot[snapshot].append(tag)
     return holds_by_snapshot
 
