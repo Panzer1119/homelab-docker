@@ -39,6 +39,7 @@ import argparse
 import logging
 import os
 import shlex
+import socket
 import subprocess
 import sys
 import time
@@ -739,11 +740,11 @@ def pbs_backup_dataset_snapshot(
         mountpoint: str,
         snapshot_name: str,
         repository: str,
-        backup_id_prefix: str,
-        namespace: str,
-        username: Optional[str],
-        auth_id: Optional[str],
         secret: Optional[str],  # password/token secret; if None, we will prompt only on executing
+        namespace: Optional[str],
+        backup_id: str,
+        backup_time: str,
+        archive_name_prefix: Optional[str],
         encryption_password: Optional[str],
         dry_run: bool,
 ) -> None:
@@ -768,8 +769,7 @@ def pbs_backup_dataset_snapshot(
         return
 
     dataset_id = dataset.replace("/", "_")
-    backup_id = f"{backup_id_prefix}{dataset}"
-    archive_specification = f"{dataset_id}.pxar:{str(snapshot_directory)}"
+    archive_name = f"{archive_name_prefix or ""}{dataset_id}.pxar:{str(snapshot_directory)}"
 
     env = {}
     if secret:
@@ -779,16 +779,14 @@ def pbs_backup_dataset_snapshot(
 
     cmd = [
         "proxmox-backup-client", "backup",
-        archive_specification,
+        archive_name,
         "--repository", repository,
+        "--backup-type", "host",
         "--backup-id", backup_id,
+        "--backup-time", backup_time,
     ]
     if namespace:
         cmd += ["--ns", namespace]
-    if auth_id:
-        cmd += ["--auth-id", auth_id]
-    elif username:
-        cmd += ["--username", username]
 
     run_cmd(
         cmd,
@@ -971,20 +969,28 @@ def build_parser() -> argparse.ArgumentParser:
     # Positional: at least one root dataset
     p.add_argument("datasets", nargs="+", help="ZFS datasets to consider (roots).")
 
-    # Repository (common & important) — short + long
-    p.add_argument("-R", "--repository", required=True, help="PBS repository (e.g. 'user@pbs@host:datastore').")
+    # PBS repository options (group)
+    g_pbs_r = p.add_argument_group("PBS repository options")
+    ## PBS repository options string
+    g_pbs_r.add_argument("-R", "--pbs-repository",
+                         help="PBS repository (e.g. 'user@pbs!token@host:store'). Takes precedence over other PBS options.")
+    ## PBS repository options secret
+    g_pbs_r.add_argument("-P", "--pbs-secret",
+                         help="PBS password or API token secret. If omitted, you will be prompted securely when needed.")
+    ## PBS repository options
+    g_pbs_r.add_argument("--pbs-username", help="PBS username for authentication (e.g. 'user@pbs!token').")
+    g_pbs_r.add_argument("--pbs-server", help="PBS hostname or IP address (e.g. 'host').")
+    g_pbs_r.add_argument("--pbs-port", type=int, help="PBS port (e.g. '8007').")
+    g_pbs_r.add_argument("--pbs-datastore", help="PBS datastore (e.g. 'store').")
 
     # PBS options (group)
     g_pbs = p.add_argument_group("PBS options")
-    g_pbs.add_argument("--pbs-username", help="PBS username for password authentication.")
-    g_pbs.add_argument("--pbs-auth-id", help="PBS auth-id for API token authentication (e.g. 'user@pbs!tokenid').")
-    g_pbs.add_argument("-P", "--pbs-secret",
-                       help="PBS password or API token secret. If omitted, you will be prompted securely when needed.")
-    g_pbs.add_argument("-K", "--pbs-encryption-password", default="",
-                       help="PBS encryption password (empty disables encryption).")
-    g_pbs.add_argument("-N", "--pbs-namespace", default="", help="PBS namespace.")
-    g_pbs.add_argument("-B", "--pbs-backup-id-prefix", default="",
-                       help="Prefix added to the backup ID (backup ID = prefix + dataset).")
+    g_pbs.add_argument("-K", "--pbs-encryption-password", help="PBS encryption password (empty disables encryption).")
+    g_pbs.add_argument("-N", "--pbs-namespace", help="PBS namespace.")
+    g_pbs.add_argument("-B", "--pbs-backup-id", default=socket.gethostname(),
+                       help="ID for the backup (defaults to local hostname).")
+    g_pbs.add_argument("--pbs-archive-name-prefix",
+                       help="Prefix added to the archive name (archive name = 'prefix + <dataset with '/' -> '_'>.pxar').")
 
     # ZFS options (group)
     g_zfs = p.add_argument_group("ZFS options")
@@ -1176,18 +1182,29 @@ def main(argv: Optional[List[str]] = None) -> int:
                 logging.info("Nothing to back up (dry-run mode).")
             return 0
 
+    # Build the PBS repository string
+    pbs_repository = args.pbs_repository
+    if not pbs_repository:
+        pbs_repository = pbs_build_repository_string(
+            username=args.pbs_username,
+            token_name=None,  # PBS token name is not supported in this version (it can be part of the username)
+            server=args.pbs_server,
+            port=args.pbs_port,
+            datastore=args.pbs_datastore,
+        )
+
     # Backup loop
     for plan in plans:
         pbs_backup_dataset_snapshot(
             dataset=plan.dataset,
             mountpoint=plan.mountpoint,
             snapshot_name=snapshot_name,
-            repository=args.repository,
-            backup_id_prefix=args.pbs_backup_id_prefix,
-            namespace=args.pbs_namespace,
-            username=args.pbs_username,
-            auth_id=args.pbs_auth_id,
+            repository=pbs_repository,
             secret=pbs_secret if pbs_secret else None,
+            namespace=args.pbs_namespace,
+            backup_id=args.pbs_backup_id,
+            backup_time=timestamp_current,
+            archive_name_prefix=args.pbs_archive_name_prefix if args.pbs_archive_name_prefix else None,
             encryption_password=args.pbs_encryption_password if args.pbs_encryption_password else None,
             dry_run=not args.execute,
         )
