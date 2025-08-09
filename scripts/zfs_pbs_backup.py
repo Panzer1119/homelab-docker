@@ -1122,6 +1122,9 @@ def create_and_hold_snapshots(
          recursive root (they're already covered by step 2).
       4) Snapshot the remaining non-recursive datasets without -r (can be batched).
     """
+    logging.debug("Creating and holding snapshots for %d dataset plans with snapshot name '%s'",
+                  len(dataset_plans), snapshot_name)
+    # Step 1: gather and minimize recursive roots
     recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
 
     # Step 2: snapshot recursive roots
@@ -1162,6 +1165,9 @@ def release_and_destroy_snapshots(
          recursive root (they're already covered by step 2).
       4) Destroy the remaining snapshots without -r (can be batched).
     """
+    logging.debug("Releasing and destroying snapshots for %d dataset plans with snapshot name '%s'",
+                  len(dataset_plans), snapshot_name)
+    # Step 1: gather datasets that requested recursive snapshotting and minimize them
     recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
 
     # Step 2: destroy recursive roots
