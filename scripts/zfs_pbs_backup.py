@@ -130,6 +130,7 @@ def run_cmd(
         env: Optional[Dict[str, str]] = None,
         check: bool = True,
         capture_output: bool = True,
+        message_for_return_codes: dict[int, str] = None,
 ) -> subprocess.CompletedProcess:
     """
     Run a command with structured logging and timing.
@@ -162,16 +163,49 @@ def run_cmd(
 
     start = time.perf_counter()
     try:
+        # Disable check if message_for_return_codes is provided, as it will handle errors
+        if message_for_return_codes is not None:
+            check = False
         completed_process = subprocess.run(
             cmd,
             env={**os.environ, **(env or {})},
             check=check,
             capture_output=capture_output,
         )
+        # Check return code if message_for_return_codes is provided
+        if message_for_return_codes is not None:
+            check_command_success(
+                cmd,
+                completed_process,
+                message_for_return_codes,
+            )
         return completed_process
     finally:
         elapsed = time.perf_counter() - start
         logging.debug("time: %.3fs for: %s", elapsed, command_string)
+
+
+def check_command_success(cmd: List[str], completed_process: subprocess.CompletedProcess,
+                          message_for_return_codes: dict[int, str]):
+    """
+    Check if a command was successful based on its return code.
+    Raises CalledProcessError for unexpected return codes.
+    Returns True if the command was successful (return code 0),
+    """
+    if completed_process.returncode == 0:
+        return
+
+    if completed_process.returncode in message_for_return_codes:
+        message = message_for_return_codes[completed_process.returncode]
+        logging.error(message)
+        sys.exit(1)
+
+    raise subprocess.CalledProcessError(
+        completed_process.returncode,
+        cmd,
+        output=completed_process.stdout,
+        stderr=completed_process.stderr,
+    )
 
 
 # =============================================================================
