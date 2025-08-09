@@ -109,6 +109,14 @@ def can_execute(program: str) -> bool:
     return os.access(path, os.X_OK)
 
 
+def are_we_root() -> bool:
+    """
+    Check if we are running as root (uid 0).
+    Returns True if we are root, False otherwise.
+    """
+    return os.getuid() == 0
+
+
 # =============================================================================
 # Command runner with timing & dry-run semantics
 # =============================================================================
@@ -863,6 +871,14 @@ def ensure_tools():
         sys.exit(2)
 
 
+def check_permissions():
+    """Check if we can execute ZFS commands."""
+    if are_we_root():
+        logging.info("Running as root; ensure you trust this script and its source.")
+    else:
+        logging.warning("Not running as root; ensure you have sufficient permissions to read ZFS datasets.")
+
+
 def secure_prompt(prompt_text: str) -> str:
     """Prompt for a secret without echoing."""
     import getpass
@@ -877,6 +893,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     configure_logging(args.verbose, args.debug, args.quiet)
     ensure_tools()
+    check_permissions()
 
     # Prompt for secret only when actually needed (execute or resume)
     pbs_secret = args.pbs_secret
