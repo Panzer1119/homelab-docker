@@ -50,11 +50,11 @@ from typing import Dict, Iterable, List, Optional, Tuple
 # Defaults & constants
 # =============================================================================
 
-DEFAULT_INCLUDE_PROP = "zfs-pbs-backup:include"  # "true" | "false" | "recursive" | "children"
-DEFAULT_SNAP_TS_PROP = "zfs-pbs-backup:unix_timestamp"  # snapshot property storing unix timestamp
-DEFAULT_SNAP_DONE_PROP = "zfs-pbs-backup:backed_up"  # snapshot property: "true" after successful backup
-DEFAULT_SNAP_PREFIX = "zfs-pbs-backup_"
-DEFAULT_HOLD_NAME = "zfs-pbs-backup"
+DEFAULT_PROPERTY_INCLUDE = "zfs-pbs-backup:include"  # "true" | "false" | "recursive" | "children"
+DEFAULT_PROPERTY_SNAPSHOT_TIMESTAMP = "zfs-pbs-backup:unix_timestamp"  # snapshot property storing unix timestamp
+DEFAULT_PROPERTY_SNAPSHOT_DONE = "zfs-pbs-backup:backed_up"  # snapshot property: "true" after successful backup
+DEFAULT_SNAPSHOT_PREFIX = "zfs-pbs-backup_"
+DEFAULT_SNAPSHOT_HOLD_NAME = "zfs-pbs-backup"
 
 READ_ONLY_ZFS_SUBCMDS = {
     ("zfs", "list"),
@@ -779,15 +779,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     # ZFS options (group)
     g_zfs = p.add_argument_group("ZFS options")
-    g_zfs.add_argument("--zfs-include-property", default=DEFAULT_INCLUDE_PROP,
+    g_zfs.add_argument("--zfs-include-property", default=DEFAULT_PROPERTY_INCLUDE,
                        help="ZFS dataset property controlling include mode: true/false/recursive/children.")
-    g_zfs.add_argument("--zfs-snapshot-timestamp-property", default=DEFAULT_SNAP_TS_PROP,
+    g_zfs.add_argument("--zfs-snapshot-timestamp-property", default=DEFAULT_PROPERTY_SNAPSHOT_TIMESTAMP,
                        help="ZFS snapshot property storing the unix timestamp for this run.")
-    g_zfs.add_argument("--zfs-snapshot-done-property", default=DEFAULT_SNAP_DONE_PROP,
+    g_zfs.add_argument("--zfs-snapshot-done-property", default=DEFAULT_PROPERTY_SNAPSHOT_DONE,
                        help="ZFS snapshot property set to 'true' after a successful backup.")
-    g_zfs.add_argument("--zfs-snapshot-prefix", default=DEFAULT_SNAP_PREFIX,
+    g_zfs.add_argument("--zfs-snapshot-prefix", default=DEFAULT_SNAPSHOT_PREFIX,
                        help="Prefix for snapshot names (final name is <prefix><timestamp>).")
-    g_zfs.add_argument("--zfs-hold-name", default=DEFAULT_HOLD_NAME,
+    g_zfs.add_argument("--zfs-hold-name", default=DEFAULT_SNAPSHOT_HOLD_NAME,
                        help="Hold name to apply to temporary snapshots.")
 
     g_zfs.add_argument("-H", "--hold-snapshots", action=argparse.BooleanOptionalAction, default=True,
