@@ -22,7 +22,7 @@ Highlights
 Typical flow
 ------------
 1) Determine run timestamp (or resume a previous one).
-2) Optionally remove orphaned snapshots (ask/true/false).
+2) Optionally remove orphaned snapshots (ask/true/false/only).
 3) Read include-mode property on datasets recursively and build the work plan.
 4) Create snapshots (with -r for recursive/children modes), set timestamp property, and clear backed flag.
 5) Back up each dataset’s snapshot (pxar) to PBS and mark it backed.
@@ -879,7 +879,7 @@ def cleanup_orphans_if_any(
         snapshot_prefix: str,
         timestamp_current: str,
         property_snapshot_timestamp: str,
-        remove_orphans: str,  # "true" | "false" | "ask"
+        remove_orphans: str,  # "true" | "false" | "ask" | "only"
         holding_enabled: bool,
         hold_name: str,
         dry_run: bool,
@@ -906,6 +906,13 @@ def cleanup_orphans_if_any(
         if answer != "y":
             logging.info("Skipping orphan removal.")
             return
+
+    if remove_orphans not in ["true", "ask", "only"]:
+        logging.error(
+            "Invalid --remove-orphans value: %s; expected 'true', 'false', 'ask', or 'only'.",
+            quote(remove_orphans)
+        )
+        sys.exit(1)
 
     for dataset, snapshot_name in orphans:
         destroy_snapshot_helper(
@@ -963,7 +970,7 @@ def build_parser() -> argparse.ArgumentParser:
                        help="Hold temporary snapshots until they are backed up.")
     g_zfs.add_argument("-X", "--exclude-empty-parents", action=argparse.BooleanOptionalAction, default=True,
                        help="If a dataset has children and is empty itself, skip backing up the parent dataset.")
-    g_zfs.add_argument("-O", "--remove-orphans", choices=["true", "false", "ask"], default="ask",
+    g_zfs.add_argument("-O", "--remove-orphans", choices=["true", "false", "ask", "only"], default="ask",
                        help="Remove orphaned snapshots whose timestamp does not match the current run.")
 
     # Resume & run behavior
@@ -1086,7 +1093,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         snapshot_name = f"{args.zfs_snapshot_prefix}{timestamp_now}"
         timestamp_current = timestamp_now
 
-    # Orphan cleanup (ask/true/false)
+    # Orphan cleanup (ask/true/false/only)
     cleanup_orphans_if_any(
         plans,
         snapshot_prefix=args.zfs_snapshot_prefix,
@@ -1097,6 +1104,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         hold_name=args.zfs_hold_name,
         dry_run=not args.execute,
     )
+
+    # If we are only removing orphans, we can exit early
+    if args.remove_orphans == "only":
+        logging.info("Orphan cleanup completed. Exiting as per --remove-orphans=only.")
+        return 0
 
     # Create snapshots (unless resuming)
     if not args.resume:
