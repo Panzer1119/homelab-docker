@@ -56,7 +56,7 @@ DEFAULT_PROPERTY_SNAPSHOT_DONE = "zfs-pbs-backup:backed_up"  # snapshot property
 DEFAULT_SNAPSHOT_PREFIX = "zfs-pbs-backup_"
 DEFAULT_SNAPSHOT_HOLD_NAME = "zfs-pbs-backup"
 
-READ_ONLY_ZFS_SUBCMDS = {
+READ_ONLY_ZFS_SUB_COMMANDS = {
     ("zfs", "list"),
     ("zfs", "get"),
     ("zfs", "holds"),
@@ -80,7 +80,7 @@ def infer_read_only(cmd: List[str]) -> bool:
     if not cmd:
         return True
     head = tuple(cmd[:2]) if len(cmd) >= 2 else (cmd[0], "")
-    if head in READ_ONLY_ZFS_SUBCMDS:
+    if head in READ_ONLY_ZFS_SUB_COMMANDS:
         return True
     if cmd[:1] == ["proxmox-backup-client"] and "backup" not in cmd:
         return True
