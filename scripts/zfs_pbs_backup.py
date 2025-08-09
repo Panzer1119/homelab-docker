@@ -746,6 +746,7 @@ def pbs_backup_dataset_snapshot(
         backup_time: str,
         archive_name_prefix: Optional[str],
         encryption_password: Optional[str],
+        fingerprint: Optional[str],
         dry_run: bool,
 ) -> None:
     """
@@ -776,6 +777,8 @@ def pbs_backup_dataset_snapshot(
         env["PBS_PASSWORD"] = secret
     if encryption_password:
         env["PBS_ENCRYPTION_PASSWORD"] = encryption_password
+    if fingerprint:
+        env["PBS_FINGERPRINT"] = fingerprint
 
     cmd = [
         "proxmox-backup-client", "backup",
@@ -985,6 +988,7 @@ def build_parser() -> argparse.ArgumentParser:
     g_pbs_r.add_argument("--pbs-server", help="PBS hostname or IP address (e.g. 'host').")
     g_pbs_r.add_argument("--pbs-port", type=int, help="PBS port (e.g. '8007').")
     g_pbs_r.add_argument("--pbs-datastore", help="PBS datastore (e.g. 'store').")
+    g_pbs_r.add_argument("--pbs-fingerprint", help="PBS server fingerprint (optional; used for verification).")
 
     # PBS backup options (group)
     g_pbs_b = p.add_argument_group("PBS backup options")
@@ -1211,6 +1215,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             backup_time=timestamp_current,
             archive_name_prefix=args.pbs_archive_name_prefix if args.pbs_archive_name_prefix else None,
             encryption_password=args.pbs_encryption_password if args.pbs_encryption_password else None,
+            fingerprint=args.pbs_fingerprint if args.pbs_fingerprint else None,
             dry_run=not args.execute,
         )
         # Mark as backed up
