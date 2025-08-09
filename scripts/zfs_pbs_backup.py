@@ -802,14 +802,28 @@ def pbs_backup_dataset_snapshot(
     if dry_run:
         cmd.append("--dry-run")
 
-    run_cmd(
+    completed_process = run_cmd(
         cmd,
         message=f"Back up dataset {quote(dataset)} snapshot {quote(snapshot_name)} "
                 f"to PBS repository {quote(repository)} as backup-id {quote(backup_id)}",
         dry_run=dry_run,
         read_only=False,
         env=env,
+        check=False
     )
+    if completed_process.returncode != 0:
+        # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+        logging.error(
+            "Failed to back up dataset %s snapshot %s to PBS repository %s:\n%s",
+            quote(dataset), quote(snapshot_name), quote(repository),
+            completed_process.stderr.decode().strip() if completed_process.stderr else "Unknown error"
+        )
+        raise subprocess.CalledProcessError(
+            completed_process.returncode,
+            cmd,
+            output=completed_process.stdout,
+            stderr=completed_process.stderr
+        )
 
 
 # =============================================================================
