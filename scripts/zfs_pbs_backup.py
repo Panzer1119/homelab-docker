@@ -88,7 +88,7 @@ def infer_read_only(cmd: List[str]) -> bool:
 
 
 def which(prog: str) -> Optional[str]:
-    """Return absolute path to prog if found in PATH, else None."""
+    """Return an absolute path to prog if found in PATH, else None."""
     from shutil import which as _which
     return _which(prog)
 
@@ -114,7 +114,7 @@ def run_cmd(
     - Ensure the command itself is debug-logged at most once per call, and at least
       once if it's not read-only.
     - In dry-run mode, **read-only commands still execute** (for discovery); mutating
-      commands return a dummy success result without execution.
+      commands return a fake success result without execution.
     - Always debug-log the elapsed time.
 
     Returns a subprocess.CompletedProcess (or a synthetic one in dry-run for mutating).
@@ -400,7 +400,7 @@ def is_parent_empty_excluding_child_mounts(parent_mnt: str, child_mounts: Iterab
     """
     Consider a parent dataset "empty" if its mountpoint contains no files nor directories
     *other than* the directories that are mountpoints for its child datasets.
-    Only checks immediate entries (shallow scan).
+    This only checks immediate entries (shallow scan).
     """
     parent = Path(parent_mnt)
     try:
@@ -553,7 +553,7 @@ def pbs_backup_dataset_snapshot(
         namespace: str,
         pbs_username: Optional[str],
         pbs_auth_id: Optional[str],
-        pbs_secret: Optional[str],  # password/token secret; if None we will prompt only on execute
+        pbs_secret: Optional[str],  # password/token secret; if None, we will prompt only on executing
         encryption_password: Optional[str],
         dry_run: bool,
 ) -> None:
@@ -647,7 +647,7 @@ def create_snapshots_for_plans(
     for root in recursive_roots:
         zfs_snapshot_create([root], snapname, recursive=True, hold=hold_snapshots, hold_name=hold_name, dry_run=dry_run)
 
-    # Step 3: compute descendants-covered set
+    # Step 3: compute a descendants-covered set
     def covered_by_recursive(ds: str) -> bool:
         return any(ds.startswith(recursive_root + "/") or ds == recursive_root for recursive_root in recursive_roots)
 
@@ -925,7 +925,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     else:
         logging.info("Snapshot creation skipped due to resume mode.")
 
-    # Filter to actionable items (existing snapshot & not done)
+    # Filter to actionable items (existing snapshot and not done)
     if not args.resume:
         plans = filter_plans_for_existing_unbacked(plans, snapname=snapname,
                                                    snap_done_prop=args.zfs_snapshot_done_property)
