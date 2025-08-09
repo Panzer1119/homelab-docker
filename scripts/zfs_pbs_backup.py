@@ -555,6 +555,27 @@ def destroy_snapshot_helper(
     )
 
 
+def destroy_snapshots_helper(
+        dataset_plans: List[DatasetPlan],
+        *,
+        snapshot_name: str,
+        hold_snapshots: bool,
+        hold_name: str,
+        dry_run: bool,
+):
+    """
+    Destroy snapshots for all plans, respecting holds and dry-run mode.
+    """
+    for plan in dataset_plans:
+        destroy_snapshot_helper(
+            plan.dataset,
+            snapshot_name,
+            holding_enabled=hold_snapshots,
+            our_hold_name=hold_name,
+            dry_run=dry_run,
+        )
+
+
 # =============================================================================
 # Planning & dataset selection
 # =============================================================================
@@ -1344,14 +1365,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     #     zfs_set(args.zfs_snapshot_done_property, "true", snapshot, dry_run=not args.execute)
 
     # Tear-down: release holds (if ours) and destroy snapshots
-    for plan in plans:
-        destroy_snapshot_helper(
-            plan.dataset,
-            snapshot_name,
-            holding_enabled=args.hold_snapshots,
-            our_hold_name=args.zfs_hold_name,
-            dry_run=not args.execute,
-        )
+    destroy_snapshots_helper(
+        plans,
+        snapshot_name=snapshot_name,
+        hold_snapshots=args.hold_snapshots,
+        hold_name=args.zfs_hold_name,
+        dry_run=not args.execute,
+    )
 
     return 0
 
