@@ -67,6 +67,8 @@ REQUIRED_PROGRAMS = [
     "proxmox-backup-client",  # Proxmox Backup Server client
 ]
 
+ARE_WE_ROOT = os.getuid() == 0  # Check if we are running as root (uid 0)
+
 
 # =============================================================================
 # Small utilities
@@ -107,14 +109,6 @@ def can_execute(program: str) -> bool:
     if not path:
         return False
     return os.access(path, os.X_OK)
-
-
-def are_we_root() -> bool:
-    """
-    Check if we are running as root (uid 0).
-    Returns True if we are root, False otherwise.
-    """
-    return os.getuid() == 0
 
 
 # =============================================================================
@@ -908,7 +902,7 @@ def ensure_tools():
 
 def check_permissions():
     """Check if we can execute ZFS commands."""
-    if are_we_root():
+    if ARE_WE_ROOT:
         logging.info("Running as root; ensure you trust this script and its source.")
     else:
         logging.warning("Not running as root; ensure you have sufficient permissions to read ZFS datasets.")
