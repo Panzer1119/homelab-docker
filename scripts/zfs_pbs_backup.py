@@ -1032,15 +1032,15 @@ def cleanup_orphans_if_any(
 
     if remove_orphans == "false":
         logging.warning(
-            "Found %d orphaned snapshot(s) with prefix %s; not removing (--remove-orphans=false).",
-            len(orphans), quote(snapshot_prefix),
+            "Found %d orphaned snapshot%s with prefix %s; not removing (--remove-orphans=false).",
+            len(orphans), s(orphans), quote(snapshot_prefix),
         )
         return
 
     if remove_orphans == "ask":
         logging.warning(
-            "Found %d orphaned snapshot(s) with prefix %s. There might be another instance using them.",
-            len(orphans), quote(snapshot_prefix),
+            "Found %d orphaned snapshot%s with prefix %s. There might be another instance using them.",
+            len(orphans), s(orphans), quote(snapshot_prefix),
         )
         answer = input("Remove orphaned snapshots now? [y/N]: ").strip().lower()
         if answer != "y":
@@ -1053,6 +1053,8 @@ def cleanup_orphans_if_any(
             quote(remove_orphans)
         )
         sys.exit(1)
+    logging.info("Removing %d orphaned snapshot%s with prefix %s.",
+                 len(orphans), s(orphans), quote(snapshot_prefix))
 
     for dataset, snapshot_name in orphans:
         destroy_snapshot_helper(
