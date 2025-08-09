@@ -1128,6 +1128,7 @@ def create_and_hold_snapshots(
     recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
 
     # Step 2: snapshot recursive roots
+    logging.debug("Creating snapshots for recursive roots: %s", ", ".join(recursive_roots))
     zfs_create_and_hold_snapshots(recursive_roots, snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
                                   hold_name=hold_name, dry_run=dry_run)
 
@@ -1142,8 +1143,11 @@ def create_and_hold_snapshots(
 
     # Step 4: snapshot the remaining non-recursive datasets in one go (if any)
     if non_recursive_targets:
+        logging.debug("Creating snapshots for non-recursive targets: %s", ", ".join(non_recursive_targets))
         zfs_create_and_hold_snapshots(non_recursive_targets, snapshot_name, recursive=False,
                                       hold_snapshots=hold_snapshots, hold_name=hold_name, dry_run=dry_run)
+    else:
+        logging.debug("No non-recursive datasets to snapshot; all covered by recursive roots.")
 
 
 def release_and_destroy_snapshots(
@@ -1171,6 +1175,7 @@ def release_and_destroy_snapshots(
     recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
 
     # Step 2: destroy recursive roots
+    logging.debug("Releasing and destroying snapshots for recursive roots: %s", ", ".join(recursive_roots))
     zfs_release_and_destroy_snapshots(recursive_roots, snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
                                       hold_name=hold_name, dry_run=dry_run)
 
@@ -1185,8 +1190,12 @@ def release_and_destroy_snapshots(
 
     # Step 4: destroy the remaining non-recursive datasets in one go (if any)
     if non_recursive_targets:
+        logging.debug("Releasing and destroying snapshots for non-recursive targets: %s",
+                      ", ".join(non_recursive_targets))
         zfs_release_and_destroy_snapshots(non_recursive_targets, snapshot_name, recursive=False,
                                           hold_snapshots=hold_snapshots, hold_name=hold_name, dry_run=dry_run)
+    else:
+        logging.debug("No non-recursive datasets to release and destroy; all covered by recursive roots.")
 
 
 def mark_snapshot_timestamp(
