@@ -62,6 +62,11 @@ READ_ONLY_ZFS_SUB_COMMANDS = {
     ("zfs", "holds"),
 }
 
+REQUIRED_PROGRAMS = [
+    "zfs",  # ZFS command-line tool
+    "proxmox-backup-client",  # Proxmox Backup Server client
+]
+
 
 # =============================================================================
 # Small utilities
@@ -836,7 +841,7 @@ def configure_logging(verbose: bool, debug: bool, quiet: bool):
 
 def ensure_tools():
     """Abort early if required CLI tools are not available."""
-    missing = [program for program in ("zfs", "proxmox-backup-client") if which(program) is None]
+    missing = [program for program in REQUIRED_PROGRAMS if which(program) is None]
     if missing:
         logging.error("Missing required tools: %s", ", ".join(missing))
         sys.exit(2)
