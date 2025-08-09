@@ -1109,9 +1109,8 @@ def create_and_hold_snapshots(
     recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
 
     # Step 2: snapshot recursive roots
-    for root in recursive_roots:
-        zfs_create_and_hold_snapshots([root], snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
-                                      hold_name=hold_name, dry_run=dry_run)
+    zfs_create_and_hold_snapshots(recursive_roots, snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
+                                  hold_name=hold_name, dry_run=dry_run)
 
     # Step 3: compute a descendants-covered set
     def covered_by_recursive(dataset: str) -> bool:
@@ -1150,9 +1149,8 @@ def release_and_destroy_snapshots(
     recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
 
     # Step 2: destroy recursive roots
-    for root in recursive_roots:
-        zfs_release_and_destroy_snapshots([root], snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
-                                          hold_name=hold_name, dry_run=dry_run)
+    zfs_release_and_destroy_snapshots(recursive_roots, snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
+                                      hold_name=hold_name, dry_run=dry_run)
 
     # Step 3: compute a descendants-covered set
     def covered_by_recursive(dataset: str) -> bool:
