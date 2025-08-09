@@ -704,6 +704,35 @@ def find_orphan_snapshots(
 # Proxmox Backup Server helper
 # =============================================================================
 
+def pbs_build_repository_string(
+        *,
+        username: Optional[str],
+        token_name: Optional[str],
+        server: Optional[str],
+        port: Optional[int],
+        datastore: Optional[str],
+) -> str:
+    """
+    Build a Proxmox Backup Server repository string.
+
+    Format: [[username@]server[:port]:]datastore
+    """
+    if not datastore:
+        raise ValueError("Datastore must be specified for PBS repository string.")
+    repo_parts = []
+    if username:
+        if token_name:
+            repo_parts.append(f"{username}!{token_name}@")
+        else:
+            repo_parts.append(f"{username}@")
+    if server:
+        repo_parts.append(f"{server}:")
+    if port:
+        repo_parts.append(f"{port}:")
+    repo_parts.append(datastore)
+    return "".join(repo_parts)
+
+
 def pbs_backup_dataset_snapshot(
         *,
         dataset: str,
