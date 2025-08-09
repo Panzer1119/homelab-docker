@@ -781,6 +781,35 @@ def pbs_status(
         sys.exit(1)
 
 
+def pbs_create_archive_name(*,
+                            dataset: str,
+                            mountpoint: str,
+                            snapshot_name: str,
+                            archive_name_prefix: Optional[str]
+                            ) -> str:
+    """
+    Create a Proxmox Backup Server archive name for the dataset snapshot.
+
+    Format: <archive_name_prefix><dataset with '/' -> '_'>.pxar:<snapshot directory>
+    """
+    snapshot_directory = snapshot_path_on_disk(mountpoint, snapshot_name)
+    if not snapshot_directory.exists():
+        logging.error("Skip dataset %s: snapshot directory %s does not exist.",
+                      quote(dataset), quote(str(snapshot_directory)))
+        sys.exit(1)
+    elif not snapshot_directory.is_dir():
+        logging.warning("Skip dataset %s: snapshot directory %s is not a directory.",
+                        quote(dataset), quote(str(snapshot_directory)))
+        # sys.exit(1) # Even if it's not a directory, we could still archive it
+    elif not os.access(snapshot_directory, os.R_OK):
+        logging.error("Skip dataset %s: snapshot directory %s is not readable.",
+                      quote(dataset), quote(str(snapshot_directory)))
+        # sys.exit(1)
+
+    dataset_id = dataset.replace("/", "_")
+    return f"{archive_name_prefix or ""}{dataset_id}.pxar:{str(snapshot_directory)}"
+
+
 def pbs_backup_dataset_snapshot(
         *,
         dataset: str,
