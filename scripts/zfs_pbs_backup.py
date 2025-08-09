@@ -22,7 +22,7 @@ Highlights
 Typical flow
 ------------
 1) Determine run timestamp (or resume a previous one).
-2) Optionally remove orphaned snapshots (ask/true/false/only).
+2) Optionally remove orphaned snapshots (ask/true/false/only/force-release).
 3) Read include-mode property on datasets recursively and build the work plan.
 4) Create snapshots (with -r for recursive/children modes), set timestamp property, and clear backed flag.
 5) Back up each dataset’s snapshot (pxar) to PBS and mark it backed.
@@ -643,6 +643,7 @@ def zfs_release_and_destroy_snapshots(
         hold_snapshots: bool,
         hold_name: str,
         dry_run: bool,
+        force_release: bool = False,
 ):
     """
     Release holds (if any) and destroy snapshots (optionally recursive).
@@ -656,7 +657,7 @@ def zfs_release_and_destroy_snapshots(
     holds_by_snapshot: Dict[str, List[str]] = zfs_holds(snapshots, recursive=recursive, dry_run=dry_run)
 
     # Filter snapshots
-    snapshots_to_release: List[str] = []
+    snapshots_to_release_by_hold: Dict[str, List[str]] = {}
     snapshots_to_destroy: List[str] = []
     for snapshot, holds in holds_by_snapshot.items():
         # Skip if snapshot does not contain an at-sign (not a snapshot)
@@ -668,8 +669,11 @@ def zfs_release_and_destroy_snapshots(
             snapshots_to_destroy.append(snapshot)
             continue
         # If holds exist and the only hold equals our hold name, we can release the hold and destroy
-        if hold_snapshots and set(holds) == {hold_name}:
-            snapshots_to_release.append(snapshot)
+        if (hold_snapshots and set(holds) == {hold_name}) or force_release:
+            for hold in holds:
+                if not hold in snapshots_to_release_by_hold:
+                    snapshots_to_release_by_hold[hold] = []
+                snapshots_to_release_by_hold[hold].append(snapshot)
             snapshots_to_destroy.append(snapshot)
             continue
         # Otherwise, we cannot destroy the snapshot (external holds interfere)
@@ -679,11 +683,10 @@ def zfs_release_and_destroy_snapshots(
         )
 
     # Make snapshots unique
-    snapshots_to_release = list(set(snapshots_to_release))
     snapshots_to_destroy = list(set(snapshots_to_destroy))
 
     # If no snapshots to release, we're done
-    if not snapshots_to_release and not snapshots_to_destroy:
+    if not snapshots_to_release_by_hold and not snapshots_to_destroy:
         if dry_run:
             logging.info("No snapshots to release or destroy in dry-run mode.")
         else:
@@ -691,13 +694,20 @@ def zfs_release_and_destroy_snapshots(
         return
 
     # Release holds (optional)
-    if hold_snapshots:
-        zfs_release_snapshots(
-            snapshots_to_release,
-            hold_name,
-            recursive=recursive,
-            dry_run=dry_run,
-        )
+    if hold_snapshots or force_release:
+        if force_release and (
+                len(snapshots_to_release_by_hold.keys()) > 1 or hold_name not in snapshots_to_release_by_hold):
+            # Warn if force release is about to release external holds
+            logging.warning("Force release is enabled, releasing %d hold%s:%s",
+                            len(snapshots_to_release_by_hold.keys()), s(len(snapshots_to_release_by_hold.keys())),
+                            ", ".join(quote(hold) for hold in snapshots_to_release_by_hold.keys()))
+        for hold, snapshots_to_release in snapshots_to_release_by_hold.items():
+            zfs_release_snapshots(
+                snapshots_to_release,
+                hold,
+                recursive=recursive,
+                dry_run=dry_run,
+            )
 
     # If no snapshots to destroy, we're done
     if not snapshots_to_destroy:
@@ -1194,7 +1204,7 @@ def cleanup_orphans_if_any(
         snapshot_prefix: str,
         timestamp_current: str,
         property_snapshot_timestamp: str,
-        remove_orphans: str,  # "true" | "false" | "ask" | "only"
+        remove_orphans: str,  # "true" | "false" | "ask" | "only" | "force-release"
         hold_snapshots: bool,
         hold_name: str,
         dry_run: bool,
@@ -1231,9 +1241,9 @@ def cleanup_orphans_if_any(
             logging.info("Skipping orphan removal.")
             return
 
-    if remove_orphans not in ["true", "ask", "only"]:
+    if remove_orphans not in ["true", "ask", "only", "force-release"]:
         logging.error(
-            "Invalid --remove-orphans value: %s; expected 'true', 'false', 'ask', or 'only'.",
+            "Invalid --remove-orphans value: %s; expected 'true', 'false', 'ask', 'only', or 'force-release'.",
             quote(remove_orphans)
         )
         sys.exit(1)
@@ -1248,7 +1258,8 @@ def cleanup_orphans_if_any(
             recursive=False,
             hold_snapshots=hold_snapshots,
             hold_name=hold_name,
-            dry_run=dry_run
+            dry_run=dry_run,
+            force_release=remove_orphans == "force-release",
         )
 
 
@@ -1299,8 +1310,9 @@ def build_parser() -> argparse.ArgumentParser:
                        help="Hold temporary snapshots until they are backed up.")
     g_zfs.add_argument("-X", "--exclude-empty-parents", action=argparse.BooleanOptionalAction, default=True,
                        help="If a dataset has children and is empty itself, skip backing up the parent dataset.")
-    g_zfs.add_argument("-O", "--remove-orphans", choices=["true", "false", "ask", "only"], default="ask",
-                       help="Remove orphaned snapshots whose timestamp does not match the current run. Option 'only' will only remove orphans and not create new snapshots or backups.")
+    g_zfs.add_argument("-O", "--remove-orphans", choices=["true", "false", "ask", "only", "force-release"],
+                       default="ask",
+                       help="Remove orphaned snapshots whose timestamp does not match the current run. Option 'only' will only remove orphans and not create new snapshots or backups. Option 'force-release' will release all (even external) holds on orphaned snapshots and destroy them.")
 
     # ZFS label options (group)
     g_zfs_l = p.add_argument_group("ZFS label options")
@@ -1434,7 +1446,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     logging.debug("Snapshot name: %s, timestamp current: %s, timestamp now: %s", quote(snapshot_name),
                   timestamp_current, timestamp_now)
 
-    # Orphan cleanup (ask/true/false/only)
+    # Orphan cleanup (ask/true/false/only/force-release)
     cleanup_orphans_if_any(
         dataset_plans,
         snapshot_prefix=args.zfs_snapshot_prefix,
