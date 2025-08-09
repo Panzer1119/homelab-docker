@@ -439,7 +439,7 @@ def zfs_hold_snapshots(snapshots: List[str], hold_name: str, *, recursive: bool,
     cmd: List[str] = ["zfs", "hold"]
     if recursive:
         cmd.append("-r")
-    cmd += hold_name
+    cmd += [hold_name]
     cmd += snapshots
 
     # Run the command
@@ -455,7 +455,7 @@ def zfs_hold_snapshots(snapshots: List[str], hold_name: str, *, recursive: bool,
         check_zfs_datasets_exist(snapshots, completed_process, cmd=cmd, types=["snapshot"])
 
 
-def zfs_holds(snapshots: List[str], *, recursive: bool, dry_run: bool) -> List[str]:
+def zfs_holds(snapshots: List[str], *, recursive: bool, dry_run: bool) -> Dict[str, List[str]]:
     """
     List holds on ZFS snapshots.
     """
@@ -465,7 +465,7 @@ def zfs_holds(snapshots: List[str], *, recursive: bool, dry_run: bool) -> List[s
             logging.info("No snapshots to check holds in dry-run mode.")
         else:
             logging.info("No snapshots to check holds.")
-        return []
+        return {}
     # Make snapshots unique
     snapshots: List[str] = list(set(snapshots))
     # Build the command
@@ -481,14 +481,16 @@ def zfs_holds(snapshots: List[str], *, recursive: bool, dry_run: bool) -> List[s
         check_zfs_datasets_exist(snapshots, completed_process, cmd=cmd, types=["snapshot"])
 
     # Parse the output
-    holds = []
+    holds_by_snapshot: Dict[str, List[str]] = {}
     for line in completed_process.stdout.decode().splitlines():
         if not line.strip():
             continue
         # <snapshot>\t<tag>\t<timestamp>
         snapshot, tag, timestamp = line.split("\t", 2)
-        holds.append(tag)
-    return holds
+        if snapshot not in holds_by_snapshot:
+            holds_by_snapshot[snapshot] = []
+        holds_by_snapshot[snapshot].append(tag)
+    return holds_by_snapshot
 
 
 def zfs_release_snapshots(snapshots: List[str], hold_name: str, *, recursive: bool, dry_run: bool) -> None:
@@ -648,11 +650,11 @@ def zfs_release_and_destroy_snapshots(
     snapshots = list(set(snapshots))
 
     # Get holds on the snapshots
-    holds_by_snapshot: dict[str, list[str]] = {snapshot: zfs_holds(snapshot) for snapshot in snapshots}
+    holds_by_snapshot: Dict[str, List[str]] = zfs_holds(snapshots, recursive=recursive, dry_run=dry_run)
 
     # Filter snapshots
-    snapshots_to_release: list[str] = []
-    snapshots_to_destroy: list[str] = []
+    snapshots_to_release: List[str] = []
+    snapshots_to_destroy: List[str] = []
     for snapshot, holds in holds_by_snapshot.items():
         # Skip if snapshot does not contain an at-sign (not a snapshot)
         if "@" not in snapshot:
@@ -1238,7 +1240,7 @@ def cleanup_orphans_if_any(
                  orphan_snapshot_length, s(orphan_snapshot_length), quote(snapshot_prefix))
 
     # Release holds and destroy orphaned snapshots
-    for snapshot_name, datasets in orphan_datasets_by_snapshot_name:
+    for snapshot_name, datasets in orphan_datasets_by_snapshot_name.items():
         zfs_release_and_destroy_snapshots(
             datasets,
             snapshot_name,
