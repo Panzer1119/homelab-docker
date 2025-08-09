@@ -238,6 +238,53 @@ def zfs_list(
     return [line.split("\t") for line in output if line.strip()]
 
 
+def zfs_dataset_exists(
+        dataset: str,
+        *,
+        types: Optional[List[str]] = None,
+) -> bool:
+    """
+    Check if a ZFS dataset exists and is of the specified type(s).
+
+    Equivalent to:
+        zfs list -H -p -o name -t <types> <dataset>
+
+    Returns True if the dataset exists and matches the type(s), False otherwise.
+    """
+    if types is None:
+        types = ["filesystem", "snapshot"]
+    cmd = ["zfs", "list", "-H", "-p", "-o", "name"]
+    if types:
+        cmd += ["-t", ",".join(types)]
+    cmd.append(dataset)
+    try:
+        completed_process = run_cmd(cmd, dry_run=False, read_only=True, check=False)
+        return bool(completed_process.stdout.strip())
+    except subprocess.CalledProcessError:
+        return False
+
+
+def check_zfs_datasets_exist(
+        datasets: List[str],
+        *,
+        types: Optional[List[str]] = None,
+        check_permission: bool = True,
+):
+    """
+    Check if all ZFS datasets exist and are of the specified type(s).
+    Raises an exception if any dataset does not exist or is of the wrong type.
+    """
+    if types is None:
+        types = ["filesystem", "snapshot"]
+    for dataset in datasets:
+        if not zfs_dataset_exists(dataset, types=types):
+            logging.error(f"Dataset {quote(dataset)} does not exist or is not a ZFS {'/'.join(types)}.")
+            sys.exit(1)
+    if check_permission and not ARE_WE_ROOT:
+        logging.error("This operation requires root privileges (uid 0) or ZFS permissions to be set up correctly.")
+        sys.exit(1)
+
+
 def zfs_get(
         properties: List[str],
         target: str,
