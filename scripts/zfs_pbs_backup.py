@@ -773,6 +773,11 @@ def pbs_backup_dataset_snapshot(
     archive_name = f"{archive_name_prefix or ""}{dataset_id}.pxar:{str(snapshot_directory)}"
 
     env = {}
+    if repository:
+        env["REPOSITORY"] = repository
+    else:
+        logging.error("PBS repository must be specified.")
+        sys.exit(1)
     if secret:
         env["PBS_PASSWORD"] = secret
     if encryption_password:
@@ -783,7 +788,6 @@ def pbs_backup_dataset_snapshot(
     cmd = [
         "proxmox-backup-client", "backup",
         archive_name,
-        "--repository", repository,
         "--backup-type", "host",
         "--backup-id", backup_id,
         "--backup-time", backup_time,
