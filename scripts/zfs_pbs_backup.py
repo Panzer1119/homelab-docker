@@ -725,6 +725,14 @@ def pbs_backup_dataset_snapshot(
         logging.warning("Skip dataset %s: snapshot directory %s does not exist.",
                         quote(dataset), quote(str(snapshot_directory)))
         return
+    elif not snapshot_directory.is_dir():
+        logging.warning("Skip dataset %s: snapshot directory %s is not a directory.",
+                        quote(dataset), quote(str(snapshot_directory)))
+        return
+    elif not os.access(snapshot_directory, os.R_OK):
+        logging.warning("Skip dataset %s: snapshot directory %s is not readable.",
+                        quote(dataset), quote(str(snapshot_directory)))
+        return
 
     dataset_id = dataset.replace("/", "_")
     backup_id = f"{backup_id_prefix}{dataset}"
