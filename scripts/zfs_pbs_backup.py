@@ -155,7 +155,6 @@ def run_cmd(
 # =============================================================================
 
 def zfs_list(
-        what: str,
         *,
         dataset: Optional[str] = None,
         recursive: bool = False,
@@ -313,7 +312,6 @@ def get_mountpoints_recursively(root_dataset: str) -> Dict[str, str]:
     Return {dataset: mountpoint} for root and all descendant filesystems.
     """
     rows = zfs_list(
-        "filesystems",
         dataset=root_dataset,
         recursive=True,
         columns=["name", "mountpoint"],
@@ -328,7 +326,6 @@ def list_snapshots_for_dataset(dataset: str, prefix: str) -> List[str]:
     e.g. "pool/data@zfs-pbs-backup_1699999999"
     """
     rows = zfs_list(
-        "snapshots",
         dataset=dataset,
         recursive=False,
         columns=["name"],
