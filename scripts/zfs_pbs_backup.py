@@ -374,7 +374,8 @@ def zfs_snapshot_create(
     if recursive:
         cmd.append("-r")
     cmd += [f"{dataset}@{snapshot_name}" for dataset in datasets]
-    completed_process = run_cmd(cmd, message=f"Create snapshot(s) {quote(snapshot_name)}", dry_run=dry_run,
+    completed_process = run_cmd(cmd, message=f"Create {len(datasets)} snapshot{s(datasets)} {quote(snapshot_name)}",
+                                dry_run=dry_run,
                                 read_only=False, check=False)
     # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
     if completed_process.returncode != 0:
@@ -394,7 +395,7 @@ def zfs_snapshot_create(
         cmd += [hold_name] + [f"{dataset}@{snapshot_name}" for dataset in datasets]
         completed_process = run_cmd(
             cmd,
-            message=f"Hold snapshot(s) {quote(snapshot_name)} with hold name {quote(hold_name)}",
+            message=f"Hold {len(datasets)} snapshot{s(datasets)} {quote(snapshot_name)} with hold name {quote(hold_name)}",
             dry_run=dry_run,
             read_only=False,
             check=False
