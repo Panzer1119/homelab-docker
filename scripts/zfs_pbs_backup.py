@@ -774,7 +774,7 @@ def pbs_backup_dataset_snapshot(
 
     env = {}
     if repository:
-        env["REPOSITORY"] = repository
+        env["PBS_REPOSITORY"] = repository
     else:
         logging.error("PBS repository must be specified.")
         sys.exit(1)
