@@ -977,7 +977,7 @@ def mark_snapshot_timestamp_and_reset_done(
             continue
         snapshot = f"{plan.dataset}@{snapshot_name}"
         zfs_set(property_snapshot_timestamp, timestamp, snapshot, dry_run=dry_run)
-        zfs_set(property_snapshot_done, "false", snapshot, dry_run=dry_run)
+        # zfs_set(property_snapshot_done, "false", snapshot, dry_run=dry_run)
 
 
 def filter_plans_for_existing_unbacked(
@@ -1325,11 +1325,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         dry_run=not args.execute,
     )
 
-    # After successful backup, mark the snapshots as done
-    for plan in plans:
-        # Mark as backed up
-        snapshot = f"{plan.dataset}@{snapshot_name}"
-        zfs_set(args.zfs_snapshot_done_property, "true", snapshot, dry_run=not args.execute)
+    # # After successful backup, mark the snapshots as done
+    # for plan in plans:
+    #     # Mark as backed up
+    #     snapshot = f"{plan.dataset}@{snapshot_name}"
+    #     zfs_set(args.zfs_snapshot_done_property, "true", snapshot, dry_run=not args.execute)
 
     # Tear-down: release holds (if ours) and destroy snapshots
     for plan in plans:
