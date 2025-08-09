@@ -780,10 +780,14 @@ def pbs_backup_dataset_snapshot(
         sys.exit(1)
     if secret:
         env["PBS_PASSWORD"] = secret
+    else:
+        logging.error("PBS secret (password or token) must be specified.")
+        sys.exit(1)
     if encryption_password:
         env["PBS_ENCRYPTION_PASSWORD"] = encryption_password
     if fingerprint:
         env["PBS_FINGERPRINT"] = fingerprint
+        logging.debug("Using PBS fingerprint: %s", quote(fingerprint))
 
     cmd = [
         "proxmox-backup-client", "backup",
