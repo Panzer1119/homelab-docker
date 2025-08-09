@@ -566,9 +566,9 @@ def destroy_snapshots_helper(
     """
     Destroy snapshots for all plans, respecting holds and dry-run mode.
     """
-    for plan in dataset_plans:
+    for dataset_plan in dataset_plans:
         destroy_snapshot_helper(
-            plan.dataset,
+            dataset_plan.dataset,
             snapshot_name,
             holding_enabled=hold_snapshots,
             our_hold_name=hold_name,
@@ -625,7 +625,7 @@ def collect_datasets_to_backup(
     - "children" excludes processing the parent itself (children only).
     - Optionally skip empty parents (with children) for "true"/"recursive".
     """
-    plans: List[DatasetPlan] = []
+    dataset_plans: List[DatasetPlan] = []
 
     for root_dataset in root_datasets:
         mountpoint_by_dataset = get_mountpoints_recursively(root_dataset)
@@ -662,7 +662,7 @@ def collect_datasets_to_backup(
                     logging.info("Skip empty parent dataset %s at %s", quote(dataset), quote(mountpoint))
 
             if include_mode != "false":
-                plans.append(DatasetPlan(
+                dataset_plans.append(DatasetPlan(
                     dataset=dataset,
                     mountpoint=mountpoint,
                     include_mode=include_mode,
@@ -670,7 +670,7 @@ def collect_datasets_to_backup(
                     process_self=process_self,
                 ))
 
-    return plans
+    return dataset_plans
 
 
 # =============================================================================
@@ -688,8 +688,8 @@ def find_resume_timestamp(
     Prefer the stored property; fall back to parsing the name suffix.
     """
     timestamp_newest: Optional[str] = None
-    for plan in dataset_plans:
-        snapshots = list_snapshots_for_dataset(plan.dataset, snapshot_prefix)
+    for dataset_plan in dataset_plans:
+        snapshots = list_snapshots_for_dataset(dataset_plan.dataset, snapshot_prefix)
         for snapshot in snapshots:
             snapshot_name = snapshot.split("@", 1)[1]
             properties = zfs_get([property_snapshot_timestamp], snapshot)
@@ -717,8 +717,8 @@ def find_orphan_snapshots(
     do not belong to the current run timestamp.
     """
     orphans: List[Tuple[str, str]] = []
-    for plan in dataset_plans:
-        snapshots = list_snapshots_for_dataset(plan.dataset, snapshot_prefix)
+    for dataset_plan in dataset_plans:
+        snapshots = list_snapshots_for_dataset(dataset_plan.dataset, snapshot_prefix)
         for snapshot in snapshots:
             dataset, snapshot_name = snapshot.split("@", 1)
             properties = zfs_get([property_snapshot_timestamp], snapshot)
@@ -843,7 +843,7 @@ def pbs_create_archive_name(*,
 
 def pbs_backup_dataset_snapshot(
         *,
-        plans: List[DatasetPlan],
+        dataset_plans: List[DatasetPlan],
         snapshot_name: str,
         repository: str,
         secret: Optional[str],  # password/token secret; if None, we will prompt only on executing
@@ -861,12 +861,12 @@ def pbs_backup_dataset_snapshot(
     """
     archive_names = [
         pbs_create_archive_name(
-            dataset=plan.dataset,
-            mountpoint=plan.mountpoint,
+            dataset=dataset_plan.dataset,
+            mountpoint=dataset_plan.mountpoint,
             snapshot_name=snapshot_name,
             archive_name_prefix=archive_name_prefix,
         )
-        for plan in plans
+        for dataset_plan in dataset_plans
     ]
 
     env = {}
@@ -979,7 +979,8 @@ def create_snapshots_for_dataset_plans(
         return any(
             dataset.startswith(recursive_root + "/") or dataset == recursive_root for recursive_root in recursive_roots)
 
-    non_recursive_candidates = [plan.dataset for plan in dataset_plans if not plan.recursive_for_snapshot]
+    non_recursive_candidates = [dataset_plan.dataset for dataset_plan in dataset_plans if
+                                not dataset_plan.recursive_for_snapshot]
     non_recursive_targets = [dataset for dataset in non_recursive_candidates if not covered_by_recursive(dataset)]
 
     # Step 4: snapshot the remaining non-recursive datasets in one go (if any)
@@ -990,7 +991,7 @@ def create_snapshots_for_dataset_plans(
 
 
 def mark_snapshot_timestamp_and_reset_done(
-        plans: List[DatasetPlan],
+        dataset_plans: List[DatasetPlan],
         *,
         dataset_filter_self_only: bool,
         snapshot_name: str,
@@ -1003,16 +1004,16 @@ def mark_snapshot_timestamp_and_reset_done(
     Stamp the snapshot with the run timestamp and clear the "backed_up" flag.
     Only applies to datasets that we will actually back up when dataset_filter_self_only=True.
     """
-    for plan in plans:
-        if dataset_filter_self_only and not plan.process_self:
+    for dataset_plan in dataset_plans:
+        if dataset_filter_self_only and not dataset_plan.process_self:
             continue
-        snapshot = f"{plan.dataset}@{snapshot_name}"
+        snapshot = f"{dataset_plan.dataset}@{snapshot_name}"
         zfs_set(property_snapshot_timestamp, timestamp, snapshot, dry_run=dry_run)
         # zfs_set(property_snapshot_done, "false", snapshot, dry_run=dry_run)
 
 
 def filter_plans_for_existing_unbacked(
-        plans: List[DatasetPlan],
+        dataset_plans: List[DatasetPlan],
         *,
         snapshot_name: str,
         property_snapshot_done: str,
@@ -1021,21 +1022,21 @@ def filter_plans_for_existing_unbacked(
     Keep only datasets where the snapshot exists and is not yet marked as backed up.
     """
     selected: List[DatasetPlan] = []
-    for plan in plans:
-        snapshot = f"{plan.dataset}@{snapshot_name}"
+    for dataset_plan in dataset_plans:
+        snapshot = f"{dataset_plan.dataset}@{snapshot_name}"
         try:
             properties = zfs_get([property_snapshot_done], snapshot)
         except subprocess.CalledProcessError:
             # Snapshot missing
             continue
         done = properties.get(property_snapshot_done, "").strip().lower() == "true"
-        if not done and plan.process_self:
-            selected.append(plan)
+        if not done and dataset_plan.process_self:
+            selected.append(dataset_plan)
     return selected
 
 
 def cleanup_orphans_if_any(
-        plans: List[DatasetPlan],
+        dataset_plans: List[DatasetPlan],
         *,
         snapshot_prefix: str,
         timestamp_current: str,
@@ -1046,7 +1047,7 @@ def cleanup_orphans_if_any(
         dry_run: bool,
 ) -> None:
     """Find and optionally remove orphan snapshots from previous runs."""
-    orphans = find_orphan_snapshots(plans, snapshot_prefix=snapshot_prefix, timestamp_current=timestamp_current,
+    orphans = find_orphan_snapshots(dataset_plans, snapshot_prefix=snapshot_prefix, timestamp_current=timestamp_current,
                                     property_snapshot_timestamp=property_snapshot_timestamp)
     if not orphans:
         return
@@ -1239,19 +1240,19 @@ def main(argv: Optional[List[str]] = None) -> int:
             pbs_secret = ""
 
     # Build the plan
-    plans = collect_datasets_to_backup(
+    dataset_plans = collect_datasets_to_backup(
         root_datasets=args.datasets,
         property_include=args.zfs_include_property,
         exclude_empty_parents=args.exclude_empty_parents,
     )
-    if not plans:
+    if not dataset_plans:
         logging.warning("No datasets selected. Check %s property values.", quote(args.zfs_include_property))
         return 0
 
     # Determine snapshot name
     timestamp_now = str(int(time.time()))
     if args.resume:
-        timestamp_newest = find_resume_timestamp(plans, snapshot_prefix=args.zfs_snapshot_prefix,
+        timestamp_newest = find_resume_timestamp(dataset_plans, snapshot_prefix=args.zfs_snapshot_prefix,
                                                  property_snapshot_timestamp=args.zfs_snapshot_timestamp_property)
         if not timestamp_newest:
             logging.warning("Resume requested, but no suitable existing timestamp found. Aborting.")
@@ -1261,9 +1262,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         logging.warning("Resuming: skipping snapshot creation and using existing timestamp %s (snapshot %s).",
                         timestamp_newest, quote(snapshot_name))
         # Only process datasets that have this snapshot and are not marked done
-        plans = filter_plans_for_existing_unbacked(plans, snapshot_name=snapshot_name,
-                                                   property_snapshot_done=args.zfs_snapshot_done_property)
-        if not plans:
+        dataset_plans = filter_plans_for_existing_unbacked(dataset_plans, snapshot_name=snapshot_name,
+                                                           property_snapshot_done=args.zfs_snapshot_done_property)
+        if not dataset_plans:
             logging.info("Nothing to do after resume filtering.")
             return 0
     else:
@@ -1276,7 +1277,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Orphan cleanup (ask/true/false/only)
     cleanup_orphans_if_any(
-        plans,
+        dataset_plans,
         snapshot_prefix=args.zfs_snapshot_prefix,
         timestamp_current=timestamp_current,
         property_snapshot_timestamp=args.zfs_snapshot_timestamp_property,
@@ -1294,7 +1295,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     # Create snapshots (unless resuming)
     if not args.resume:
         create_snapshots_for_dataset_plans(
-            plans,
+            dataset_plans,
             snapshot_name=snapshot_name,
             hold_snapshots=args.hold_snapshots,
             hold_name=args.zfs_hold_name,
@@ -1302,7 +1303,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         )
         # Stamp timestamp and clear done flag on snapshots we will actually back up
         mark_snapshot_timestamp_and_reset_done(
-            plans,
+            dataset_plans,
             dataset_filter_self_only=True,
             snapshot_name=snapshot_name,
             property_snapshot_timestamp=args.zfs_snapshot_timestamp_property,
@@ -1315,9 +1316,9 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Filter to actionable items (existing snapshot and not done)
     if not args.resume:
-        plans = filter_plans_for_existing_unbacked(plans, snapshot_name=snapshot_name,
-                                                   property_snapshot_done=args.zfs_snapshot_done_property)
-        if not plans:
+        dataset_plans = filter_plans_for_existing_unbacked(dataset_plans, snapshot_name=snapshot_name,
+                                                           property_snapshot_done=args.zfs_snapshot_done_property)
+        if not dataset_plans:
             if args.execute:
                 logging.info("Nothing to back up (already done?).")
             else:
@@ -1344,7 +1345,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Backup the snapshots to Proxmox Backup Server
     pbs_backup_dataset_snapshot(
-        plans=plans,
+        dataset_plans=dataset_plans,
         snapshot_name=snapshot_name,
         repository=pbs_repository,
         secret=pbs_secret if pbs_secret else None,
@@ -1359,14 +1360,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
 
     # # After successful backup, mark the snapshots as done
-    # for plan in plans:
+    # for dataset_plan in dataset_plans:
     #     # Mark as backed up
-    #     snapshot = f"{plan.dataset}@{snapshot_name}"
+    #     snapshot = f"{dataset_plan.dataset}@{snapshot_name}"
     #     zfs_set(args.zfs_snapshot_done_property, "true", snapshot, dry_run=not args.execute)
 
     # Tear-down: release holds (if ours) and destroy snapshots
     destroy_snapshots_helper(
-        plans,
+        dataset_plans,
         snapshot_name=snapshot_name,
         hold_snapshots=args.hold_snapshots,
         hold_name=args.zfs_hold_name,
