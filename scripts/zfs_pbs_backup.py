@@ -948,8 +948,8 @@ def _minimize_recursive_roots(recursive_datasets: List[str]) -> List[str]:
     return minimized
 
 
-def create_snapshots_for_plans(
-        plans: List[DatasetPlan],
+def create_snapshots_for_dataset_plans(
+        dataset_plans: List[DatasetPlan],
         *,
         snapshot_name: str,
         hold_snapshots: bool,
@@ -967,7 +967,7 @@ def create_snapshots_for_plans(
          recursive root (they're already covered by step 2).
       4) Snapshot the remaining non-recursive datasets without -r (can be batched).
     """
-    recursive_roots = _minimize_recursive_roots([p.dataset for p in plans if p.recursive_for_snapshot])
+    recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
 
     # Step 2: snapshot recursive roots
     for root in recursive_roots:
@@ -979,7 +979,7 @@ def create_snapshots_for_plans(
         return any(
             dataset.startswith(recursive_root + "/") or dataset == recursive_root for recursive_root in recursive_roots)
 
-    non_recursive_candidates = [plan.dataset for plan in plans if not plan.recursive_for_snapshot]
+    non_recursive_candidates = [plan.dataset for plan in dataset_plans if not plan.recursive_for_snapshot]
     non_recursive_targets = [dataset for dataset in non_recursive_candidates if not covered_by_recursive(dataset)]
 
     # Step 4: snapshot the remaining non-recursive datasets in one go (if any)
@@ -1293,7 +1293,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Create snapshots (unless resuming)
     if not args.resume:
-        create_snapshots_for_plans(
+        create_snapshots_for_dataset_plans(
             plans,
             snapshot_name=snapshot_name,
             hold_snapshots=args.hold_snapshots,
