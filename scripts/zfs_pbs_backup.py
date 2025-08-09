@@ -98,6 +98,17 @@ def which(program: str) -> Optional[str]:
     return _which(program)
 
 
+def can_execute(program: str) -> bool:
+    """
+    Check if a program is executable.
+    Returns True if the program exists and is executable, False otherwise.
+    """
+    path = which(program)
+    if not path:
+        return False
+    return os.access(path, os.X_OK)
+
+
 # =============================================================================
 # Command runner with timing & dry-run semantics
 # =============================================================================
@@ -844,6 +855,11 @@ def ensure_tools():
     missing = [program for program in REQUIRED_PROGRAMS if which(program) is None]
     if missing:
         logging.error("Missing required tools: %s", ", ".join(missing))
+        sys.exit(2)
+
+    unaccessible = [program for program in REQUIRED_PROGRAMS if not can_execute(program)]
+    if unaccessible:
+        logging.error("Required tools are not executable: %s", ", ".join(unaccessible))
         sys.exit(2)
 
 
