@@ -176,7 +176,7 @@ def run_cmd(
         # Disable check if message_for_return_codes is provided, as it will handle errors
         if message_for_return_codes is not None:
             check = False
-        completed_process = subprocess.run(
+        completed_process: subprocess.CompletedProcess = subprocess.run(
             cmd,
             env={**os.environ, **(env or {})},
             check=check,
@@ -219,7 +219,7 @@ def check_command_success(cmd: List[str], completed_process: subprocess.Complete
 
 
 # =============================================================================
-# ZFS helpers (the only place that runs zfs commands)
+# ZFS wrappers (the only place that runs zfs commands)
 # =============================================================================
 
 def zfs_list(
@@ -241,15 +241,16 @@ def zfs_list(
         columns = ["name"]
     if types is None:
         types = ["filesystem"]
-    cmd = ["zfs", "list", "-H", "-p", "-o", ",".join(columns)]
+    cmd: List[str] = ["zfs", "list", "-H", "-p", "-o", ",".join(columns)]
     if recursive:
         cmd.append("-r")
     if types:
         cmd += ["-t", ",".join(types)]
     if dataset:
         cmd.append(dataset)
-    completed_process = run_cmd(cmd, message=None, dry_run=False, read_only=True, message_for_return_codes={
-        1: f"Dataset {quote(dataset)} does not exist or is not a ZFS {"/".join(types)}."})
+    completed_process: subprocess.CompletedProcess = run_cmd(cmd, message=None, dry_run=False, read_only=True,
+                                                             message_for_return_codes={
+                                                                 1: f"Dataset {quote(dataset)} does not exist or is not a ZFS {"/".join(types)}."})
     output = completed_process.stdout.decode().splitlines()
     return [line.split("\t") for line in output if line.strip()]
 
@@ -269,12 +270,12 @@ def zfs_dataset_exists(
     """
     if types is None:
         types = ["filesystem", "snapshot"]
-    cmd = ["zfs", "list", "-H", "-p", "-o", "name"]
+    cmd: List[str] = ["zfs", "list", "-H", "-p", "-o", "name"]
     if types:
         cmd += ["-t", ",".join(types)]
     cmd.append(dataset)
     try:
-        completed_process = run_cmd(cmd, dry_run=False, read_only=True, check=False)
+        completed_process: subprocess.CompletedProcess = run_cmd(cmd, dry_run=False, read_only=True, check=False)
         return bool(completed_process.stdout.strip())
     except subprocess.CalledProcessError:
         return False
@@ -282,6 +283,7 @@ def zfs_dataset_exists(
 
 def check_zfs_datasets_exist(
         datasets: List[str],
+        completed_process: subprocess.CompletedProcess,
         *,
         types: Optional[List[str]] = None,
         check_permission: bool = True,
@@ -302,181 +304,266 @@ def check_zfs_datasets_exist(
             logging.error(f"Command: {quote(' '.join(cmd))}")
         logging.error("This operation requires root privileges (uid 0) or ZFS permissions to be set up correctly.")
         sys.exit(1)
+    raise subprocess.CalledProcessError(
+        completed_process.returncode,
+        cmd,
+        output=completed_process.stdout,
+        stderr=completed_process.stderr,
+    )
 
 
 def zfs_get(
+        datasets: List[str],
         properties: List[str],
-        target: str,
         *,
-        source_order: str = "local,received,default,inherited",
-) -> Dict[str, str]:
+        source_order: List[str] = None,
+) -> Dict[str, Dict[str, str]]:
     """
-    Get ZFS properties for dataset/snapshot with parsable output.
-
-    Equivalent to:
-        zfs get -H -p -o property,value,source -s <sources> <props> <target>
-
-    Returns {property: value}.
+    Get ZFS properties for datasets with parsable output.
     """
-    cmd = [
+    if source_order is None:
+        source_order = ["local", "received", "default", "inherited"]
+    # If no datasets to get properties from, we're done
+    if not datasets:
+        logging.info("No datasets to get properties from.")
+        return {}
+    # Make datasets unique
+    datasets: List[str] = list(set(datasets))
+    # Build the command
+    cmd: List[str] = [
         "zfs", "get", "-H", "-p",
-        "-o", "property,value,source",
-        "-s", source_order,
+        "-o", "name,property,value,source",
+        "-s", ",".join(source_order),
         ",".join(properties),
-        target,
     ]
-    completed_process = run_cmd(cmd, dry_run=False, read_only=True)
-    result: Dict[str, str] = {}
+    cmd += datasets
+    # Run the command
+    completed_process: subprocess.CompletedProcess = run_cmd(cmd, dry_run=False, read_only=True, check=False)
+    # If the command failed, it's either because the datasets do not exist or we don't have enough permissions.
+    if completed_process.returncode != 0:
+        check_zfs_datasets_exist(datasets, completed_process, cmd=cmd)
+
+    properties_by_dataset: Dict[str, Dict[str, str]] = {}
     for line in completed_process.stdout.decode().splitlines():
         if not line.strip():
             continue
-        key, value, _source = line.split("\t", 2)
-        result[key] = value
-    return result
+        dataset, key, value, source = line.split("\t", 3)
+        if dataset not in properties_by_dataset:
+            properties_by_dataset[dataset] = {}
+        properties_by_dataset[dataset][key] = value
+    return properties_by_dataset
 
 
-def zfs_set(key: str, value: str, target: str, *, dry_run: bool):
-    """Set a single ZFS property."""
-    cmd = ["zfs", "set", f"{key}={value}", target]
-    completed_process = run_cmd(
+def zfs_set(datasets: List[str], properties: Dict[str, str], *, dry_run: bool) -> None:
+    """
+    Set a ZFS property on datasets.
+    """
+    # If no datasets to set properties on, we're done
+    if not datasets:
+        if dry_run:
+            logging.info("No datasets to set properties on in dry-run mode.")
+        else:
+            logging.info("No datasets to set properties on.")
+        return
+    # Make datasets unique
+    datasets: List[str] = list(set(datasets))
+    # Build the command
+    cmd: List[str] = ["zfs", "set"]
+    cmd += [f"{key}={value}" for key, value in properties.items()]
+    cmd += datasets
+
+    # Run the command
+    completed_process: subprocess.CompletedProcess = run_cmd(
         cmd,
-        message=f"Set ZFS property {quote(key)}={quote(value)} on {quote(target)}",
+        message=f"Set ZFS properties {", ".join([f"{quote(key)}={quote(value)}" for key, value in properties.items()])} on {len(datasets)} dataset{s(datasets)}",
         dry_run=dry_run,
         read_only=False,
         debug_log=True,
         check=False
     )
-    # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+    # If the command failed, it's either because the datasets do not exist or we don't have enough permissions.
     if completed_process.returncode != 0:
-        check_zfs_datasets_exist([target], cmd=cmd)
-        raise subprocess.CalledProcessError(
-            completed_process.returncode,
-            cmd,
-            output=completed_process.stdout,
-            stderr=completed_process.stderr,
-        )
+        check_zfs_datasets_exist(datasets, completed_process, cmd=cmd)
 
 
-def zfs_snapshot_create(
-        datasets: List[str],
-        snapshot_name: str,
-        *,
-        recursive: bool,
-        hold: bool,
-        hold_name: str,
-        dry_run: bool,
-):
+def zfs_create_snapshots(datasets: List[str], snapshot_name: str, *, recursive: bool, dry_run: bool) -> List[str]:
     """
-    Create snapshots (optionally recursive) and optionally apply a hold.
+    Create ZFS snapshots.
     """
-    # Create snapshots
-    cmd = ["zfs", "snapshot"]
+    # If no datasets to snapshot, we're done
+    if not datasets:
+        if dry_run:
+            logging.info("No datasets to snapshot in dry-run mode.")
+        else:
+            logging.info("No datasets to snapshot.")
+        return []
+    # Make datasets unique
+    datasets: List[str] = list(set(datasets))
+    # Generate snapshots
+    snapshots: List[str] = [f"{dataset}@{snapshot_name}" for dataset in datasets]
+    # Build the command
+    cmd: List[str] = ["zfs", "snapshot"]
     if recursive:
         cmd.append("-r")
-    cmd += [f"{dataset}@{snapshot_name}" for dataset in datasets]
-    completed_process = run_cmd(cmd, message=f"Create {len(datasets)} snapshot{s(datasets)} {quote(snapshot_name)}",
-                                dry_run=dry_run,
-                                read_only=False, check=False)
-    # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+    cmd += snapshots
+
+    # Run the command
+    completed_process: subprocess.CompletedProcess = run_cmd(
+        cmd,
+        message=f"Create {len(snapshots)} snapshot{s(snapshots)}" + " recursively" if recursive else "",
+        dry_run=dry_run,
+        read_only=False,
+        check=False,
+    )
+    # If the command failed, it's either because the datasets do not exist or we don't have enough permissions.
     if completed_process.returncode != 0:
-        check_zfs_datasets_exist(datasets, cmd=cmd, types=["filesystem"])
-        raise subprocess.CalledProcessError(
-            completed_process.returncode,
-            cmd,
-            output=completed_process.stdout,
-            stderr=completed_process.stderr,
-        )
+        check_zfs_datasets_exist(datasets, completed_process, cmd=cmd, types=["filesystem"])
 
-    # Hold snapshots (optional)
-    if hold:
-        cmd = ["zfs", "hold"]
-        if recursive:
-            cmd.append("-r")
-        cmd += [hold_name] + [f"{dataset}@{snapshot_name}" for dataset in datasets]
-        completed_process = run_cmd(
-            cmd,
-            message=f"Hold {len(datasets)} snapshot{s(datasets)} {quote(snapshot_name)} with hold name {quote(hold_name)}",
-            dry_run=dry_run,
-            read_only=False,
-            check=False
-        )
-        # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
-        if completed_process.returncode != 0:
-            check_zfs_datasets_exist([f"{dataset}@{snapshot_name}" for dataset in datasets], cmd=cmd,
-                                     types=["snapshot"])
-            raise subprocess.CalledProcessError(
-                completed_process.returncode,
-                cmd,
-                output=completed_process.stdout,
-                stderr=completed_process.stderr,
-            )
+    # Return the created snapshots
+    return snapshots
 
 
-def zfs_holds(snapshot_name: str) -> List[str]:
+def zfs_hold_snapshots(snapshots: List[str], hold_name: str, *, recursive: bool, dry_run: bool) -> None:
     """
-    List holds on a snapshot.
-
-    Equivalent to:
-        zfs holds -H <snapshot>
-
-    Returns a list of hold tags.
+    Holds multiple ZFS snapshots with a given hold name.
     """
-    cmd = ["zfs", "holds", "-H", snapshot_name]
-    try:
-        completed_process = run_cmd(cmd, dry_run=False, read_only=True)
-        holds = []
-        for line in completed_process.stdout.decode().splitlines():
-            if not line.strip():
-                continue
-            # <snapshot>\t<tag>\t<timestamp>
-            _snap, tag, _ts = line.split("\t", 2)
-            holds.append(tag)
-        return holds
-    except subprocess.CalledProcessError:
-        # Snapshot may not exist
+    # If no snapshots to hold, we're done
+    if not snapshots:
+        if dry_run:
+            logging.info("No snapshots to hold in dry-run mode.")
+        else:
+            logging.info("No snapshots to hold.")
+        return
+    # Make snapshots unique
+    snapshots: List[str] = list(set(snapshots))
+    # Build the command
+    cmd: List[str] = ["zfs", "hold"]
+    if recursive:
+        cmd.append("-r")
+    cmd += hold_name
+    cmd += snapshots
+
+    # Run the command
+    completed_process: subprocess.CompletedProcess = run_cmd(
+        cmd,
+        message=f"Hold {len(snapshots)} snapshot{s(snapshots)} with hold name {quote(hold_name)}" + " recursively" if recursive else "",
+        dry_run=dry_run,
+        read_only=False,
+        check=False,
+    )
+    # If the command failed, it's either because the datasets do not exist or we don't have enough permissions.
+    if completed_process.returncode != 0:
+        check_zfs_datasets_exist(snapshots, completed_process, cmd=cmd, types=["snapshot"])
+
+
+def zfs_holds(snapshots: List[str], *, recursive: bool, dry_run: bool) -> List[str]:
+    """
+    List holds on ZFS snapshots.
+    """
+    # If no snapshots to check, we're done
+    if not snapshots:
+        if dry_run:
+            logging.info("No snapshots to check holds in dry-run mode.")
+        else:
+            logging.info("No snapshots to check holds.")
         return []
+    # Make snapshots unique
+    snapshots: List[str] = list(set(snapshots))
+    # Build the command
+    cmd: List[str] = ["zfs", "holds", "-H", "-p"]
+    if recursive:
+        cmd.append("-r")
+    cmd += snapshots
+
+    # Run the command
+    completed_process: subprocess.CompletedProcess = run_cmd(cmd, dry_run=False, read_only=True, check=False)
+    # If the command failed, it's either because the datasets do not exist or we don't have enough permissions.
+    if completed_process.returncode != 0:
+        check_zfs_datasets_exist(snapshots, completed_process, cmd=cmd, types=["snapshot"])
+
+    # Parse the output
+    holds = []
+    for line in completed_process.stdout.decode().splitlines():
+        if not line.strip():
+            continue
+        # <snapshot>\t<tag>\t<timestamp>
+        snapshot, tag, timestamp = line.split("\t", 2)
+        holds.append(tag)
+    return holds
 
 
-def zfs_release_hold(snapshot_name: str, hold_name: str, *, dry_run: bool):
-    """Release a hold on a snapshot."""
-    cmd = ["zfs", "release", hold_name, snapshot_name]
-    completed_process = run_cmd(
+def zfs_release_snapshots(snapshots: List[str], hold_name: str, *, recursive: bool, dry_run: bool) -> None:
+    """
+    Release a hold on multiple snapshots.
+    """
+    # If no snapshots to release, we're done
+    if not snapshots:
+        if dry_run:
+            logging.info("No snapshots to release in dry-run mode.")
+        else:
+            logging.info("No snapshots to release.")
+        return
+    # Make snapshots unique
+    snapshots = list(set(snapshots))
+    # Build the command
+    cmd: List[str] = ["zfs", "release", hold_name]
+    if recursive:
+        cmd.append("-r")
+    cmd += snapshots
+
+    # Run the command
+    completed_process: subprocess.CompletedProcess = run_cmd(
         cmd,
-        message=f"Release hold {quote(hold_name)} on {quote(snapshot_name)}",
+        message=f"Release hold {quote(hold_name)} on {len(snapshots)} snapshot{s(snapshots)}" + " recursively" if recursive else "",
         dry_run=dry_run,
         read_only=False,
         check=False,
     )
-    # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+    # If the command failed, it's either because the datasets do not exist or we don't have enough permissions.
     if completed_process.returncode != 0:
-        check_zfs_datasets_exist([snapshot_name], cmd=cmd, types=["snapshot"])
-        raise subprocess.CalledProcessError(
-            completed_process.returncode,
-            cmd,
-            output=completed_process.stdout,
-            stderr=completed_process.stderr,
-        )
+        check_zfs_datasets_exist(snapshots, completed_process, cmd=cmd, types=["snapshot"])
 
 
-def zfs_destroy_snapshot(snapshot_name: str, *, dry_run: bool):
-    """Destroy a snapshot."""
-    cmd = ["zfs", "destroy", snapshot_name]
-    completed_process = run_cmd(
+def zfs_destroy_snapshots(snapshots: List[str], *, recursive: bool, dry_run: bool) -> None:
+    """
+    Destroy ZFS snapshots.
+    """
+    # If no snapshots to destroy, we're done
+    if not snapshots:
+        if dry_run:
+            logging.info("No snapshots to destroy in dry-run mode.")
+        else:
+            logging.info("No snapshots to destroy.")
+        return
+    # Make snapshots unique
+    snapshots = list(set(snapshots))
+    # Check if the snapshots are valid
+    if not all("@" in snapshot for snapshot in snapshots):
+        logging.error("Abort destroying snapshots: Some snapshots do not contain an '@' character: %s",
+                      ", ".join(quote(snapshot) for snapshot in snapshots))
+        sys.exit(1)
+    # Build the command
+    cmd: List[str] = ["zfs", "destroy"]
+    if recursive:
+        cmd.append("-r")
+    cmd += snapshots
+
+    # Run the command
+    completed_process: subprocess.CompletedProcess = run_cmd(
         cmd,
-        message=f"Destroy snapshot {quote(snapshot_name)}",
+        message=f"Destroy {len(snapshots)} snapshot{s(snapshots)}" + " recursively" if recursive else "",
         dry_run=dry_run,
         read_only=False,
         check=False,
     )
-    # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
+    # If the command failed, it's either because the datasets do not exist or we don't have enough permissions.
     if completed_process.returncode != 0:
-        check_zfs_datasets_exist([snapshot_name], cmd=cmd, types=["snapshot"])
-        raise subprocess.CalledProcessError(
-            completed_process.returncode,
-            cmd,
-            output=completed_process.stdout,
-            stderr=completed_process.stderr,
-        )
+        check_zfs_datasets_exist(snapshots, completed_process, cmd=cmd, types=["snapshot"])
+
+
+# =============================================================================
+# ZFS helpers
+# =============================================================================
 
 
 def get_mountpoints_recursively(root_dataset: str) -> Dict[str, str]:
@@ -519,61 +606,109 @@ def snapshot_path_on_disk(dataset_mountpoint: str, snapshot_name: str) -> Path:
     return Path(dataset_mountpoint) / ".zfs" / "snapshot" / snapshot_name
 
 
-# =============================================================================
-# Holds-aware destroy helper
-# =============================================================================
-
-def destroy_snapshot_helper(
-        dataset: str,
+def zfs_create_and_hold_snapshots(
+        datasets: List[str],
         snapshot_name: str,
         *,
-        holding_enabled: bool,
-        our_hold_name: str,
-        dry_run: bool,
-):
-    """
-    Destroy a snapshot safely:
-      - If no holds exist, destroy it.
-      - If holds exist and the only hold equals our hold name and holding is enabled,
-        release that hold and destroy.
-      - Otherwise, warn and skip (external holds interfere).
-    """
-    snapshot = f"{dataset}@{snapshot_name}"
-    holds = zfs_holds(snapshot)
-    if not holds:
-        zfs_destroy_snapshot(snapshot, dry_run=dry_run)
-        return
-
-    if holding_enabled and set(holds) == {our_hold_name}:
-        zfs_release_hold(snapshot, our_hold_name, dry_run=dry_run)
-        zfs_destroy_snapshot(snapshot, dry_run=dry_run)
-        return
-
-    logging.warning(
-        "Skip destroying snapshot %s: external holds present (%s) or holding disabled.",
-        quote(snapshot), ", ".join(quote(hold) for hold in holds) if holds else "none",
-    )
-
-
-def destroy_snapshots_helper(
-        dataset_plans: List[DatasetPlan],
-        *,
-        snapshot_name: str,
+        recursive: bool,
         hold_snapshots: bool,
         hold_name: str,
         dry_run: bool,
 ):
     """
-    Destroy snapshots for all plans, respecting holds and dry-run mode.
+    Create snapshots (optionally recursive) and optionally apply a hold.
     """
-    for dataset_plan in dataset_plans:
-        destroy_snapshot_helper(
-            dataset_plan.dataset,
-            snapshot_name,
-            holding_enabled=hold_snapshots,
-            our_hold_name=hold_name,
+    # Create snapshots
+    snapshots: List[str] = zfs_create_snapshots(datasets, snapshot_name, recursive=recursive, dry_run=dry_run)
+
+    # Hold snapshots (optional)
+    if hold_snapshots:
+        zfs_hold_snapshots(
+            snapshots,
+            hold_name,
+            recursive=recursive,
             dry_run=dry_run,
         )
+
+
+def zfs_release_and_destroy_snapshots(
+        datasets: List[str],
+        snapshot_name: str,
+        *,
+        recursive: bool,
+        hold_snapshots: bool,
+        hold_name: str,
+        dry_run: bool,
+):
+    """
+    Release holds (if any) and destroy snapshots (optionally recursive).
+    """
+    # Generate snapshots
+    snapshots: List[str] = [f"{dataset}@{snapshot_name}" for dataset in datasets]
+    # Make snapshots unique
+    snapshots = list(set(snapshots))
+
+    # Get holds on the snapshots
+    holds_by_snapshot: dict[str, list[str]] = {snapshot: zfs_holds(snapshot) for snapshot in snapshots}
+
+    # Filter snapshots
+    snapshots_to_release: list[str] = []
+    snapshots_to_destroy: list[str] = []
+    for snapshot, holds in holds_by_snapshot.items():
+        # Skip if snapshot does not contain an at-sign (not a snapshot)
+        if "@" not in snapshot:
+            logging.warning("Skip destroying %s: not a snapshot (no '@' in name).", quote(snapshot))
+            continue
+        # If no holds exist, we can destroy the snapshot
+        if not holds:
+            snapshots_to_destroy.append(snapshot)
+            continue
+        # If holds exist and the only hold equals our hold name, we can release the hold and destroy
+        if hold_snapshots and set(holds) == {hold_name}:
+            snapshots_to_release.append(snapshot)
+            snapshots_to_destroy.append(snapshot)
+            continue
+        # Otherwise, we cannot destroy the snapshot (external holds interfere)
+        logging.warning(
+            "Skip destroying snapshot %s: external holds present (%s) or holding disabled.",
+            quote(snapshot), ", ".join(quote(hold) for hold in holds) if holds else "none",
+        )
+
+    # Make snapshots unique
+    snapshots_to_release = list(set(snapshots_to_release))
+    snapshots_to_destroy = list(set(snapshots_to_destroy))
+
+    # If no snapshots to release, we're done
+    if not snapshots_to_release and not snapshots_to_destroy:
+        if dry_run:
+            logging.info("No snapshots to release or destroy in dry-run mode.")
+        else:
+            logging.info("No snapshots to release or destroy.")
+        return
+
+    # Release holds (optional)
+    if hold_snapshots:
+        zfs_release_snapshots(
+            snapshots_to_release,
+            hold_name,
+            recursive=recursive,
+            dry_run=dry_run,
+        )
+
+    # If no snapshots to destroy, we're done
+    if not snapshots_to_destroy:
+        if dry_run:
+            logging.info("No snapshots to destroy in dry-run mode.")
+        else:
+            logging.info("No snapshots to destroy.")
+        return
+
+    # Destroy snapshots
+    zfs_destroy_snapshots(
+        snapshots_to_destroy,
+        recursive=recursive,
+        dry_run=dry_run,
+    )
 
 
 # =============================================================================
@@ -632,7 +767,8 @@ def collect_datasets_to_backup(
         # dataset -> include mode
         include_modes: Dict[str, str] = {}
         for dataset in mountpoint_by_dataset.keys():
-            include_mode = zfs_get([property_include], dataset).get(property_include, "").strip().lower()
+            include_mode = zfs_get([dataset], [property_include]).get(dataset, {}).get(property_include,
+                                                                                       "").strip().lower()
             if include_mode == "":
                 include_mode = "false"
             if include_mode not in {"true", "false", "recursive", "children"}:
@@ -692,7 +828,7 @@ def find_resume_timestamp(
         snapshots = list_snapshots_for_dataset(dataset_plan.dataset, snapshot_prefix)
         for snapshot in snapshots:
             snapshot_name = snapshot.split("@", 1)[1]
-            properties = zfs_get([property_snapshot_timestamp], snapshot)
+            properties = zfs_get([snapshot], [property_snapshot_timestamp]).get(snapshot, {})
             timestamp = properties.get(property_snapshot_timestamp, "").strip()
             if timestamp.isdigit():
                 if timestamp_newest is None or int(timestamp) > int(timestamp_newest):
@@ -721,7 +857,7 @@ def find_orphan_snapshots(
         snapshots = list_snapshots_for_dataset(dataset_plan.dataset, snapshot_prefix)
         for snapshot in snapshots:
             dataset, snapshot_name = snapshot.split("@", 1)
-            properties = zfs_get([property_snapshot_timestamp], snapshot)
+            properties = zfs_get([snapshot], [property_snapshot_timestamp]).get(snapshot, {})
             timestamp = properties.get(property_snapshot_timestamp, "").strip()
             if not timestamp.isdigit():
                 if snapshot_name.startswith(snapshot_prefix):
@@ -786,8 +922,8 @@ def pbs_status(
         logging.error("PBS secret (password or token) must be specified.")
         sys.exit(1)
 
-    cmd = ["proxmox-backup-client", "status"]
-    completed_process = run_cmd(
+    cmd: List[str] = ["proxmox-backup-client", "status"]
+    completed_process: subprocess.CompletedProcess = run_cmd(
         cmd,
         message="Check PBS repository status",
         dry_run=dry_run,
@@ -886,7 +1022,7 @@ def pbs_backup_dataset_snapshot(
         env["PBS_FINGERPRINT"] = fingerprint
         logging.debug("Using PBS fingerprint: %s", quote(fingerprint))
 
-    cmd = ["proxmox-backup-client", "backup"]
+    cmd: List[str] = ["proxmox-backup-client", "backup"]
     cmd.extend(archive_names)
     cmd += ["--backup-type", "host"]
     cmd += ["--backup-id", backup_id]
@@ -904,7 +1040,7 @@ def pbs_backup_dataset_snapshot(
     if dry_run:
         cmd.append("--dry-run")
 
-    completed_process = run_cmd(
+    completed_process: subprocess.CompletedProcess = run_cmd(
         cmd,
         message=f"Back up snapshot {quote(snapshot_name)} to PBS repository {quote(repository)} as backup-id {quote(backup_id)}",
         dry_run=dry_run,
@@ -948,7 +1084,7 @@ def _minimize_recursive_roots(recursive_datasets: List[str]) -> List[str]:
     return minimized
 
 
-def create_snapshots_for_dataset_plans(
+def create_and_hold_snapshots(
         dataset_plans: List[DatasetPlan],
         *,
         snapshot_name: str,
@@ -971,8 +1107,8 @@ def create_snapshots_for_dataset_plans(
 
     # Step 2: snapshot recursive roots
     for root in recursive_roots:
-        zfs_snapshot_create([root], snapshot_name, recursive=True, hold=hold_snapshots, hold_name=hold_name,
-                            dry_run=dry_run)
+        zfs_create_and_hold_snapshots([root], snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
+                                      hold_name=hold_name, dry_run=dry_run)
 
     # Step 3: compute a descendants-covered set
     def covered_by_recursive(dataset: str) -> bool:
@@ -985,54 +1121,67 @@ def create_snapshots_for_dataset_plans(
 
     # Step 4: snapshot the remaining non-recursive datasets in one go (if any)
     if non_recursive_targets:
-        zfs_snapshot_create(non_recursive_targets, snapshot_name, recursive=False, hold=hold_snapshots,
-                            hold_name=hold_name,
-                            dry_run=dry_run)
+        zfs_create_and_hold_snapshots(non_recursive_targets, snapshot_name, recursive=False,
+                                      hold_snapshots=hold_snapshots, hold_name=hold_name, dry_run=dry_run)
 
 
-def mark_snapshot_timestamp_and_reset_done(
+def release_and_destroy_snapshots(
         dataset_plans: List[DatasetPlan],
         *,
-        dataset_filter_self_only: bool,
         snapshot_name: str,
-        property_snapshot_timestamp: str,
-        property_snapshot_done: str,
-        timestamp: str,
+        hold_snapshots: bool,
+        hold_name: str,
         dry_run: bool,
 ):
     """
-    Stamp the snapshot with the run timestamp and clear the "backed_up" flag.
-    Only applies to datasets that we will actually back up when dataset_filter_self_only=True.
+    Destroy snapshots efficiently while ensuring each snapshot gets destroyed only once.
+
+    Strategy:
+      1) Gather datasets that requested recursive snapshotting and **minimize** them so
+         that child datasets under a recursive root are not listed separately.
+      2) Destroy root snapshots with -r.
+      3) Gather non-recursive datasets and **exclude** any that are descendants of any
+         recursive root (they're already covered by step 2).
+      4) Destroy the remaining snapshots without -r (can be batched).
     """
-    for dataset_plan in dataset_plans:
-        if dataset_filter_self_only and not dataset_plan.process_self:
-            continue
-        snapshot = f"{dataset_plan.dataset}@{snapshot_name}"
-        zfs_set(property_snapshot_timestamp, timestamp, snapshot, dry_run=dry_run)
-        # zfs_set(property_snapshot_done, "false", snapshot, dry_run=dry_run)
+    recursive_roots = _minimize_recursive_roots([p.dataset for p in dataset_plans if p.recursive_for_snapshot])
+
+    # Step 2: destroy recursive roots
+    for root in recursive_roots:
+        zfs_release_and_destroy_snapshots([root], snapshot_name, recursive=True, hold_snapshots=hold_snapshots,
+                                          hold_name=hold_name, dry_run=dry_run)
+
+    # Step 3: compute a descendants-covered set
+    def covered_by_recursive(dataset: str) -> bool:
+        return any(
+            dataset.startswith(recursive_root + "/") or dataset == recursive_root for recursive_root in recursive_roots)
+
+    non_recursive_candidates = [dataset_plan.dataset for dataset_plan in dataset_plans if
+                                not dataset_plan.recursive_for_snapshot]
+    non_recursive_targets = [dataset for dataset in non_recursive_candidates if not covered_by_recursive(dataset)]
+
+    # Step 4: destroy the remaining non-recursive datasets in one go (if any)
+    if non_recursive_targets:
+        zfs_release_and_destroy_snapshots(non_recursive_targets, snapshot_name, recursive=False,
+                                          hold_snapshots=hold_snapshots, hold_name=hold_name, dry_run=dry_run)
 
 
-def filter_plans_for_existing_unbacked(
+def mark_snapshot_timestamp(
         dataset_plans: List[DatasetPlan],
+        timestamp: str,
         *,
         snapshot_name: str,
-        property_snapshot_done: str,
-) -> List[DatasetPlan]:
+        property_snapshot_timestamp: str,
+        dry_run: bool,
+):
     """
-    Keep only datasets where the snapshot exists and is not yet marked as backed up.
+    Stamp the snapshot with the timestamp
     """
-    selected: List[DatasetPlan] = []
-    for dataset_plan in dataset_plans:
-        snapshot = f"{dataset_plan.dataset}@{snapshot_name}"
-        try:
-            properties = zfs_get([property_snapshot_done], snapshot)
-        except subprocess.CalledProcessError:
-            # Snapshot missing
-            continue
-        done = properties.get(property_snapshot_done, "").strip().lower() == "true"
-        if not done and dataset_plan.process_self:
-            selected.append(dataset_plan)
-    return selected
+    # Generate snapshots
+    snapshots: List[str] = [f"{dataset_plan.dataset}@{snapshot_name}" for dataset_plan in dataset_plans]
+
+    # Set the timestamp property
+    zfs_set(snapshots, {property_snapshot_timestamp: timestamp}, dry_run=dry_run)
 
 
 def cleanup_orphans_if_any(
@@ -1294,15 +1443,15 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Create snapshots (unless resuming)
     if not args.resume:
-        create_snapshots_for_dataset_plans(
+        create_and_hold_snapshots(
             dataset_plans,
             snapshot_name=snapshot_name,
             hold_snapshots=args.hold_snapshots,
             hold_name=args.zfs_hold_name,
             dry_run=not args.execute,
         )
-        # Stamp timestamp and clear done flag on snapshots we will actually back up
-        mark_snapshot_timestamp_and_reset_done(
+        # Stamp timestamp
+        mark_snapshot_timestamp(
             dataset_plans,
             dataset_filter_self_only=True,
             snapshot_name=snapshot_name,
@@ -1359,14 +1508,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         dry_run=not args.execute,
     )
 
-    # # After successful backup, mark the snapshots as done
-    # for dataset_plan in dataset_plans:
-    #     # Mark as backed up
-    #     snapshot = f"{dataset_plan.dataset}@{snapshot_name}"
-    #     zfs_set(args.zfs_snapshot_done_property, "true", snapshot, dry_run=not args.execute)
-
     # Tear-down: release holds (if ours) and destroy snapshots
-    destroy_snapshots_helper(
+    release_and_destroy_snapshots(
         dataset_plans,
         snapshot_name=snapshot_name,
         hold_snapshots=args.hold_snapshots,
