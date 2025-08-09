@@ -76,6 +76,9 @@ ARE_WE_ROOT = os.getuid() == 0  # Check if we are running as root (uid 0)
 
 def quote(s: str) -> str:
     """Return s wrapped in double quotes for logging."""
+    if '"' in s:
+        # If the string contains double quotes, escape them
+        s = s.replace('"', '\\"')
     return f'"{s}"'
 
 
