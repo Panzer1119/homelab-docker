@@ -128,6 +128,7 @@ def run_cmd(
         check: bool = True,
         capture_output: bool = True,
         message_for_return_codes: dict[int, str] = None,
+        debug_log: bool = False,
 ) -> subprocess.CompletedProcess:
     """
     Run a command with structured logging and timing.
@@ -145,9 +146,11 @@ def run_cmd(
 
     if message:
         if dry_run and not read_only:
-            logging.info("[dry-run] %s", message)
+            message = f"[DRY-RUN] {message}"
+        if debug_log:
+            logging.debug(message)
         else:
-            logging.info("%s", message)
+            logging.info(message)
 
     command_string = " ".join(shlex.quote(c) for c in cmd)
     if read_only:
