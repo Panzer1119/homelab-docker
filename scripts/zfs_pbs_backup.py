@@ -983,34 +983,36 @@ def build_parser() -> argparse.ArgumentParser:
     g_pbs_r.add_argument("--pbs-port", type=int, help="PBS port (e.g. '8007').")
     g_pbs_r.add_argument("--pbs-datastore", help="PBS datastore (e.g. 'store').")
 
-    # PBS options (group)
-    g_pbs = p.add_argument_group("PBS options")
-    g_pbs.add_argument("-K", "--pbs-encryption-password", help="PBS encryption password (empty disables encryption).")
-    g_pbs.add_argument("-N", "--pbs-namespace", help="PBS namespace.")
-    g_pbs.add_argument("-B", "--pbs-backup-id", default=socket.gethostname(),
-                       help="ID for the backup (defaults to local hostname).")
-    g_pbs.add_argument("--pbs-archive-name-prefix",
-                       help="Prefix added to the archive name (archive name = 'prefix + <dataset with '/' -> '_'>.pxar').")
+    # PBS backup options (group)
+    g_pbs_b = p.add_argument_group("PBS backup options")
+    g_pbs_b.add_argument("-K", "--pbs-encryption-password", help="PBS encryption password (empty disables encryption).")
+    g_pbs_b.add_argument("-N", "--pbs-namespace", help="PBS namespace.")
+    g_pbs_b.add_argument("-B", "--pbs-backup-id", default=socket.gethostname(),
+                         help="ID for the backup (defaults to local hostname).")
+    g_pbs_b.add_argument("--pbs-archive-name-prefix",
+                         help="Prefix added to the archive name (archive name = 'prefix + <dataset with '/' -> '_'>.pxar').")
 
     # ZFS options (group)
     g_zfs = p.add_argument_group("ZFS options")
-    g_zfs.add_argument("--zfs-include-property", default=DEFAULT_PROPERTY_INCLUDE,
-                       help="ZFS dataset property controlling include mode: true/false/recursive/children.")
-    g_zfs.add_argument("--zfs-snapshot-timestamp-property", default=DEFAULT_PROPERTY_SNAPSHOT_TIMESTAMP,
-                       help="ZFS snapshot property storing the unix timestamp for this run.")
-    g_zfs.add_argument("--zfs-snapshot-done-property", default=DEFAULT_PROPERTY_SNAPSHOT_DONE,
-                       help="ZFS snapshot property set to 'true' after a successful backup.")
-    g_zfs.add_argument("--zfs-snapshot-prefix", default=DEFAULT_SNAPSHOT_PREFIX,
-                       help="Prefix for snapshot names (final name is <prefix><timestamp>).")
-    g_zfs.add_argument("--zfs-hold-name", default=DEFAULT_SNAPSHOT_HOLD_NAME,
-                       help="Hold name to apply to temporary snapshots.")
-
     g_zfs.add_argument("-H", "--hold-snapshots", action=argparse.BooleanOptionalAction, default=True,
                        help="Hold temporary snapshots until they are backed up.")
     g_zfs.add_argument("-X", "--exclude-empty-parents", action=argparse.BooleanOptionalAction, default=True,
                        help="If a dataset has children and is empty itself, skip backing up the parent dataset.")
     g_zfs.add_argument("-O", "--remove-orphans", choices=["true", "false", "ask", "only"], default="ask",
-                       help="Remove orphaned snapshots whose timestamp does not match the current run.")
+                       help="Remove orphaned snapshots whose timestamp does not match the current run. Option 'only' will only remove orphans and not create new snapshots or backups.")
+
+    # ZFS label options (group)
+    g_zfs_l = p.add_argument_group("ZFS label options")
+    g_zfs_l.add_argument("--zfs-snapshot-prefix", default=DEFAULT_SNAPSHOT_PREFIX,
+                         help="Prefix for snapshot names (final name is <prefix><timestamp>).")
+    g_zfs_l.add_argument("--zfs-hold-name", default=DEFAULT_SNAPSHOT_HOLD_NAME,
+                         help="Hold name to apply to temporary snapshots.")
+    g_zfs_l.add_argument("--zfs-include-property", default=DEFAULT_PROPERTY_INCLUDE,
+                         help="ZFS dataset property controlling include mode: true/false/recursive/children.")
+    g_zfs_l.add_argument("--zfs-snapshot-timestamp-property", default=DEFAULT_PROPERTY_SNAPSHOT_TIMESTAMP,
+                         help="ZFS snapshot property storing the unix timestamp for this run.")
+    g_zfs_l.add_argument("--zfs-snapshot-done-property", default=DEFAULT_PROPERTY_SNAPSHOT_DONE,
+                         help="ZFS snapshot property set to 'true' after a successful backup.")
 
     # Resume & run behavior
     p.add_argument("-C", "--resume", action=argparse.BooleanOptionalAction, default=False,
