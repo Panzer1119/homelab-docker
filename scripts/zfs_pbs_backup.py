@@ -159,8 +159,8 @@ def zfs_list(
         *,
         dataset: Optional[str] = None,
         recursive: bool = False,
-        columns: List[str] = ["name"],
-        types: List[str] = ["filesystem"],
+        columns=None,
+        types=None,
 ) -> List[List[str]]:
     """
     List ZFS objects with parsable output.
@@ -170,6 +170,10 @@ def zfs_list(
 
     Returns a list of rows; each row is a list of column strings.
     """
+    if columns is None:
+        columns = ["name"]
+    if types is None:
+        types = ["filesystem"]
     cmd = ["zfs", "list", "-H", "-p", "-o", ",".join(columns)]
     if recursive:
         cmd.append("-r")
