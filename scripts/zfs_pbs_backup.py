@@ -927,6 +927,15 @@ def secure_prompt(prompt_text: str) -> str:
 def main(argv: Optional[List[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     configure_logging(args.verbose, args.debug, args.quiet)
+
+    # Debug logging of CLI options
+    if args.debug:
+        logging.debug("CLI options / arguments:")
+        options = vars(args)
+        max_length = max(len(key) for key in options)
+        for option in sorted(options):
+            logging.debug("  %-*s : %r", max_length, option, options[option])
+
     ensure_tools()
     check_permissions()
 
