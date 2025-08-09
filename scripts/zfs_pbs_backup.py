@@ -812,8 +812,7 @@ def pbs_create_archive_name(*,
 
 def pbs_backup_dataset_snapshot(
         *,
-        dataset: str,
-        mountpoint: str,
+        plans: List[DatasetPlan],
         snapshot_name: str,
         repository: str,
         secret: Optional[str],  # password/token secret; if None, we will prompt only on executing
@@ -828,26 +827,16 @@ def pbs_backup_dataset_snapshot(
 ) -> None:
     """
     Back up the snapshot directory as a pxar archive using proxmox-backup-client.
-
-    Archive: <dataset with '/' -> '_'>.pxar:<snapshot directory>
-    Backup-ID: <backup_id_prefix><dataset>
     """
-    snapshot_directory = snapshot_path_on_disk(mountpoint, snapshot_name)
-    if not snapshot_directory.exists():
-        logging.warning("Skip dataset %s: snapshot directory %s does not exist.",
-                        quote(dataset), quote(str(snapshot_directory)))
-        return
-    elif not snapshot_directory.is_dir():
-        logging.warning("Skip dataset %s: snapshot directory %s is not a directory.",
-                        quote(dataset), quote(str(snapshot_directory)))
-        return
-    elif not os.access(snapshot_directory, os.R_OK):
-        logging.warning("Skip dataset %s: snapshot directory %s is not readable.",
-                        quote(dataset), quote(str(snapshot_directory)))
-        return
-
-    dataset_id = dataset.replace("/", "_")
-    archive_name = f"{archive_name_prefix or ""}{dataset_id}.pxar:{str(snapshot_directory)}"
+    archive_names = [
+        pbs_create_archive_name(
+            dataset=plan.dataset,
+            mountpoint=plan.mountpoint,
+            snapshot_name=snapshot_name,
+            archive_name_prefix=archive_name_prefix,
+        )
+        for plan in plans
+    ]
 
     env = {}
     if repository:
@@ -868,7 +857,7 @@ def pbs_backup_dataset_snapshot(
 
     cmd = [
         "proxmox-backup-client", "backup",
-        archive_name,
+        " ".join(archive_names),
         "--backup-type", "host",
         "--backup-id", backup_id,
         "--backup-time", backup_time,
@@ -887,8 +876,7 @@ def pbs_backup_dataset_snapshot(
 
     completed_process = run_cmd(
         cmd,
-        message=f"Back up dataset {quote(dataset)} snapshot {quote(snapshot_name)} "
-                f"to PBS repository {quote(repository)} as backup-id {quote(backup_id)}",
+        message=f"Back up snapshot {quote(snapshot_name)} to PBS repository {quote(repository)} as backup-id {quote(backup_id)}",
         dry_run=dry_run,
         read_only=False,
         env=env,
@@ -899,8 +887,7 @@ def pbs_backup_dataset_snapshot(
     if completed_process.returncode != 0:
         # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
         logging.error(
-            "Failed to back up dataset %s snapshot %s to PBS repository %s:\n%s",
-            quote(dataset), quote(snapshot_name), quote(repository),
+            "Failed to back up snapshot %s to PBS repository %s:\n%s", quote(snapshot_name), quote(repository),
             completed_process.stderr.decode().strip() if completed_process.stderr else "Unknown error"
         )
         raise subprocess.CalledProcessError(
@@ -1323,23 +1310,24 @@ def main(argv: Optional[List[str]] = None) -> int:
         dry_run=not args.execute,
     )
 
-    # Backup loop
+    # Backup the snapshots to Proxmox Backup Server
+    pbs_backup_dataset_snapshot(
+        plans=plans,
+        snapshot_name=snapshot_name,
+        repository=pbs_repository,
+        secret=pbs_secret if pbs_secret else None,
+        namespace=args.pbs_namespace if args.pbs_namespace else None,
+        backup_id=args.pbs_backup_id if args.pbs_backup_id else socket.gethostname(),
+        backup_time=timestamp_current,
+        archive_name_prefix=args.pbs_archive_name_prefix if args.pbs_archive_name_prefix else None,
+        encryption_password=args.pbs_encryption_password if args.pbs_encryption_password else None,
+        fingerprint=args.pbs_fingerprint if args.pbs_fingerprint else None,
+        pbs_change_detection_mode=args.pbs_change_detection_mode,
+        dry_run=not args.execute,
+    )
+
+    # After successful backup, mark the snapshots as done
     for plan in plans:
-        pbs_backup_dataset_snapshot(
-            dataset=plan.dataset,
-            mountpoint=plan.mountpoint,
-            snapshot_name=snapshot_name,
-            repository=pbs_repository,
-            secret=pbs_secret if pbs_secret else None,
-            namespace=args.pbs_namespace if args.pbs_namespace else None,
-            backup_id=args.pbs_backup_id if args.pbs_backup_id else socket.gethostname(),
-            backup_time=timestamp_current,
-            archive_name_prefix=args.pbs_archive_name_prefix if args.pbs_archive_name_prefix else None,
-            encryption_password=args.pbs_encryption_password if args.pbs_encryption_password else None,
-            fingerprint=args.pbs_fingerprint if args.pbs_fingerprint else None,
-            pbs_change_detection_mode=args.pbs_change_detection_mode,
-            dry_run=not args.execute,
-        )
         # Mark as backed up
         snapshot = f"{plan.dataset}@{snapshot_name}"
         zfs_set(args.zfs_snapshot_done_property, "true", snapshot, dry_run=not args.execute)
