@@ -855,13 +855,12 @@ def pbs_backup_dataset_snapshot(
         env["PBS_FINGERPRINT"] = fingerprint
         logging.debug("Using PBS fingerprint: %s", quote(fingerprint))
 
-    cmd = [
-        "proxmox-backup-client", "backup",
-        " ".join(archive_names),
-        "--backup-type", "host",
-        "--backup-id", backup_id,
-        "--backup-time", backup_time,
-    ]
+    cmd = ["proxmox-backup-client", "backup"]
+    cmd.extend(archive_names)
+    cmd += ["--backup-type", "host"]
+    cmd += ["--backup-id", backup_id]
+    cmd += ["--backup-time", backup_time]
+
     if namespace:
         cmd += ["--ns", namespace]
 
