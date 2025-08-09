@@ -83,6 +83,15 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
+def s(n: int | list) -> str:
+    """
+    Return an empty string if n is 1, otherwise return 's'
+    """
+    if isinstance(n, list):
+        n = len(n)
+    return "" if n == 1 else "s"
+
+
 def infer_read_only(cmd: List[str]) -> bool:
     """
     Heuristic to decide if a command is read-only. Used to allow running discovery
