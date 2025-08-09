@@ -1212,6 +1212,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         snapshot_name = f"{args.zfs_snapshot_prefix}{timestamp_now}"
         timestamp_current = timestamp_now
 
+    # Log the snapshot name and timestamp
+    logging.debug("Snapshot name: %s, timestamp current: %s, timestamp now: %s", quote(snapshot_name),
+                  timestamp_current, timestamp_now)
+
     # Orphan cleanup (ask/true/false/only)
     cleanup_orphans_if_any(
         plans,
