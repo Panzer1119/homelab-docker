@@ -1122,7 +1122,7 @@ def configure_logging(verbose: bool, debug: bool, quiet: bool):
     else:
         level = logging.WARNING
 
-    logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
+    logging.basicConfig(level=level, format="[%(asctime)s][%(levelname)7s]: %(message)s")
 
 
 def ensure_tools():
