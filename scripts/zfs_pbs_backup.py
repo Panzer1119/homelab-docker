@@ -87,10 +87,10 @@ def infer_read_only(cmd: List[str]) -> bool:
     return False
 
 
-def which(prog: str) -> Optional[str]:
+def which(program: str) -> Optional[str]:
     """Return an absolute path to prog if found in PATH, else None."""
     from shutil import which as _which
-    return _which(prog)
+    return _which(program)
 
 
 # =============================================================================
@@ -119,35 +119,35 @@ def run_cmd(
 
     Returns a subprocess.CompletedProcess (or a synthetic one in dry-run for mutating).
     """
-    ro = infer_read_only(cmd) if read_only is None else read_only
+    read_only = infer_read_only(cmd) if read_only is None else read_only
 
     if message:
-        if dry_run and not ro:
+        if dry_run and not read_only:
             logging.info("[dry-run] %s", message)
         else:
             logging.info("%s", message)
 
-    cmd_str = " ".join(shlex.quote(c) for c in cmd)
-    if ro:
-        logging.debug("cmd: %s", cmd_str)
+    command_string = " ".join(shlex.quote(c) for c in cmd)
+    if read_only:
+        logging.debug("cmd: %s", command_string)
     else:
-        logging.debug("cmd (mutating): %s", cmd_str)
+        logging.debug("cmd (mutating): %s", command_string)
 
-    if dry_run and not ro:
+    if dry_run and not read_only:
         return subprocess.CompletedProcess(cmd, returncode=0, stdout=b"", stderr=b"")
 
     start = time.perf_counter()
     try:
-        cp = subprocess.run(
+        completed_process = subprocess.run(
             cmd,
             env={**os.environ, **(env or {})},
             check=check,
             capture_output=capture_output,
         )
-        return cp
+        return completed_process
     finally:
         elapsed = time.perf_counter() - start
-        logging.debug("time: %.3fs for: %s", elapsed, cmd_str)
+        logging.debug("time: %.3fs for: %s", elapsed, command_string)
 
 
 # =============================================================================
@@ -180,13 +180,13 @@ def zfs_list(
         cmd += ["-t", ",".join(types)]
     if dataset:
         cmd.append(dataset)
-    cp = run_cmd(cmd, message=None, dry_run=False, read_only=True)
-    out = cp.stdout.decode().splitlines()
-    return [line.split("\t") for line in out if line.strip()]
+    completed_process = run_cmd(cmd, message=None, dry_run=False, read_only=True)
+    output = completed_process.stdout.decode().splitlines()
+    return [line.split("\t") for line in output if line.strip()]
 
 
 def zfs_get(
-        props: List[str],
+        properties: List[str],
         target: str,
         *,
         source_order: str = "local,received,default,inherited",
@@ -203,33 +203,33 @@ def zfs_get(
         "zfs", "get", "-H", "-p",
         "-o", "property,value,source",
         "-s", source_order,
-        ",".join(props),
+        ",".join(properties),
         target,
     ]
-    cp = run_cmd(cmd, dry_run=False, read_only=True)
+    completed_process = run_cmd(cmd, dry_run=False, read_only=True)
     result: Dict[str, str] = {}
-    for line in cp.stdout.decode().splitlines():
+    for line in completed_process.stdout.decode().splitlines():
         if not line.strip():
             continue
-        prop, value, _source = line.split("\t", 2)
-        result[prop] = value
+        key, value, _source = line.split("\t", 2)
+        result[key] = value
     return result
 
 
-def zfs_set(prop: str, value: str, target: str, *, dry_run: bool):
+def zfs_set(key: str, value: str, target: str, *, dry_run: bool):
     """Set a single ZFS property."""
-    cmd = ["zfs", "set", f"{prop}={value}", target]
+    cmd = ["zfs", "set", f"{key}={value}", target]
     run_cmd(
         cmd,
-        message=f"Set ZFS property {quote(prop)}={quote(value)} on {quote(target)}",
+        message=f"Set ZFS property {quote(key)}={quote(value)} on {quote(target)}",
         dry_run=dry_run,
         read_only=False,
     )
 
 
 def zfs_snapshot_create(
-        targets: List[str],
-        snapname: str,
+        datasets: List[str],
+        snapshot_name: str,
         *,
         recursive: bool,
         hold: bool,
@@ -243,24 +243,24 @@ def zfs_snapshot_create(
     cmd = ["zfs", "snapshot"]
     if recursive:
         cmd.append("-r")
-    cmd += [f"{t}@{snapname}" for t in targets]
-    run_cmd(cmd, message=f"Create snapshot(s) {quote(snapname)}", dry_run=dry_run, read_only=False)
+    cmd += [f"{dataset}@{snapshot_name}" for dataset in datasets]
+    run_cmd(cmd, message=f"Create snapshot(s) {quote(snapshot_name)}", dry_run=dry_run, read_only=False)
 
     # Hold snapshots (optional)
     if hold:
         cmd = ["zfs", "hold"]
         if recursive:
             cmd.append("-r")
-        cmd += [hold_name] + [f"{t}@{snapname}" for t in targets]
+        cmd += [hold_name] + [f"{dataset}@{snapshot_name}" for dataset in datasets]
         run_cmd(
             cmd,
-            message=f"Hold snapshot(s) {quote(snapname)} with hold name {quote(hold_name)}",
+            message=f"Hold snapshot(s) {quote(snapshot_name)} with hold name {quote(hold_name)}",
             dry_run=dry_run,
             read_only=False,
         )
 
 
-def zfs_holds(target_snap: str) -> List[str]:
+def zfs_holds(snapshot_name: str) -> List[str]:
     """
     List holds on a snapshot.
 
@@ -269,11 +269,11 @@ def zfs_holds(target_snap: str) -> List[str]:
 
     Returns a list of hold tags.
     """
-    cmd = ["zfs", "holds", "-H", target_snap]
+    cmd = ["zfs", "holds", "-H", snapshot_name]
     try:
-        cp = run_cmd(cmd, dry_run=False, read_only=True)
+        completed_process = run_cmd(cmd, dry_run=False, read_only=True)
         holds = []
-        for line in cp.stdout.decode().splitlines():
+        for line in completed_process.stdout.decode().splitlines():
             if not line.strip():
                 continue
             # <snapshot>\t<tag>\t<timestamp>
@@ -285,23 +285,23 @@ def zfs_holds(target_snap: str) -> List[str]:
         return []
 
 
-def zfs_release_hold(target_snap: str, hold_name: str, *, dry_run: bool):
+def zfs_release_hold(snapshot_name: str, hold_name: str, *, dry_run: bool):
     """Release a hold on a snapshot."""
-    cmd = ["zfs", "release", hold_name, target_snap]
+    cmd = ["zfs", "release", hold_name, snapshot_name]
     run_cmd(
         cmd,
-        message=f"Release hold {quote(hold_name)} on {quote(target_snap)}",
+        message=f"Release hold {quote(hold_name)} on {quote(snapshot_name)}",
         dry_run=dry_run,
         read_only=False,
     )
 
 
-def zfs_destroy_snapshot(target_snap: str, *, dry_run: bool):
+def zfs_destroy_snapshot(snapshot_name: str, *, dry_run: bool):
     """Destroy a snapshot."""
-    cmd = ["zfs", "destroy", target_snap]
+    cmd = ["zfs", "destroy", snapshot_name]
     run_cmd(
         cmd,
-        message=f"Destroy snapshot {quote(target_snap)}",
+        message=f"Destroy snapshot {quote(snapshot_name)}",
         dry_run=dry_run,
         read_only=False,
     )
@@ -317,7 +317,7 @@ def get_mountpoints_recursively(root_dataset: str) -> Dict[str, str]:
         columns=["name", "mountpoint"],
         types=["filesystem"],
     )
-    return {name: mnt for name, mnt in rows}
+    return {name: mountpoint for name, mountpoint in rows}
 
 
 def list_snapshots_for_dataset(dataset: str, prefix: str) -> List[str]:
@@ -331,9 +331,9 @@ def list_snapshots_for_dataset(dataset: str, prefix: str) -> List[str]:
         columns=["name"],
         types=["snapshot"],
     )
-    snaps = [r[0] for r in rows if r]
+    snapshots = [row[0] for row in rows if row]
     full_prefix = f"{dataset}@{prefix}"
-    return [s for s in snaps if s.startswith(full_prefix)]
+    return [snapshot for snapshot in snapshots if snapshot.startswith(full_prefix)]
 
 
 def snapshot_path_on_disk(dataset_mountpoint: str, snapshot_name: str) -> Path:
@@ -353,7 +353,7 @@ def snapshot_path_on_disk(dataset_mountpoint: str, snapshot_name: str) -> Path:
 
 def destroy_snapshot_helper(
         dataset: str,
-        snapname: str,
+        snapshot_name: str,
         *,
         holding_enabled: bool,
         our_hold_name: str,
@@ -366,20 +366,20 @@ def destroy_snapshot_helper(
         release that hold and destroy.
       - Otherwise, warn and skip (external holds interfere).
     """
-    full = f"{dataset}@{snapname}"
-    holds = zfs_holds(full)
+    snapshot = f"{dataset}@{snapshot_name}"
+    holds = zfs_holds(snapshot)
     if not holds:
-        zfs_destroy_snapshot(full, dry_run=dry_run)
+        zfs_destroy_snapshot(snapshot, dry_run=dry_run)
         return
 
     if holding_enabled and set(holds) == {our_hold_name}:
-        zfs_release_hold(full, our_hold_name, dry_run=dry_run)
-        zfs_destroy_snapshot(full, dry_run=dry_run)
+        zfs_release_hold(snapshot, our_hold_name, dry_run=dry_run)
+        zfs_destroy_snapshot(snapshot, dry_run=dry_run)
         return
 
     logging.warning(
         "Skip destroying snapshot %s: external holds present (%s) or holding disabled.",
-        quote(full), ", ".join(quote(h) for h in holds) if holds else "none",
+        quote(snapshot), ", ".join(quote(hold) for hold in holds) if holds else "none",
     )
 
 
@@ -410,9 +410,9 @@ def is_parent_empty_excluding_child_mounts(parent_mnt: str, child_mounts: Iterab
         return False
 
     child_mounts_set = {os.path.abspath(p) for p in child_mounts}
-    for e in entries:
-        abs_e = os.path.abspath(str(e))
-        if abs_e in child_mounts_set:
+    for entry in entries:
+        absolute_entry = os.path.abspath(str(entry))
+        if absolute_entry in child_mounts_set:
             continue
         # Any other file/dir => not empty
         return False
@@ -420,9 +420,9 @@ def is_parent_empty_excluding_child_mounts(parent_mnt: str, child_mounts: Iterab
 
 
 def collect_datasets_to_backup(
-        roots: List[str],
+        root_datasets: List[str],
         *,
-        include_prop: str,
+        property_include: str,
         exclude_empty_parents: bool,
 ) -> List[DatasetPlan]:
     """
@@ -434,45 +434,45 @@ def collect_datasets_to_backup(
     """
     plans: List[DatasetPlan] = []
 
-    for root in roots:
-        mnts = get_mountpoints_recursively(root)
+    for root_dataset in root_datasets:
+        mountpoint_by_dataset = get_mountpoints_recursively(root_dataset)
         # dataset -> include mode
-        modes: Dict[str, str] = {}
-        for ds in mnts.keys():
-            mode = zfs_get([include_prop], ds).get(include_prop, "").strip().lower()
-            if mode == "":
-                mode = "false"
-            if mode not in {"true", "false", "recursive", "children"}:
+        include_modes: Dict[str, str] = {}
+        for dataset in mountpoint_by_dataset.keys():
+            include_mode = zfs_get([property_include], dataset).get(property_include, "").strip().lower()
+            if include_mode == "":
+                include_mode = "false"
+            if include_mode not in {"true", "false", "recursive", "children"}:
                 logging.warning(
                     "Dataset %s has unknown %s=%s; treating as false.",
-                    quote(ds), quote(include_prop), quote(mode)
+                    quote(dataset), quote(property_include), quote(include_mode)
                 )
-                mode = "false"
-            modes[ds] = mode
+                include_mode = "false"
+            include_modes[dataset] = include_mode
 
         # Precompute child mountpoints for empty-parent checks
-        children_by_parent: Dict[str, List[str]] = {ds: [] for ds in mnts.keys()}
-        for ds in mnts.keys():
-            for other in mnts.keys():
-                if other != ds and other.startswith(ds + "/"):
-                    children_by_parent[ds].append(mnts[other])
+        children_by_parent: Dict[str, List[str]] = {dataset: [] for dataset in mountpoint_by_dataset.keys()}
+        for dataset in mountpoint_by_dataset.keys():
+            for other in mountpoint_by_dataset.keys():
+                if other != dataset and other.startswith(dataset + "/"):
+                    children_by_parent[dataset].append(mountpoint_by_dataset[other])
 
-        for ds, mnt in mnts.items():
-            mode = modes[ds]
-            recursive_flag = mode in {"recursive", "children"}
-            process_self = mode in {"true", "recursive"}
+        for dataset, mountpoint in mountpoint_by_dataset.items():
+            include_mode = include_modes[dataset]
+            recursive_flag = include_mode in {"recursive", "children"}
+            process_self = include_mode in {"true", "recursive"}
 
             if process_self and exclude_empty_parents:
-                child_mounts = children_by_parent.get(ds, [])
-                if child_mounts and is_parent_empty_excluding_child_mounts(mnt, child_mounts):
+                child_mounts = children_by_parent.get(dataset, [])
+                if child_mounts and is_parent_empty_excluding_child_mounts(mountpoint, child_mounts):
                     process_self = False
-                    logging.info("Skip empty parent dataset %s at %s", quote(ds), quote(mnt))
+                    logging.info("Skip empty parent dataset %s at %s", quote(dataset), quote(mountpoint))
 
-            if mode != "false":
+            if include_mode != "false":
                 plans.append(DatasetPlan(
-                    dataset=ds,
-                    mountpoint=mnt,
-                    include_mode=mode,
+                    dataset=dataset,
+                    mountpoint=mountpoint,
+                    include_mode=include_mode,
                     recursive_for_snapshot=recursive_flag,
                     process_self=process_self,
                 ))
@@ -485,57 +485,57 @@ def collect_datasets_to_backup(
 # =============================================================================
 
 def find_resume_timestamp(
-        datasets: List[DatasetPlan],
+        dataset_plans: List[DatasetPlan],
         *,
-        snap_prefix: str,
-        snap_ts_prop: str,
+        snapshot_prefix: str,
+        property_snapshot_timestamp: str,
 ) -> Optional[str]:
     """
     Find the newest unix timestamp among snapshots that match the prefix.
     Prefer the stored property; fall back to parsing the name suffix.
     """
-    newest_ts: Optional[str] = None
-    for plan in datasets:
-        snaps = list_snapshots_for_dataset(plan.dataset, snap_prefix)
-        for fullsnap in snaps:
-            snapname = fullsnap.split("@", 1)[1]
-            props = zfs_get([snap_ts_prop], fullsnap)
-            ts = props.get(snap_ts_prop, "").strip()
-            if ts.isdigit():
-                if newest_ts is None or int(ts) > int(newest_ts):
-                    newest_ts = ts
+    timestamp_newest: Optional[str] = None
+    for plan in dataset_plans:
+        snapshots = list_snapshots_for_dataset(plan.dataset, snapshot_prefix)
+        for snapshot in snapshots:
+            snapshot_name = snapshot.split("@", 1)[1]
+            properties = zfs_get([property_snapshot_timestamp], snapshot)
+            timestamp = properties.get(property_snapshot_timestamp, "").strip()
+            if timestamp.isdigit():
+                if timestamp_newest is None or int(timestamp) > int(timestamp_newest):
+                    timestamp_newest = timestamp
             else:
-                if snapname.startswith(snap_prefix):
-                    suffix = snapname[len(snap_prefix):]
-                    if suffix.isdigit() and (newest_ts is None or int(suffix) > int(newest_ts)):
-                        newest_ts = suffix
-    return newest_ts
+                if snapshot_name.startswith(snapshot_prefix):
+                    suffix = snapshot_name[len(snapshot_prefix):]
+                    if suffix.isdigit() and (timestamp_newest is None or int(suffix) > int(timestamp_newest)):
+                        timestamp_newest = suffix
+    return timestamp_newest
 
 
 def find_orphan_snapshots(
-        datasets: List[DatasetPlan],
+        dataset_plans: List[DatasetPlan],
         *,
-        snap_prefix: str,
-        current_ts: str,
-        snap_ts_prop: str,
+        snapshot_prefix: str,
+        timestamp_current: str,
+        property_snapshot_timestamp: str,
 ) -> List[Tuple[str, str]]:
     """
-    Return a list of (dataset, snapname) for snapshots that match our prefix but
+    Return a list of (dataset, snapshot_name) for snapshots that match our prefix but
     do not belong to the current run timestamp.
     """
     orphans: List[Tuple[str, str]] = []
-    for plan in datasets:
-        snaps = list_snapshots_for_dataset(plan.dataset, snap_prefix)
-        for fullsnap in snaps:
-            ds, snapname = fullsnap.split("@", 1)
-            props = zfs_get([snap_ts_prop], fullsnap)
-            ts = props.get(snap_ts_prop, "").strip()
-            if not ts.isdigit():
-                if snapname.startswith(snap_prefix):
-                    suffix = snapname[len(snap_prefix):]
-                    ts = suffix if suffix.isdigit() else ""
-            if ts != current_ts:
-                orphans.append((ds, snapname))
+    for plan in dataset_plans:
+        snapshots = list_snapshots_for_dataset(plan.dataset, snapshot_prefix)
+        for snapshot in snapshots:
+            dataset, snapshot_name = snapshot.split("@", 1)
+            properties = zfs_get([property_snapshot_timestamp], snapshot)
+            timestamp = properties.get(property_snapshot_timestamp, "").strip()
+            if not timestamp.isdigit():
+                if snapshot_name.startswith(snapshot_prefix):
+                    suffix = snapshot_name[len(snapshot_prefix):]
+                    timestamp = suffix if suffix.isdigit() else ""
+            if timestamp != timestamp_current:
+                orphans.append((dataset, snapshot_name))
     return orphans
 
 
@@ -547,13 +547,13 @@ def pbs_backup_dataset_snapshot(
         *,
         dataset: str,
         mountpoint: str,
-        snapname: str,
+        snapshot_name: str,
         repository: str,
         backup_id_prefix: str,
         namespace: str,
-        pbs_username: Optional[str],
-        pbs_auth_id: Optional[str],
-        pbs_secret: Optional[str],  # password/token secret; if None, we will prompt only on executing
+        username: Optional[str],
+        auth_id: Optional[str],
+        secret: Optional[str],  # password/token secret; if None, we will prompt only on executing
         encryption_password: Optional[str],
         dry_run: bool,
 ) -> None:
@@ -563,38 +563,38 @@ def pbs_backup_dataset_snapshot(
     Archive: <dataset with '/' -> '_'>.pxar:<snapshot directory>
     Backup-ID: <backup_id_prefix><dataset>
     """
-    snap_dir = snapshot_path_on_disk(mountpoint, snapname)
-    if not snap_dir.exists():
+    snapshot_directory = snapshot_path_on_disk(mountpoint, snapshot_name)
+    if not snapshot_directory.exists():
         logging.warning("Skip dataset %s: snapshot directory %s does not exist.",
-                        quote(dataset), quote(str(snap_dir)))
+                        quote(dataset), quote(str(snapshot_directory)))
         return
 
-    ds_id = dataset.replace("/", "_")
+    dataset_id = dataset.replace("/", "_")
     backup_id = f"{backup_id_prefix}{dataset}"
-    archive_spec = f"{ds_id}.pxar:{str(snap_dir)}"
+    archive_specification = f"{dataset_id}.pxar:{str(snapshot_directory)}"
 
     env = {}
-    if pbs_secret:
-        env["PBS_PASSWORD"] = pbs_secret
+    if secret:
+        env["PBS_PASSWORD"] = secret
     if encryption_password:
         env["PBS_ENCRYPTION_PASSWORD"] = encryption_password
 
     cmd = [
         "proxmox-backup-client", "backup",
-        archive_spec,
+        archive_specification,
         "--repository", repository,
         "--backup-id", backup_id,
     ]
     if namespace:
         cmd += ["--ns", namespace]
-    if pbs_auth_id:
-        cmd += ["--auth-id", pbs_auth_id]
-    elif pbs_username:
-        cmd += ["--username", pbs_username]
+    if auth_id:
+        cmd += ["--auth-id", auth_id]
+    elif username:
+        cmd += ["--username", username]
 
     run_cmd(
         cmd,
-        message=f"Back up dataset {quote(dataset)} snapshot {quote(snapname)} "
+        message=f"Back up dataset {quote(dataset)} snapshot {quote(snapshot_name)} "
                 f"to PBS repository {quote(repository)} as backup-id {quote(backup_id)}",
         dry_run=dry_run,
         read_only=False,
@@ -614,18 +614,18 @@ def _minimize_recursive_roots(recursive_datasets: List[str]) -> List[str]:
     Example:
       ["pool", "pool/data", "pool/data/vm"] -> ["pool"]
     """
-    roots = sorted(set(recursive_datasets))
+    root_datasets = sorted(set(recursive_datasets))
     minimized: List[str] = []
-    for ds in roots:
-        if not any(ds.startswith(parent + "/") for parent in minimized):
-            minimized.append(ds)
+    for dataset in root_datasets:
+        if not any(dataset.startswith(parent + "/") for parent in minimized):
+            minimized.append(dataset)
     return minimized
 
 
 def create_snapshots_for_plans(
         plans: List[DatasetPlan],
         *,
-        snapname: str,
+        snapshot_name: str,
         hold_snapshots: bool,
         hold_name: str,
         dry_run: bool,
@@ -645,18 +645,21 @@ def create_snapshots_for_plans(
 
     # Step 2: snapshot recursive roots
     for root in recursive_roots:
-        zfs_snapshot_create([root], snapname, recursive=True, hold=hold_snapshots, hold_name=hold_name, dry_run=dry_run)
+        zfs_snapshot_create([root], snapshot_name, recursive=True, hold=hold_snapshots, hold_name=hold_name,
+                            dry_run=dry_run)
 
     # Step 3: compute a descendants-covered set
-    def covered_by_recursive(ds: str) -> bool:
-        return any(ds.startswith(recursive_root + "/") or ds == recursive_root for recursive_root in recursive_roots)
+    def covered_by_recursive(dataset: str) -> bool:
+        return any(
+            dataset.startswith(recursive_root + "/") or dataset == recursive_root for recursive_root in recursive_roots)
 
-    non_recursive_candidates = [p.dataset for p in plans if not p.recursive_for_snapshot]
-    non_recursive_targets = [ds for ds in non_recursive_candidates if not covered_by_recursive(ds)]
+    non_recursive_candidates = [plan.dataset for plan in plans if not plan.recursive_for_snapshot]
+    non_recursive_targets = [dataset for dataset in non_recursive_candidates if not covered_by_recursive(dataset)]
 
     # Step 4: snapshot the remaining non-recursive datasets in one go (if any)
     if non_recursive_targets:
-        zfs_snapshot_create(non_recursive_targets, snapname, recursive=False, hold=hold_snapshots, hold_name=hold_name,
+        zfs_snapshot_create(non_recursive_targets, snapshot_name, recursive=False, hold=hold_snapshots,
+                            hold_name=hold_name,
                             dry_run=dry_run)
 
 
@@ -664,9 +667,9 @@ def mark_snapshot_timestamp_and_reset_done(
         plans: List[DatasetPlan],
         *,
         dataset_filter_self_only: bool,
-        snapname: str,
-        snap_ts_prop: str,
-        snap_done_prop: str,
+        snapshot_name: str,
+        property_snapshot_timestamp: str,
+        property_snapshot_done: str,
         timestamp: str,
         dry_run: bool,
 ):
@@ -674,74 +677,75 @@ def mark_snapshot_timestamp_and_reset_done(
     Stamp the snapshot with the run timestamp and clear the "backed_up" flag.
     Only applies to datasets that we will actually back up when dataset_filter_self_only=True.
     """
-    for p in plans:
-        if dataset_filter_self_only and not p.process_self:
+    for plan in plans:
+        if dataset_filter_self_only and not plan.process_self:
             continue
-        snap_full = f"{p.dataset}@{snapname}"
-        zfs_set(snap_ts_prop, timestamp, snap_full, dry_run=dry_run)
-        zfs_set(snap_done_prop, "false", snap_full, dry_run=dry_run)
+        snapshot = f"{plan.dataset}@{snapshot_name}"
+        zfs_set(property_snapshot_timestamp, timestamp, snapshot, dry_run=dry_run)
+        zfs_set(property_snapshot_done, "false", snapshot, dry_run=dry_run)
 
 
 def filter_plans_for_existing_unbacked(
         plans: List[DatasetPlan],
         *,
-        snapname: str,
-        snap_done_prop: str,
+        snapshot_name: str,
+        property_snapshot_done: str,
 ) -> List[DatasetPlan]:
     """
     Keep only datasets where the snapshot exists and is not yet marked as backed up.
     """
     selected: List[DatasetPlan] = []
-    for p in plans:
-        full = f"{p.dataset}@{snapname}"
+    for plan in plans:
+        snapshot = f"{plan.dataset}@{snapshot_name}"
         try:
-            props = zfs_get([snap_done_prop], full)
+            properties = zfs_get([property_snapshot_done], snapshot)
         except subprocess.CalledProcessError:
             # Snapshot missing
             continue
-        done = props.get(snap_done_prop, "").strip().lower() == "true"
-        if not done and p.process_self:
-            selected.append(p)
+        done = properties.get(property_snapshot_done, "").strip().lower() == "true"
+        if not done and plan.process_self:
+            selected.append(plan)
     return selected
 
 
 def cleanup_orphans_if_any(
         plans: List[DatasetPlan],
         *,
-        snap_prefix: str,
-        current_ts: str,
-        snap_ts_prop: str,
+        snapshot_prefix: str,
+        timestamp_current: str,
+        property_snapshot_timestamp: str,
         remove_orphans: str,  # "true" | "false" | "ask"
         holding_enabled: bool,
         hold_name: str,
         dry_run: bool,
 ) -> None:
     """Find and optionally remove orphan snapshots from previous runs."""
-    orphans = find_orphan_snapshots(plans, snap_prefix=snap_prefix, current_ts=current_ts, snap_ts_prop=snap_ts_prop)
+    orphans = find_orphan_snapshots(plans, snapshot_prefix=snapshot_prefix, timestamp_current=timestamp_current,
+                                    property_snapshot_timestamp=property_snapshot_timestamp)
     if not orphans:
         return
 
     if remove_orphans == "false":
         logging.warning(
             "Found %d orphaned snapshot(s) with prefix %s; not removing (--remove-orphans=false).",
-            len(orphans), quote(snap_prefix),
+            len(orphans), quote(snapshot_prefix),
         )
         return
 
     if remove_orphans == "ask":
         logging.warning(
             "Found %d orphaned snapshot(s) with prefix %s. There might be another instance using them.",
-            len(orphans), quote(snap_prefix),
+            len(orphans), quote(snapshot_prefix),
         )
-        ans = input("Remove orphaned snapshots now? [y/N]: ").strip().lower()
-        if ans != "y":
+        answer = input("Remove orphaned snapshots now? [y/N]: ").strip().lower()
+        if answer != "y":
             logging.info("Skipping orphan removal.")
             return
 
-    for ds, snapname in orphans:
+    for dataset, snapshot_name in orphans:
         destroy_snapshot_helper(
-            ds,
-            snapname,
+            dataset,
+            snapshot_name,
             holding_enabled=holding_enabled,
             our_hold_name=hold_name,
             dry_run=dry_run,
@@ -832,7 +836,7 @@ def configure_logging(verbose: bool, debug: bool, quiet: bool):
 
 def ensure_tools():
     """Abort early if required CLI tools are not available."""
-    missing = [prog for prog in ("zfs", "proxmox-backup-client") if which(prog) is None]
+    missing = [program for program in ("zfs", "proxmox-backup-client") if which(program) is None]
     if missing:
         logging.error("Missing required tools: %s", ", ".join(missing))
         sys.exit(2)
@@ -863,8 +867,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Build the plan
     plans = collect_datasets_to_backup(
-        roots=args.datasets,
-        include_prop=args.zfs_include_property,
+        root_datasets=args.datasets,
+        property_include=args.zfs_include_property,
         exclude_empty_parents=args.exclude_empty_parents,
     )
     if not plans:
@@ -872,31 +876,33 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
 
     # Determine snapshot name
-    now_ts = str(int(time.time()))
+    timestamp_now = str(int(time.time()))
     if args.resume:
-        newest = find_resume_timestamp(plans, snap_prefix=args.zfs_snapshot_prefix,
-                                       snap_ts_prop=args.zfs_snapshot_timestamp_property)
-        if not newest:
+        timestamp_newest = find_resume_timestamp(plans, snapshot_prefix=args.zfs_snapshot_prefix,
+                                                 property_snapshot_timestamp=args.zfs_snapshot_timestamp_property)
+        if not timestamp_newest:
             logging.warning("Resume requested, but no suitable existing timestamp found. Aborting.")
             return 1
-        snapname = f"{args.zfs_snapshot_prefix}{newest}"
+        snapshot_name = f"{args.zfs_snapshot_prefix}{timestamp_newest}"
+        timestamp_current = timestamp_newest
         logging.warning("Resuming: skipping snapshot creation and using existing timestamp %s (snapshot %s).",
-                        newest, quote(snapname))
+                        timestamp_newest, quote(snapshot_name))
         # Only process datasets that have this snapshot and are not marked done
-        plans = filter_plans_for_existing_unbacked(plans, snapname=snapname,
-                                                   snap_done_prop=args.zfs_snapshot_done_property)
+        plans = filter_plans_for_existing_unbacked(plans, snapshot_name=snapshot_name,
+                                                   property_snapshot_done=args.zfs_snapshot_done_property)
         if not plans:
             logging.info("Nothing to do after resume filtering.")
             return 0
     else:
-        snapname = f"{args.zfs_snapshot_prefix}{now_ts}"
+        snapshot_name = f"{args.zfs_snapshot_prefix}{timestamp_now}"
+        timestamp_current = timestamp_now
 
     # Orphan cleanup (ask/true/false)
     cleanup_orphans_if_any(
         plans,
-        snap_prefix=args.zfs_snapshot_prefix,
-        current_ts=snapname[len(args.zfs_snapshot_prefix):],
-        snap_ts_prop=args.zfs_snapshot_timestamp_property,
+        snapshot_prefix=args.zfs_snapshot_prefix,
+        timestamp_current=timestamp_current,
+        property_snapshot_timestamp=args.zfs_snapshot_timestamp_property,
         remove_orphans=args.remove_orphans,
         holding_enabled=args.hold_snapshots,
         hold_name=args.zfs_hold_name,
@@ -907,7 +913,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if not args.resume:
         create_snapshots_for_plans(
             plans,
-            snapname=snapname,
+            snapshot_name=snapshot_name,
             hold_snapshots=args.hold_snapshots,
             hold_name=args.zfs_hold_name,
             dry_run=not args.execute,
@@ -916,10 +922,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         mark_snapshot_timestamp_and_reset_done(
             plans,
             dataset_filter_self_only=True,
-            snapname=snapname,
-            snap_ts_prop=args.zfs_snapshot_timestamp_property,
-            snap_done_prop=args.zfs_snapshot_done_property,
-            timestamp=snapname[len(args.zfs_snapshot_prefix):],
+            snapshot_name=snapshot_name,
+            property_snapshot_timestamp=args.zfs_snapshot_timestamp_property,
+            property_snapshot_done=args.zfs_snapshot_done_property,
+            timestamp=timestamp_current,
             dry_run=not args.execute,
         )
     else:
@@ -927,36 +933,36 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Filter to actionable items (existing snapshot and not done)
     if not args.resume:
-        plans = filter_plans_for_existing_unbacked(plans, snapname=snapname,
-                                                   snap_done_prop=args.zfs_snapshot_done_property)
+        plans = filter_plans_for_existing_unbacked(plans, snapshot_name=snapshot_name,
+                                                   property_snapshot_done=args.zfs_snapshot_done_property)
         if not plans:
             logging.info("Nothing to back up (already done?).")
             return 0
 
     # Backup loop
-    for p in plans:
+    for plan in plans:
         pbs_backup_dataset_snapshot(
-            dataset=p.dataset,
-            mountpoint=p.mountpoint,
-            snapname=snapname,
+            dataset=plan.dataset,
+            mountpoint=plan.mountpoint,
+            snapshot_name=snapshot_name,
             repository=args.repository,
             backup_id_prefix=args.pbs_backup_id_prefix,
             namespace=args.pbs_namespace,
-            pbs_username=args.pbs_username,
-            pbs_auth_id=args.pbs_auth_id,
-            pbs_secret=pbs_secret if pbs_secret else None,
+            username=args.pbs_username,
+            auth_id=args.pbs_auth_id,
+            secret=pbs_secret if pbs_secret else None,
             encryption_password=args.pbs_encryption_password if args.pbs_encryption_password else None,
             dry_run=not args.execute,
         )
         # Mark as backed up
-        full = f"{p.dataset}@{snapname}"
-        zfs_set(args.zfs_snapshot_done_property, "true", full, dry_run=not args.execute)
+        snapshot = f"{plan.dataset}@{snapshot_name}"
+        zfs_set(args.zfs_snapshot_done_property, "true", snapshot, dry_run=not args.execute)
 
     # Tear-down: release holds (if ours) and destroy snapshots
-    for p in plans:
+    for plan in plans:
         destroy_snapshot_helper(
-            p.dataset,
-            snapname,
+            plan.dataset,
+            snapshot_name,
             holding_enabled=args.hold_snapshots,
             our_hold_name=args.zfs_hold_name,
             dry_run=not args.execute,
