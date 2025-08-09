@@ -1062,7 +1062,7 @@ def pbs_backup_dataset_snapshot(
 
     completed_process: subprocess.CompletedProcess = run_cmd(
         cmd,
-        message=f"Back up snapshot {quote(snapshot_name)} to PBS repository {quote(repository)} as backup-id {quote(backup_id)}",
+        message=f"Back up {len(archive_names)} snapshot{s(archive_names)} {quote(snapshot_name)} to PBS repository {quote(repository)} as backup-id {quote(backup_id)}",
         dry_run=dry_run,
         read_only=False,
         env=env,
