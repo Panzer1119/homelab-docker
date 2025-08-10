@@ -1361,6 +1361,8 @@ def build_parser() -> argparse.ArgumentParser:
     # Change detection mode
     g_pbs_b.add_argument("--pbs-change-detection-mode", choices=["legacy", "data", "metadata"], default="metadata",
                          help="Proxmox’s default file-based backups read all data into a pxar archive and check chunks for deduplication, which is slow if most files are unchanged. Switching to metadata-based change detection avoids re-reading files with unchanged metadata by splitting backups into two files (mpxar for metadata and ppxar for contents) for faster lookups. Data mode also creates split archives but re-encodes all file data without using previous metadata.")
+    g_pbs_b.add_argument("--pbs-show-progress", action=argparse.BooleanOptionalAction, default=True,
+                         help="Show live progress of the backup command (default: no).")
 
     # ZFS options (group)
     g_zfs = p.add_argument_group("ZFS options")
@@ -1573,6 +1575,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         fingerprint=args.pbs_fingerprint if args.pbs_fingerprint else None,
         pbs_change_detection_mode=args.pbs_change_detection_mode,
         dry_run=not args.execute,
+        show_progress=args.pbs_show_progress if args.pbs_show_progress else None
     )
 
     # Tear-down: release holds (if ours) and destroy snapshots
