@@ -1116,10 +1116,18 @@ def pbs_backup_dataset_snapshot(
 
 
 def log_pbs_backup_output(completed_process: subprocess.CompletedProcess) -> None:
-    logging.debug("PBS backup stdout:%s",
-                  "\n" + completed_process.stdout.decode().strip() if completed_process.stdout else " No output")
-    logging.debug("PBS backup stderr:%s",
-                  "\n" + completed_process.stderr.decode().strip() if completed_process.stderr else " No output")
+    log_process_output("PBS backup stdout:", completed_process.stdout)
+    log_process_output("PBS backup stderr:", completed_process.stderr)
+
+
+def log_process_output(message, pipe) -> None:
+    if not pipe:
+        logging.debug(message + " No output")
+        return
+    lines: List[str] = [output.strip() for output in pipe.decode().splitlines()]
+    logging.debug("%s %d line%s", message, len(lines), s(lines))
+    for line in lines:
+        logging.debug(line)
 
 
 # =============================================================================
