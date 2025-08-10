@@ -968,33 +968,36 @@ def pbs_status(
         sys.exit(1)
 
 
-def pbs_create_archive_name(*,
-                            dataset: str,
-                            mountpoint: str,
-                            snapshot_name: str,
-                            archive_name_prefix: Optional[str]
-                            ) -> str:
+def pbs_create_backup_source(*,
+                             dataset: str,
+                             mountpoint: str,
+                             snapshot_name: str,
+                             archive_name_prefix: Optional[str],
+                             live: bool = False,
+                             ) -> str:
     """
-    Create a Proxmox Backup Server archive name for the dataset snapshot.
+    Create a Proxmox Backup Server backup source string for a dataset snapshot.
+    This string is used to specify the source for the backup in the proxmox-backup-client command.
+    If live is True, it will use the live dataset mountpoint instead of the snapshot directory.
 
     Format: <archive_name_prefix><dataset with '/' -> '_'>.pxar:<snapshot directory>
     """
-    snapshot_directory = snapshot_path_on_disk(mountpoint, snapshot_name)
-    if not snapshot_directory.exists():
-        logging.error("Skip dataset %s: snapshot directory %s does not exist.",
-                      quote(dataset), quote(str(snapshot_directory)))
+    source_directory = Path(mountpoint) if live else snapshot_path_on_disk(mountpoint, snapshot_name)
+    if not source_directory.exists():
+        logging.error("Skip dataset %s: %s directory %s does not exist.",
+                      quote(dataset), "live" if live else "snapshot", quote(str(source_directory)))
         sys.exit(1)
-    elif not snapshot_directory.is_dir():
-        logging.warning("Skip dataset %s: snapshot directory %s is not a directory.",
-                        quote(dataset), quote(str(snapshot_directory)))
+    elif not source_directory.is_dir():
+        logging.warning("Skip dataset %s: %s directory %s is not a directory.",
+                        quote(dataset), "live" if live else "snapshot", quote(str(source_directory)))
         # sys.exit(1) # Even if it's not a directory, we could still archive it
-    elif not os.access(snapshot_directory, os.R_OK):
-        logging.error("Skip dataset %s: snapshot directory %s is not readable.",
-                      quote(dataset), quote(str(snapshot_directory)))
+    elif not os.access(source_directory, os.R_OK):
+        logging.error("Skip dataset %s: %s directory %s is not readable.",
+                      quote(dataset), "live" if live else "snapshot", quote(str(source_directory)))
         # sys.exit(1)
 
     dataset_id = dataset.replace("/", "_")
-    return f"{archive_name_prefix or ""}{dataset_id}.pxar:{str(snapshot_directory)}"
+    return f"{archive_name_prefix or ""}{dataset_id}.pxar:{str(source_directory)}"
 
 
 def pbs_backup_dataset_snapshot(
@@ -1011,17 +1014,20 @@ def pbs_backup_dataset_snapshot(
         fingerprint: Optional[str],
         pbs_change_detection_mode: Optional[str],
         dry_run: bool,
+        dry_run_live: bool,
         show_progress: bool = False,
 ) -> None:
     """
     Back up the snapshot directory as a pxar archive using proxmox-backup-client.
     """
-    archive_names = [
-        pbs_create_archive_name(
+    backup_live: bool = dry_run and dry_run_live
+    backup_sources = [
+        pbs_create_backup_source(
             dataset=dataset_plan.dataset,
             mountpoint=dataset_plan.mountpoint,
             snapshot_name=snapshot_name,
             archive_name_prefix=archive_name_prefix,
+            live=backup_live
         )
         for dataset_plan in dataset_plans
     ]
@@ -1044,7 +1050,7 @@ def pbs_backup_dataset_snapshot(
         logging.debug("Using PBS fingerprint: %s", quote(fingerprint))
 
     cmd: List[str] = ["proxmox-backup-client", "backup"]
-    cmd.extend(archive_names)
+    cmd.extend(backup_sources)
     cmd += ["--backup-type", "host"]
     cmd += ["--backup-id", backup_id]
     cmd += ["--backup-time", backup_time]
@@ -1061,15 +1067,20 @@ def pbs_backup_dataset_snapshot(
     if dry_run:
         cmd.append("--dry-run")
 
+    # Build the message for logging
+    message = f"Back up {len(backup_sources)} {"live dataset" if backup_live else "snapshot"}{s(backup_sources)}{"" if backup_live else " named " + quote(snapshot_name)} to PBS repository {quote(repository)} as backup-id {quote(backup_id)} in namespace {quote(namespace)} with timestamp {quote(backup_time)}"
+
     if show_progress:
-        # Use a subprocess to run the command and capture its output in real-time
-        logging.info("Running PBS backup command: %s", quote(" ".join(cmd)))
         completed_process: subprocess.CompletedProcess = subprocess.CompletedProcess(
             args=cmd,
             returncode=0,
             stdout=None,
             stderr=None,
         )
+        if dry_run:
+            message = f"[DRY-RUN] {message}"
+        logging.info(message)
+        # Use a subprocess to run the command and capture its output in real-time
         with subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
             try:
                 while process.poll() is None:
@@ -1092,7 +1103,7 @@ def pbs_backup_dataset_snapshot(
     else:
         completed_process: subprocess.CompletedProcess = run_cmd(
             cmd,
-            message=f"Back up {len(archive_names)} snapshot{s(archive_names)} {quote(snapshot_name)} to PBS repository {quote(repository)} as backup-id {quote(backup_id)} in namespace {quote(namespace)} with timestamp {quote(backup_time)}",
+            message=message,
             dry_run=dry_run,
             read_only=False,
             env=env,
@@ -1376,6 +1387,9 @@ def build_parser() -> argparse.ArgumentParser:
                          help="Proxmox’s default file-based backups read all data into a pxar archive and check chunks for deduplication, which is slow if most files are unchanged. Switching to metadata-based change detection avoids re-reading files with unchanged metadata by splitting backups into two files (mpxar for metadata and ppxar for contents) for faster lookups. Data mode also creates split archives but re-encodes all file data without using previous metadata.")
     g_pbs_b.add_argument("--pbs-show-progress", action=argparse.BooleanOptionalAction, default=True,
                          help="Show live progress of the backup command (default: no).")
+    # When dry-run is enabled, execute the backup command on live data instead of using the snapshot directory. (enabled by default, because it only affects the dry-run mode)
+    g_pbs_b.add_argument("--pbs-dry-run-live", action=argparse.BooleanOptionalAction, default=True,
+                         help="When dry-run is enabled, execute the backup command on live data instead of using the snapshot directory. This allows you to see what would be backed up without actually creating a snapshot.")
 
     # ZFS options (group)
     g_zfs = p.add_argument_group("ZFS options")
@@ -1588,6 +1602,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         fingerprint=args.pbs_fingerprint if args.pbs_fingerprint else None,
         pbs_change_detection_mode=args.pbs_change_detection_mode,
         dry_run=not args.execute,
+        dry_run_live=args.pbs_dry_run_live,
         show_progress=args.pbs_show_progress if args.pbs_show_progress else None
     )
 
