@@ -1098,10 +1098,8 @@ def pbs_backup_dataset_snapshot(
             env=env,
             check=False
         )
-        logging.debug("PBS backup stdout:%s",
-                      "\n" + completed_process.stdout.decode().strip() if completed_process.stdout else " No output")
-        logging.debug("PBS backup stderr:%s",
-                      "\n" + completed_process.stderr.decode().strip() if completed_process.stderr else " No output")
+        # Log the output
+        log_pbs_backup_output(completed_process)
     if completed_process.returncode != 0:
         # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
         logging.error(
@@ -1115,6 +1113,13 @@ def pbs_backup_dataset_snapshot(
             output=completed_process.stdout,
             stderr=completed_process.stderr
         )
+
+
+def log_pbs_backup_output(completed_process: subprocess.CompletedProcess) -> None:
+    logging.debug("PBS backup stdout:%s",
+                  "\n" + completed_process.stdout.decode().strip() if completed_process.stdout else " No output")
+    logging.debug("PBS backup stderr:%s",
+                  "\n" + completed_process.stderr.decode().strip() if completed_process.stderr else " No output")
 
 
 # =============================================================================
