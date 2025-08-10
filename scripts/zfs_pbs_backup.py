@@ -38,6 +38,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import re
 import shlex
 import socket
 import subprocess
@@ -121,6 +122,50 @@ def can_execute(program: str) -> bool:
     if not path:
         return False
     return os.access(path, os.X_OK)
+
+
+_ASCII_ESC_RE = re.compile(r"_(?!u)([0-9A-F]{2})")
+_UNICODE_ESC_RE = re.compile(r"_u([0-9A-F]{6})")
+
+
+def path_to_safe_string(path: str) -> str:
+    """
+    Convert any string to a collision-free safe form using only [A-Za-z0-9_-].
+
+    Rules:
+      - Pass through letters, digits, and hyphen '-'.
+      - Escape ALL other ASCII chars (including '_') as '_HH' (2-digit uppercase hex).
+      - Escape non-ASCII chars as '_uXXXXXX' (6-digit uppercase hex).
+    """
+    out: List[ord] = []
+    for ch in path:
+        code = ord(ch)
+        # Allow letters, digits, and hyphen '-' to pass through
+        if (65 <= code <= 90) or (97 <= code <= 122) or (48 <= code <= 57) or ch == "-":
+            out.append(ch)
+        # Escape ASCII control characters and special characters
+        elif code < 128:
+            out.append(f"_{code:02X}")
+        # Escape non-ASCII characters
+        else:
+            out.append(f"_u{code:06X}")
+    safe_string: str = "".join(out)
+    decoded_path: str = safe_string_to_path(safe_string)
+    if decoded_path != path:
+        raise ValueError(
+            f"Path to safe string conversion failed: {quote(path)} → {quote(safe_string)} -> {quote(decoded_path)}")
+    return safe_string
+
+
+def safe_string_to_path(safe_string: str) -> str:
+    """
+    Decode strings produced by path_to_safe_string back to the original.
+    """
+    # Decode unicode escapes first to avoid partial matches
+    safe_string = _UNICODE_ESC_RE.sub(lambda m: chr(int(m.group(1), 16)), safe_string)
+    # Decode ASCII escapes
+    safe_string = _ASCII_ESC_RE.sub(lambda m: chr(int(m.group(1), 16)), safe_string)
+    return safe_string
 
 
 # =============================================================================
