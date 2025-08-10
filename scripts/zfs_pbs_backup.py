@@ -1122,12 +1122,12 @@ def log_pbs_backup_output(completed_process: subprocess.CompletedProcess) -> Non
 
 def log_process_output(message, pipe) -> None:
     if not pipe:
-        logging.debug(message + " No output")
+        logging.info(message + " No output")
         return
     lines: List[str] = [output.strip() for output in pipe.decode().splitlines()]
-    logging.debug("%s %d line%s", message, len(lines), s(lines))
+    logging.info("%s %d line%s", message, len(lines), s(lines))
     for line in lines:
-        logging.debug(line)
+        logging.info(line)
 
 
 # =============================================================================
