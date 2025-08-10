@@ -1011,6 +1011,7 @@ def pbs_backup_dataset_snapshot(
         fingerprint: Optional[str],
         pbs_change_detection_mode: Optional[str],
         dry_run: bool,
+        show_progress: bool = False,
 ) -> None:
     """
     Back up the snapshot directory as a pxar archive using proxmox-backup-client.
@@ -1060,22 +1061,52 @@ def pbs_backup_dataset_snapshot(
     if dry_run:
         cmd.append("--dry-run")
 
-    completed_process: subprocess.CompletedProcess = run_cmd(
-        cmd,
-        message=f"Back up {len(archive_names)} snapshot{s(archive_names)} {quote(snapshot_name)} to PBS repository {quote(repository)} as backup-id {quote(backup_id)} in namespace {quote(namespace)} with timestamp {quote(backup_time)}",
-        dry_run=dry_run,
-        read_only=False,
-        env=env,
-        check=False
-    )
-    logging.debug("PBS backup stdout:%s",
-                  "\n" + completed_process.stdout.decode().strip() if completed_process.stdout else " No output")
-    logging.debug("PBS backup stderr:%s",
-                  "\n" + completed_process.stderr.decode().strip() if completed_process.stderr else " No output")
+    if show_progress:
+        # Use a subprocess to run the command and capture its output in real-time
+        logging.info("Running PBS backup command: %s", quote(" ".join(cmd)))
+        completed_process: subprocess.CompletedProcess = subprocess.CompletedProcess(
+            args=cmd,
+            returncode=0,
+            stdout=None,
+            stderr=None,
+        )
+        with subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
+            try:
+                while process.poll() is None:
+                    # Read stdout line by line
+                    line = process.stdout.readline()
+                    if not line:
+                        break
+                    line = line.decode().strip()
+                    if line:
+                        # Print each line of output as it comes in
+                        logging.info(line)
+            except subprocess.CalledProcessError as error:
+                process.kill()
+                completed_process = subprocess.CompletedProcess(
+                    args=cmd,
+                    returncode=error.returncode,
+                    stdout=error.output,
+                    stderr=error.stderr
+                )
+    else:
+        completed_process: subprocess.CompletedProcess = run_cmd(
+            cmd,
+            message=f"Back up {len(archive_names)} snapshot{s(archive_names)} {quote(snapshot_name)} to PBS repository {quote(repository)} as backup-id {quote(backup_id)} in namespace {quote(namespace)} with timestamp {quote(backup_time)}",
+            dry_run=dry_run,
+            read_only=False,
+            env=env,
+            check=False
+        )
+        logging.debug("PBS backup stdout:%s",
+                      "\n" + completed_process.stdout.decode().strip() if completed_process.stdout else " No output")
+        logging.debug("PBS backup stderr:%s",
+                      "\n" + completed_process.stderr.decode().strip() if completed_process.stderr else " No output")
     if completed_process.returncode != 0:
         # If the command failed, it's either because the dataset does not exist or we don't have enough permissions.
         logging.error(
-            "Failed to back up snapshot %s to PBS repository %s:\n%s", quote(snapshot_name), quote(repository),
+            "Failed to back up snapshot %s to PBS repository %s %s(exit code: %s):\n%s", quote(snapshot_name),
+            quote(repository), "with live output " if show_progress else "", completed_process.returncode,
             completed_process.stderr.decode().strip() if completed_process.stderr else "Unknown error"
         )
         raise subprocess.CalledProcessError(
