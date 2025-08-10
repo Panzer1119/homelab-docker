@@ -1080,7 +1080,7 @@ def pbs_backup_dataset_snapshot(
                     line = line.decode().strip()
                     if line:
                         # Print each line of output as it comes in
-                        logging.info(line)
+                        logging.info("[PBC]: %s", line)
             except subprocess.CalledProcessError as error:
                 process.kill()
                 completed_process = subprocess.CompletedProcess(
@@ -1127,7 +1127,7 @@ def log_process_output(message, pipe) -> None:
     lines: List[str] = [output.strip() for output in pipe.decode().splitlines()]
     logging.info("%s %d line%s", message, len(lines), s(lines))
     for line in lines:
-        logging.info(line)
+        logging.info("[PBC]: %s", line)
 
 
 # =============================================================================
