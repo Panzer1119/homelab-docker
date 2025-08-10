@@ -1041,7 +1041,7 @@ def pbs_create_backup_source(*,
                       quote(dataset), "live" if live else "snapshot", quote(str(source_directory)))
         # sys.exit(1)
 
-    dataset_id = dataset.replace("/", "_")
+    dataset_id = path_to_safe_string(dataset)
     return f"{archive_name_prefix or ""}{dataset_id}.pxar:{str(source_directory)}"
 
 
@@ -1076,6 +1076,7 @@ def pbs_backup_dataset_snapshot(
         )
         for dataset_plan in dataset_plans
     ]
+    logging.debug("Backup sources: %s", ", ".join(quote(source) for source in backup_sources))
 
     env = {}
     if repository:
