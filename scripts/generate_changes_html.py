@@ -24,10 +24,22 @@ COMMAND_TEMPLATE = (
     "git checkout $CURRENT_BRANCH && git stash pop"
 )
 
+
 def format_command(section, project, container, commit):
     return COMMAND_TEMPLATE.format(section=section, project=project, container=container, commit=commit)
 
+
 def generate_html(data):
+    # Collect distinct sections and projects for filters
+    sections_set = set()
+    projects_set = set()
+    for commit_entry in data:
+        for project in commit_entry['projects']:
+            sections_set.add(project['section'])
+            projects_set.add(project['project'])
+    sections = sorted(sections_set)
+    projects = sorted(projects_set)
+
     html = '<!DOCTYPE html>'
     html += '''
 <html lang="en">
@@ -50,11 +62,16 @@ def generate_html(data):
         .ut-tag { color: green; font-weight: bold; }
         .ut-sha { color: blue; font-weight: bold; }
         .image-info { font-family: "Lucida Console", "Menlo", "Monaco", "Courier", monospace; }
+        fieldset { display: inline-block; margin-right: 20px; vertical-align: top; }
+        legend { font-weight: bold; }
+        .filters { margin: 10px 0 20px; }
     </style>
     <script>
         function applyFilters() {
             const selectedUpdateTypes = Array.from(document.querySelectorAll('input[name="updateType"]:checked')).map(cb => cb.value);
             const selectedChangeTypes = Array.from(document.querySelectorAll('input[name="changeType"]:checked')).map(cb => cb.value);
+            const selectedSections   = Array.from(document.querySelectorAll('input[name="sectionFilter"]:checked')).map(cb => cb.value);
+            const selectedProjects   = Array.from(document.querySelectorAll('input[name="projectFilter"]:checked')).map(cb => cb.value);
 
             const allProjects = document.querySelectorAll('.project');
             const allContainers = document.querySelectorAll('.container');
@@ -62,32 +79,47 @@ def generate_html(data):
             const allProjectDividers = document.querySelectorAll('.project-divider');
             const allSectionDividers = document.querySelectorAll('.section-divider');
 
+            // Container-level filter: update types
             allContainers.forEach(container => {
                 const updateTypes = container.getAttribute('data-update-types').split(',');
                 const matchUpdate = selectedUpdateTypes.some(val => updateTypes.includes(val));
                 container.style.display = matchUpdate ? 'block' : 'none';
             });
 
+            // Project-level filter: change type + section + project + has visible container
             allProjects.forEach(project => {
                 const changeType = project.getAttribute('data-change-type');
+                const section = project.getAttribute('data-section');
+                const projName = project.getAttribute('data-project');
+
                 const matchChange = selectedChangeTypes.includes(changeType);
+                const matchSection = selectedSections.includes(section);
+                const matchProject = selectedProjects.includes(projName);
+
                 const visibleContainers = Array.from(project.querySelectorAll('.container')).some(c => c.style.display !== 'none');
-                project.style.display = matchChange && visibleContainers ? 'block' : 'none';
+                project.style.display = (matchChange && matchSection && matchProject && visibleContainers) ? 'block' : 'none';
             });
 
+            // Commit-level visibility: hide commits with no visible projects
             allCommits.forEach(commit => {
                 const visibleProjects = Array.from(commit.querySelectorAll('.project')).some(p => p.style.display !== 'none');
                 commit.style.display = visibleProjects ? 'block' : 'none';
             });
 
+            // Project-divider visibility (only in section view)
             allProjectDividers.forEach(divider => {
+                const projName = divider.getAttribute('data-project');
+                const projectSelected = !projName || selectedProjects.includes(projName);
                 const visibleProjects = Array.from(divider.querySelectorAll('.project')).some(p => p.style.display !== 'none');
-                divider.style.display = visibleProjects ? 'block' : 'none';
+                divider.style.display = (projectSelected && visibleProjects) ? 'block' : 'none';
             });
 
+            // Section-divider visibility (only in section view)
             allSectionDividers.forEach(divider => {
+                const section = divider.getAttribute('data-section');
+                const sectionSelected = !section || selectedSections.includes(section);
                 const visibleProjects = Array.from(divider.querySelectorAll('.project')).some(p => p.style.display !== 'none');
-                divider.style.display = visibleProjects ? 'block' : 'none';
+                divider.style.display = (sectionSelected && visibleProjects) ? 'block' : 'none';
             });
         }
 
@@ -119,14 +151,38 @@ def generate_html(data):
         <option value="sectionView" selected>Grouped by Section</option>
     </select>
 </div>
-<div>
+<div class="filters">
     <fieldset>
         <legend>Filter by update_type:</legend>
-''' + '\n'.join([f'<label><input type="checkbox" name="updateType" value="{t}" ' + ('' if t == 'sha' else 'checked') + f' onchange="applyFilters()"> {t}</label><br>' for t in UPDATE_TYPES]) + '''
+''' + '\n'.join([f'<label><input type="checkbox" name="updateType" value="{t}" ' + (
+        '' if t == 'sha' else 'checked') + f' onchange="applyFilters()"> {t}</label><br>' for t in UPDATE_TYPES]) + '''
     </fieldset>
     <fieldset>
         <legend>Filter by change_type:</legend>
-''' + '\n'.join([f'<label><input type="checkbox" name="changeType" value="{t}" checked onchange="applyFilters()"> {t}</label><br>' for t in CHANGE_TYPES]) + '''
+''' + '\n'.join([
+        f'<label><input type="checkbox" name="changeType" value="{t}" checked onchange="applyFilters()"> {t}</label><br>'
+        for
+        t
+        in
+        CHANGE_TYPES]) + '''
+    </fieldset>
+    <fieldset>
+        <legend>Filter by section:</legend>
+''' + '\n'.join([
+        f'<label><input type="checkbox" name="sectionFilter" value="{s}" checked onchange="applyFilters()"> {s}</label><br>'
+        for
+        s
+        in
+        sections]) + '''
+    </fieldset>
+    <fieldset>
+        <legend>Filter by project:</legend>
+''' + '\n'.join([
+        f'<label><input type="checkbox" name="projectFilter" value="{p}" checked onchange="applyFilters()"> {p}</label><br>'
+        for
+        p
+        in
+        projects]) + '''
     </fieldset>
 </div>
 <hr>
@@ -141,9 +197,10 @@ def generate_html(data):
             containers_html = ''
             for container in project['containers']:
                 update_types = ','.join(container['update_types'])
-                command = format_command(project['section'], project['project'], container['container_name'], commit_entry['commit'])
+                command = format_command(project['section'], project['project'], container['container_name'],
+                                         commit_entry['commit'])
                 styled_updates = ' '.join([
-                    f'<span class="{UPDATE_TYPE_CLASSES.get(t, '')}">{t}</span>' for t in container['update_types']
+                    f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
                 ])
                 containers_html += f'''<div class="container" data-update-types="{update_types}">
                     <strong>Container:</strong> <code>{container['container_name']}</code><br>
@@ -156,7 +213,17 @@ def generate_html(data):
                 </div>'''
 
             if containers_html:
-                project_html = f'<div class="project" data-change-type="{project["change_type"]}"><strong>Section:</strong> <code>{project["section"]}</code><br><strong>Project:</strong> <code>{project["project"]}</code><br><strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>{containers_html}</div>'
+                project_html = (
+                    f'<div class="project" '
+                    f'data-change-type="{project["change_type"]}" '
+                    f'data-section="{project["section"]}" '
+                    f'data-project="{project["project"]}">'
+                    f'<strong>Section:</strong> <code>{project["section"]}</code><br>'
+                    f'<strong>Project:</strong> <code>{project["project"]}</code><br>'
+                    f'<strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>'
+                    f'{containers_html}'
+                    f'</div>'
+                )
                 project_htmls.append(project_html)
 
         if project_htmls:
@@ -176,21 +243,22 @@ def generate_html(data):
             })
 
     for section in sorted(section_map.keys()):
-        section_html += f'<div class="section-divider"><h2>Section: <code>{section}</code></h2>'
+        section_html += f'<div class="section-divider" data-section="{section}"><h2>Section: <code>{section}</code></h2>'
         project_groups = defaultdict(list)
         for item in section_map[section]:
             project_groups[item['project']['project']].append(item)
 
         for project_name in sorted(project_groups.keys()):
-            section_html += f'<div class="project-divider"><h3>Project: <code>{project_name}</code></h3>'
+            section_html += f'<div class="project-divider" data-project="{project_name}"><h3>Project: <code>{project_name}</code></h3>'
             for item in project_groups[project_name]:
                 project = item['project']
                 containers_html = ''
                 for container in project['containers']:
                     update_types = ','.join(container['update_types'])
-                    command = format_command(project['section'], project['project'], container['container_name'], item['commit'])
+                    command = format_command(project['section'], project['project'], container['container_name'],
+                                             item['commit'])
                     styled_updates = ' '.join([
-                        f'<span class="{UPDATE_TYPE_CLASSES.get(t, '')}">{t}</span>' for t in container['update_types']
+                        f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
                     ])
                     containers_html += f'''<div class="container" data-update-types="{update_types}">
                         <strong>Container:</strong> <code>{container['container_name']}</code><br>
@@ -202,7 +270,10 @@ def generate_html(data):
                         <strong>Command:</strong> <code>{command}</code>
                     </div>'''
                 if containers_html:
-                    section_html += f'''<div class="project" data-change-type="{project['change_type']}">
+                    section_html += f'''<div class="project"
+                        data-change-type="{project['change_type']}"
+                        data-section="{section}"
+                        data-project="{project_name}">
                         <strong>Commit:</strong> <code>{item['commit']}</code><br>
                         <strong>Change Type:</strong> <span class="{project['change_type']}">{project['change_type']}</span>
                         {containers_html}
@@ -215,6 +286,7 @@ def generate_html(data):
     html += '</body>\n</html>'
     return html
 
+
 def main():
     with open(INPUT_JSON, 'r') as f:
         data = json.load(f)
@@ -225,6 +297,7 @@ def main():
         f.write(html_content)
 
     print(f"HTML output written to {OUTPUT_HTML}")
+
 
 if __name__ == '__main__':
     main()
