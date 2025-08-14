@@ -9,7 +9,7 @@ volumes:
 
 services:
   grafana:
-    image: grafana/grafana:12.0.4@sha256:bec8304cb603446038257c80b9f76354d834172a170d607d381a122d9574f079
+    image: grafana/grafana:12.1.1@sha256:a1701c2180249361737a99a01bc770db39381640e4d631825d38ff4535efa47d
     container_name: grafana
     hostname: grafana
     env_file: grafana.env
