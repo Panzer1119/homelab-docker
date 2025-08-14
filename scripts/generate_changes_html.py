@@ -49,6 +49,7 @@ def generate_html(data):
         .ut-image { color: orange; font-weight: bold; }
         .ut-tag { color: green; font-weight: bold; }
         .ut-sha { color: blue; font-weight: bold; }
+        .image-info { font-family: "Lucida Console", "Menlo", "Monaco", "Courier", monospace; }
     </style>
     <script>
         function applyFilters() {
@@ -146,8 +147,10 @@ def generate_html(data):
                 ])
                 containers_html += f'''<div class="container" data-update-types="{update_types}">
                     <strong>Container:</strong> <code>{container['container_name']}</code><br>
-                    <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
-                    <strong>New Image:</strong> <code>{container['new_image']}</code><br>
+                    <div class="image-info">
+                        <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
+                        <strong>New Image:</strong> <code>{container['new_image']}</code><br>
+                    </div>
                     <strong>Update Types:</strong> {styled_updates}<br>
                     <strong>Command:</strong> <code>{command}</code>
                 </div>'''
@@ -191,8 +194,10 @@ def generate_html(data):
                     ])
                     containers_html += f'''<div class="container" data-update-types="{update_types}">
                         <strong>Container:</strong> <code>{container['container_name']}</code><br>
-                        <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
-                        <strong>New Image:</strong> <code>{container['new_image']}</code><br>
+                        <div class="image-info">
+                            <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
+                            <strong>New Image:</strong> <code>{container['new_image']}</code><br>
+                        </div>
                         <strong>Update Types:</strong> {styled_updates}<br>
                         <strong>Command:</strong> <code>{command}</code>
                     </div>'''
