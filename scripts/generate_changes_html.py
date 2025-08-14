@@ -66,26 +66,49 @@ def generate_html(data):
         legend { font-weight: bold; }
         .filters { margin: 10px 0 20px; }
 
-        /* Button styling */
-        .project-controls { margin: 6px 0 8px; }
+        /* Buttons */
+        .project-controls { margin: 6px 0 8px; display: inline-block; }
         .btn { border: 1px solid #888; background: #f7f7f7; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .btn:hover { background: #eee; }
+        .section-header { display: flex; align-items: center; gap: 8px; }
     </style>
     <script>
+        // Safer checkbox lookup helpers
+        function getCheckboxByNameValue(name, value) {
+            // Try CSS.escape if available
+            if (window.CSS && CSS.escape) {
+                const sel = 'input[name="' + name + '"][value="' + CSS.escape(value) + '"]';
+                const bySelector = document.querySelector(sel);
+                if (bySelector) return bySelector;
+            }
+            // Fallback: linear scan
+            return Array.from(document.querySelectorAll('input[name="' + name + '"]')).find(cb => cb.value === value) || null;
+        }
+
         function getProjectCheckbox(projectName) {
-            return document.querySelector('input[name="projectFilter"][value="' + projectName.replace(/"/g, '&quot;') + '"]');
+            return getCheckboxByNameValue('projectFilter', projectName);
+        }
+        function getSectionCheckbox(sectionName) {
+            return getCheckboxByNameValue('sectionFilter', sectionName);
         }
 
         function toggleProject(projectName) {
             const cb = getProjectCheckbox(projectName);
             if (!cb) return;
-            cb.checked = !cb.checked; // toggle (one-click hide if currently shown)
+            cb.checked = !cb.checked;
             applyFilters();
             updateProjectButtons();
         }
 
+        function toggleSection(sectionName) {
+            const cb = getSectionCheckbox(sectionName);
+            if (!cb) return;
+            cb.checked = !cb.checked;
+            applyFilters();
+            updateSectionButtons();
+        }
+
         function updateProjectButtons() {
-            // Sync button labels with current checkbox state
             const buttons = document.querySelectorAll('.toggle-project-btn');
             buttons.forEach(btn => {
                 const proj = btn.getAttribute('data-project');
@@ -94,6 +117,18 @@ def generate_html(data):
                 btn.textContent = isChecked ? 'Hide project' : 'Show project';
                 btn.setAttribute('aria-pressed', (!isChecked).toString());
                 btn.title = (isChecked ? 'Disable' : 'Enable') + ' "' + proj + '" in the Projects filter';
+            });
+        }
+
+        function updateSectionButtons() {
+            const buttons = document.querySelectorAll('.toggle-section-btn');
+            buttons.forEach(btn => {
+                const sec = btn.getAttribute('data-section');
+                const cb = getSectionCheckbox(sec);
+                const isChecked = cb ? cb.checked : true;
+                btn.textContent = isChecked ? 'Hide section' : 'Show section';
+                btn.setAttribute('aria-pressed', (!isChecked).toString());
+                btn.title = (isChecked ? 'Disable' : 'Enable') + ' "' + sec + '" in the Sections filter';
             });
         }
 
@@ -138,19 +173,21 @@ def generate_html(data):
 
             // Project-divider visibility (only in section view)
             allProjectDividers.forEach(divider => {
-                const projName = divider.getAttribute('data-project');
                 const visibleProjects = Array.from(divider.querySelectorAll('.project')).some(p => p.style.display !== 'none');
                 divider.style.display = visibleProjects ? 'block' : 'none';
             });
 
             // Section-divider visibility (only in section view)
             allSectionDividers.forEach(divider => {
+                const section = divider.getAttribute('data-section');
+                const sectionSelected = selectedSections.includes(section);
                 const visibleProjects = Array.from(divider.querySelectorAll('.project')).some(p => p.style.display !== 'none');
-                divider.style.display = visibleProjects ? 'block' : 'none';
+                divider.style.display = (sectionSelected && visibleProjects) ? 'block' : 'none';
             });
 
-            // Keep per-project buttons in sync
+            // Keep toggle buttons in sync
             updateProjectButtons();
+            updateSectionButtons();
         }
 
         function toggleView() {
@@ -165,25 +202,34 @@ def generate_html(data):
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Click-to-copy for commands/images
+            // Click-to-copy for code blocks
             document.querySelectorAll('code').forEach(code => {
                 code.addEventListener('click', () => copyToClipboard(code.textContent));
             });
 
-            // Project toggle buttons
+            // Toggle buttons (projects + sections)
             document.addEventListener('click', (e) => {
-                const btn = e.target.closest('.toggle-project-btn');
-                if (btn) {
-                    toggleProject(btn.getAttribute('data-project'));
+                const pbtn = e.target.closest('.toggle-project-btn');
+                if (pbtn) {
+                    toggleProject(pbtn.getAttribute('data-project'));
+                    return;
+                }
+                const sbtn = e.target.closest('.toggle-section-btn');
+                if (sbtn) {
+                    toggleSection(sbtn.getAttribute('data-section'));
+                    return;
                 }
             });
 
-            // Keep button labels synced when user changes the filter manually
+            // Keep button labels synced when user changes filters manually
             document.querySelectorAll('input[name="projectFilter"]').forEach(cb => {
                 cb.addEventListener('change', updateProjectButtons);
             });
+            document.querySelectorAll('input[name="sectionFilter"]').forEach(cb => {
+                cb.addEventListener('change', updateSectionButtons);
+            });
 
-            toggleView(); // also calls applyFilters -> updateProjectButtons
+            toggleView(); // also calls applyFilters -> syncs button labels
         });
     </script>
 </head>
@@ -263,7 +309,8 @@ def generate_html(data):
                     f'data-change-type="{project["change_type"]}" '
                     f'data-section="{project["section"]}" '
                     f'data-project="{project["project"]}">'
-                    f'<strong>Section:</strong> <code>{project["section"]}</code><br>'
+                    f'<strong>Section:</strong> <code>{project["section"]}</code> '
+                    f'<span class="project-controls"><button class="btn toggle-section-btn" data-section="{project["section"]}" title="Disable this section in the filter">Hide section</button></span><br>'
                     f'<strong>Project:</strong> <code>{project["project"]}</code> '
                     f'<span class="project-controls"><button class="btn toggle-project-btn" data-project="{project["project"]}" title="Disable this project in the filter">Hide project</button></span><br>'
                     f'<strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>'
@@ -289,7 +336,7 @@ def generate_html(data):
             })
 
     for section in sorted(section_map.keys()):
-        section_html += f'<div class="section-divider" data-section="{section}"><h2>Section: <code>{section}</code></h2>'
+        section_html += f'<div class="section-divider" data-section="{section}"><h2 class="section-header">Section: <code>{section}</code> <button class="btn toggle-section-btn" data-section="{section}" title="Disable this section in the filter">Hide section</button></h2>'
         project_groups = defaultdict(list)
         for item in section_map[section]:
             project_groups[item['project']['project']].append(item)
