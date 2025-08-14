@@ -65,8 +65,38 @@ def generate_html(data):
         fieldset { display: inline-block; margin-right: 20px; vertical-align: top; }
         legend { font-weight: bold; }
         .filters { margin: 10px 0 20px; }
+
+        /* Button styling */
+        .project-controls { margin: 6px 0 8px; }
+        .btn { border: 1px solid #888; background: #f7f7f7; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn:hover { background: #eee; }
     </style>
     <script>
+        function getProjectCheckbox(projectName) {
+            return document.querySelector('input[name="projectFilter"][value="' + projectName.replace(/"/g, '&quot;') + '"]');
+        }
+
+        function toggleProject(projectName) {
+            const cb = getProjectCheckbox(projectName);
+            if (!cb) return;
+            cb.checked = !cb.checked; // toggle (one-click hide if currently shown)
+            applyFilters();
+            updateProjectButtons();
+        }
+
+        function updateProjectButtons() {
+            // Sync button labels with current checkbox state
+            const buttons = document.querySelectorAll('.toggle-project-btn');
+            buttons.forEach(btn => {
+                const proj = btn.getAttribute('data-project');
+                const cb = getProjectCheckbox(proj);
+                const isChecked = cb ? cb.checked : true;
+                btn.textContent = isChecked ? 'Hide project' : 'Show project';
+                btn.setAttribute('aria-pressed', (!isChecked).toString());
+                btn.title = (isChecked ? 'Disable' : 'Enable') + ' "' + proj + '" in the Projects filter';
+            });
+        }
+
         function applyFilters() {
             const selectedUpdateTypes = Array.from(document.querySelectorAll('input[name="updateType"]:checked')).map(cb => cb.value);
             const selectedChangeTypes = Array.from(document.querySelectorAll('input[name="changeType"]:checked')).map(cb => cb.value);
@@ -109,18 +139,18 @@ def generate_html(data):
             // Project-divider visibility (only in section view)
             allProjectDividers.forEach(divider => {
                 const projName = divider.getAttribute('data-project');
-                const projectSelected = !projName || selectedProjects.includes(projName);
                 const visibleProjects = Array.from(divider.querySelectorAll('.project')).some(p => p.style.display !== 'none');
-                divider.style.display = (projectSelected && visibleProjects) ? 'block' : 'none';
+                divider.style.display = visibleProjects ? 'block' : 'none';
             });
 
             // Section-divider visibility (only in section view)
             allSectionDividers.forEach(divider => {
-                const section = divider.getAttribute('data-section');
-                const sectionSelected = !section || selectedSections.includes(section);
                 const visibleProjects = Array.from(divider.querySelectorAll('.project')).some(p => p.style.display !== 'none');
-                divider.style.display = (sectionSelected && visibleProjects) ? 'block' : 'none';
+                divider.style.display = visibleProjects ? 'block' : 'none';
             });
+
+            // Keep per-project buttons in sync
+            updateProjectButtons();
         }
 
         function toggleView() {
@@ -135,10 +165,25 @@ def generate_html(data):
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Click-to-copy for commands/images
             document.querySelectorAll('code').forEach(code => {
                 code.addEventListener('click', () => copyToClipboard(code.textContent));
             });
-            toggleView();
+
+            // Project toggle buttons
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('.toggle-project-btn');
+                if (btn) {
+                    toggleProject(btn.getAttribute('data-project'));
+                }
+            });
+
+            // Keep button labels synced when user changes the filter manually
+            document.querySelectorAll('input[name="projectFilter"]').forEach(cb => {
+                cb.addEventListener('change', updateProjectButtons);
+            });
+
+            toggleView(); // also calls applyFilters -> updateProjectButtons
         });
     </script>
 </head>
@@ -160,29 +205,29 @@ def generate_html(data):
     <fieldset>
         <legend>Filter by change_type:</legend>
 ''' + '\n'.join([
-        f'<label><input type="checkbox" name="changeType" value="{t}" checked onchange="applyFilters()"> {t}</label><br>'
-        for
-        t
-        in
-        CHANGE_TYPES]) + '''
+                                                                                                                                        f'<label><input type="checkbox" name="changeType" value="{t}" checked onchange="applyFilters()"> {t}</label><br>'
+                                                                                                                                        for
+                                                                                                                                        t
+                                                                                                                                        in
+                                                                                                                                        CHANGE_TYPES]) + '''
     </fieldset>
     <fieldset>
         <legend>Filter by section:</legend>
 ''' + '\n'.join([
-        f'<label><input type="checkbox" name="sectionFilter" value="{s}" checked onchange="applyFilters()"> {s}</label><br>'
-        for
-        s
-        in
-        sections]) + '''
+                                                                                                                                                                             f'<label><input type="checkbox" name="sectionFilter" value="{s}" checked onchange="applyFilters()"> {s}</label><br>'
+                                                                                                                                                                             for
+                                                                                                                                                                             s
+                                                                                                                                                                             in
+                                                                                                                                                                             sections]) + '''
     </fieldset>
     <fieldset>
         <legend>Filter by project:</legend>
 ''' + '\n'.join([
-        f'<label><input type="checkbox" name="projectFilter" value="{p}" checked onchange="applyFilters()"> {p}</label><br>'
-        for
-        p
-        in
-        projects]) + '''
+                                                                                                                                                                                                              f'<label><input type="checkbox" name="projectFilter" value="{p}" checked onchange="applyFilters()"> {p}</label><br>'
+                                                                                                                                                                                                              for
+                                                                                                                                                                                                              p
+                                                                                                                                                                                                              in
+                                                                                                                                                                                                              projects]) + '''
     </fieldset>
 </div>
 <hr>
@@ -219,7 +264,8 @@ def generate_html(data):
                     f'data-section="{project["section"]}" '
                     f'data-project="{project["project"]}">'
                     f'<strong>Section:</strong> <code>{project["section"]}</code><br>'
-                    f'<strong>Project:</strong> <code>{project["project"]}</code><br>'
+                    f'<strong>Project:</strong> <code>{project["project"]}</code> '
+                    f'<span class="project-controls"><button class="btn toggle-project-btn" data-project="{project["project"]}" title="Disable this project in the filter">Hide project</button></span><br>'
                     f'<strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>'
                     f'{containers_html}'
                     f'</div>'
@@ -274,6 +320,9 @@ def generate_html(data):
                         data-change-type="{project['change_type']}"
                         data-section="{section}"
                         data-project="{project_name}">
+                        <div class="project-controls" style="float:right; margin-top:-24px;">
+                            <button class="btn toggle-project-btn" data-project="{project_name}" title="Disable this project in the filter">Hide project</button>
+                        </div>
                         <strong>Commit:</strong> <code>{item['commit']}</code><br>
                         <strong>Change Type:</strong> <span class="{project['change_type']}">{project['change_type']}</span>
                         {containers_html}
