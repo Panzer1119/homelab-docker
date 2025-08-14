@@ -33,6 +33,8 @@ main() {
 
   commit_count=$(git rev-list --count "${LAST_COMMIT}..${REMOTE_HEAD}")
   echo "Processing ${commit_count} new commit(s)" >&2
+  echo "Oldest: ${LAST_COMMIT}" >&2
+  echo "Newest: ${REMOTE_HEAD}" >&2
 
   local full_output="[]"
   for COMMIT in ${COMMITS}; do
