@@ -52,7 +52,7 @@ services:
       service: logging-gelf
 
   headless-shell:
-    image: chromedp/headless-shell:140.0.7339.16@sha256:58616422c5e1ef19d0e00198a614ead22e97c807a1954731bd1f7b71ff3cea9c
+    image: chromedp/headless-shell:140.0.7339.24@sha256:41e0d726bb6e56350fb94df2e21fc405d4e1a91ef1434b8363c34f6e9582b248
     container_name: stash_headless-shell
     ports:
       - "9222:9222"
