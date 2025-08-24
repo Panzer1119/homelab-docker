@@ -1,0 +1,81 @@
+---
+services:
+  tubearchivist:
+    image: bbilly1/tubearchivist:v0.5.7
+    container_name: tubearchivist
+    hostname: tubearchivist
+    depends_on:
+      - archivist-es
+      - archivist-redis
+    env_file:
+      - tubearchivist.env
+    volumes:
+      - media:/youtube
+      - cache:/cache
+    labels:
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/TubeArchivist/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/TubeArchivist/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/TubeArchivist/CIFS/Password"
+      - "de.panzer1119.docker.volume.tubearchivist_media.cifs.share=op://Docker/TubeArchivist/CIFS/Share_Media"
+      - "de.panzer1119.docker.volume.tubearchivist_cache.cifs.share=op://Docker/TubeArchivist/CIFS/Share_Cache"
+    ports:
+      - "8376:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/health" ]
+      interval: 2m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  archivist-redis:
+    image: redis:8
+    container_name: archivist-redis
+    depends_on:
+      - archivist-es
+    expose:
+      - "6379"
+    volumes:
+      - /docker/data/tubearchivist/redis:/data
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  archivist-es:
+    # only for amd64, or use official es 8.18.2
+    image: bbilly1/tubearchivist-es:8.18.2
+    container_name: archivist-es
+    env_file:
+      - elasticsearch.env
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "xpack.security.enabled=true"
+      - "discovery.type=single-node"
+      - "path.repo=/usr/share/elasticsearch/data/snapshot"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      # check for permission error when using bind mount, see readme
+      - /docker/data/tubearchivist/elasticsearch:/usr/share/elasticsearch/data
+    expose:
+      - "9200"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+volumes:
+  media:
+    name: tubearchivist_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  cache:
+    name: tubearchivist_cache
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
