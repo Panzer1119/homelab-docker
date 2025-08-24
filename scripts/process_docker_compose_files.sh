@@ -108,6 +108,9 @@ create_cifs_volume() {
   # If the password is empty or null, use the default password
   [ -z "${password}" ] || [ "${password}" == "null" ] && password="${DEFAULT_CIFS_PASSWORD}"
 
+  # If the extra_options is empty or null, set it to empty
+  [ -z "${extra_options}" ] || [ "${extra_options}" == "null" ] && extra_options=""
+
   # If all values are empty or null, skip
   if { [ -z "${host}" ] || [ "${host}" == "null" ]; } &&
      { [ -z "${share}" ] || [ "${share}" == "null" ]; } &&
