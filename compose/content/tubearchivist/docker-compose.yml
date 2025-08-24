@@ -18,6 +18,7 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/TubeArchivist/CIFS/Password"
       - "de.panzer1119.docker.volume.tubearchivist_media.cifs.share=op://Docker/TubeArchivist/CIFS/Share_Media"
       - "de.panzer1119.docker.volume.tubearchivist_cache.cifs.share=op://Docker/TubeArchivist/CIFS/Share_Cache"
+      - "de.panzer1119.docker.volume.tubearchivist_cache.cifs.extra_options=nobrl"
     ports:
       - "8376:8000"
     healthcheck:
