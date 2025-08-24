@@ -3,6 +3,7 @@
 # Default values
 SMB_VERSION="3.0"
 IO_CHARSET="utf8"
+EXTRA_OPTIONS=""
 VERBOSE=0
 EXIT_GRACEFULLY_IF_EXISTS=0
 QUIET=0
@@ -10,7 +11,7 @@ QUIET=0
 
 # Function to display usage
 usage() {
-  echo "Usage: ${0} -n <volume_name> -a <address> -s <share_name> -u <username> -p <password> [-V <smb_version>] [-C <io_charset>] [-i <uid>] [-g <gid>] [-v] [-N] [-e] [-q]"
+  echo "Usage: ${0} -n <volume_name> -a <address> -s <share_name> -u <username> -p <password> [-V <smb_version>] [-C <io_charset>] [-E <extra_options>] [-i <uid>] [-g <gid>] [-v] [-N] [-e] [-q]"
   echo "  -n <volume_name>: Name of the Docker volume to create"
   echo "  -a <address>: Address of the CIFS/SMB server"
   echo "  -s <share_name>: Name of the shared folder on the server"
@@ -18,6 +19,7 @@ usage() {
   echo "  -p <password>: Password for authentication"
   echo "  -V <smb_version>: Optional. SMB version (default: 3.0)"
   echo "  -C <io_charset>: Optional. IO charset (default: utf8)"
+  echo "  -E <extra_options>: Optional. Extra mount options (default: none)"
   echo "  -i <uid>: Optional. UID for file access (default: not set)"
   echo "  -g <gid>: Optional. GID for file access (default: not set)"
   echo "  -v: Optional. Verbose mode"
@@ -28,7 +30,7 @@ usage() {
 }
 
 # Parse options
-while getopts "n:a:s:u:p:V:C:i:g:vNeq" opt; do
+while getopts "n:a:s:u:p:V:C:E:i:g:vNeq" opt; do
   case ${opt} in
     n) VOLUME_NAME="${OPTARG}" ;;
     a) ADDRESS="${OPTARG}" ;;
@@ -37,6 +39,7 @@ while getopts "n:a:s:u:p:V:C:i:g:vNeq" opt; do
     p) PASSWORD="${OPTARG}" ;;
     V) SMB_VERSION="${OPTARG}" ;;
     C) IO_CHARSET="${OPTARG}" ;;
+    E) EXTRA_OPTIONS="${OPTARG}" ;;
     i) USER_ID="${OPTARG}" ;;
     g) GROUP_ID="${OPTARG}" ;;
     v) VERBOSE=1 ;;
@@ -76,6 +79,11 @@ fi
 
 if [[ -n ${GROUP_ID} ]]; then
   DOCKER_CMD="${DOCKER_CMD},gid=${GROUP_ID}"
+fi
+
+# Add extra options if provided
+if [[ -n ${EXTRA_OPTIONS} ]]; then
+  DOCKER_CMD="${DOCKER_CMD},${EXTRA_OPTIONS}"
 fi
 
 # Close the options string
