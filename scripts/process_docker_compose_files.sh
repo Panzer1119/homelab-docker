@@ -90,13 +90,14 @@ create_cifs_volume() {
   local volume_name="${1}"
   local volume_dictionary="${2}"
 
-  local host share username password
+  local host share username password extra_options
 
   # Get the host, share, username, and password from the volume dictionaries
   host=$(echo "${volume_dictionary}" | jq -r ".host")
   share=$(echo "${volume_dictionary}" | jq -r ".share")
   username=$(echo "${volume_dictionary}" | jq -r ".username")
   password=$(echo "${volume_dictionary}" | jq -r ".password")
+  extra_options=$(echo "${volume_dictionary}" | jq -r ".extra_options")
 
   # If the host is empty or null, use the default host
   [ -z "${host}" ] || [ "${host}" == "null" ] && host="${DEFAULT_CIFS_HOST}"
@@ -111,7 +112,8 @@ create_cifs_volume() {
   if { [ -z "${host}" ] || [ "${host}" == "null" ]; } &&
      { [ -z "${share}" ] || [ "${share}" == "null" ]; } &&
      { [ -z "${username}" ] || [ "${username}" == "null" ]; } &&
-     { [ -z "${password}" ] || [ "${password}" == "null" ]; }; then
+     { [ -z "${password}" ] || [ "${password}" == "null" ]; } &&
+     { [ -z "${extra_options}" ] || [ "${extra_options}" == "null" ]; }; then
     return
   fi
 
@@ -126,6 +128,9 @@ create_cifs_volume() {
 
   # Build the command to create the CIFS volume
   local command=("bash" "${CREATE_CIFS_VOLUME_SCRIPT_FILE}" "-n" "${volume_name}" "-a" "${host}" "-s" "${share}" "-u" "${username}" "-p" "${password}" "-e")
+
+  # Add extra options if provided
+  [ -n "${extra_options}" ] && command+=("-E" "${extra_options}")
 
   # Add verbose option if enabled
   [ "${VERBOSE}" -eq 1 ] && command+=("-v")
@@ -156,15 +161,16 @@ create_rclone_volume() {
   local volume_name="${1}"
   local volume_dictionary="${2}"
 
-  local type host port path username password ssh_key ssh_key_file_ref ssh_key_file
+  local type host port path username password extra_options ssh_key ssh_key_file_ref ssh_key_file
 
-  # Get the type, host, port, path, username, password, ssh_key, and ssh_key_file ref from the volume dictionaries
+  # Get the type, host, port, path, username, password, extra_options, ssh_key, and ssh_key_file ref from the volume dictionaries
   type=$(echo "${volume_dictionary}" | jq -r ".type")
   host=$(echo "${volume_dictionary}" | jq -r ".host")
   port=$(echo "${volume_dictionary}" | jq -r ".port")
   path=$(echo "${volume_dictionary}" | jq -r ".path")
   username=$(echo "${volume_dictionary}" | jq -r ".username")
   password=$(echo "${volume_dictionary}" | jq -r ".password")
+  extra_options=$(echo "${volume_dictionary}" | jq -r ".extra_options")
   ssh_key=$(echo "${volume_dictionary}" | jq -r ".ssh_key")
   ssh_key_file_ref=$(echo "${volume_dictionary}" | jq -r ".ssh_key_file")
   ssh_key_file=""
@@ -176,6 +182,7 @@ create_rclone_volume() {
      { [ -z "${path}" ] || [ "${path}" == "null" ]; } &&
      { [ -z "${username}" ] || [ "${username}" == "null" ]; } &&
      { [ -z "${password}" ] || [ "${password}" == "null" ]; } &&
+     { [ -z "${extra_options}" ] || [ "${extra_options}" == "null" ]; } &&
      { [ -z "${ssh_key}" ] || [ "${ssh_key}" == "null" ]; } &&
      { [ -z "${ssh_key_file_ref}" ] || [ "${ssh_key_file_ref}" == "null" ]; }; then
     return
@@ -188,12 +195,15 @@ create_rclone_volume() {
   [ "${path}" == "null" ] && path=""
   [ "${username}" == "null" ] && username=""
   [ "${password}" == "null" ] && password=""
+  [ "${extra_options}" == "null" ] && extra_options=""
   [ "${ssh_key}" == "null" ] && ssh_key=""
   [ "${ssh_key_file_ref}" == "null" ] && ssh_key_file_ref=""
 
   # Check each required Rclone value
   check_value "${type}" "Rclone Type"
   check_value "${host}" "Rclone Host"
+
+  #TODO Ignore extra_options?
 
   # If quiet mode is not enabled, display the volume name and path
   [ "${QUIET}" -eq 0 ] && echo "Found Rclone volume '${volume_name}' in '${file}'"
@@ -280,7 +290,7 @@ create_sshfs_volume() {
   local volume_name="${1}"
   local volume_dictionary="${2}"
 
-  local host port path username password
+  local host port path username password extra_options
 
   # Get the host, path, username, and password from the volume dictionaries
   host=$(echo "${volume_dictionary}" | jq -r ".host")
@@ -288,6 +298,7 @@ create_sshfs_volume() {
   path=$(echo "${volume_dictionary}" | jq -r ".path")
   username=$(echo "${volume_dictionary}" | jq -r ".username")
   password=$(echo "${volume_dictionary}" | jq -r ".password")
+  extra_options=$(echo "${volume_dictionary}" | jq -r ".extra_options")
 
   # If the port is empty or null, use the default ssh port
   [ -z "${port}" ] || [ "${port}" == "null" ] && port="${DEFAULT_SSHFS_PORT}"
@@ -297,7 +308,8 @@ create_sshfs_volume() {
      { [ -z "${port}" ] || [ "${port}" == "null" ]; } &&
      { [ -z "${path}" ] || [ "${path}" == "null" ]; } &&
      { [ -z "${username}" ] || [ "${username}" == "null" ]; } &&
-     { [ -z "${password}" ] || [ "${password}" == "null" ]; }; then
+     { [ -z "${password}" ] || [ "${password}" == "null" ]; } &&
+     { [ -z "${extra_options}" ] || [ "${extra_options}" == "null" ]; }; then
     return
   fi
 
@@ -307,6 +319,8 @@ create_sshfs_volume() {
   check_value "${path}" "SSHFS Path"
   check_value "${username}" "SSHFS Username"
   check_value "${password}" "SSHFS Password"
+
+  #TODO Ignore extra_options?
 
   # If quiet mode is not enabled, display the volume name and path
   [ "${QUIET}" -eq 0 ] && echo "Found SSHFS volume '${volume_name}' with path '${path}' in '${file}'"
@@ -413,16 +427,16 @@ process_docker_compose() {
       [ -z "${volume_label_value}" ] || [ "${volume_label_value}" == "null" ] && continue
 
       # Extract the volume name from the volume label key (the first part after "de.panzer1119.docker.volume.")
-      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password|ssh_key|ssh_key_file)$/\1/')
+      volume_name=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password|extra_options|ssh_key|ssh_key_file)$/\1/')
 
       # If the volume name is empty or null, skip
       [ -z "${volume_name}" ] || [ "${volume_name}" == "null" ] && continue
 
       # Extract the driver from the volume label key (the second part after "de.panzer1119.docker.volume.")
-      volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password|ssh_key|ssh_key_file)$/\2/')
+      volume_driver=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password|extra_options|ssh_key|ssh_key_file)$/\2/')
 
       # Extract the key from the volume label key (the third part after "de.panzer1119.docker.volume.")
-      key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password|ssh_key|ssh_key_file)$/\3/')
+      key=$(echo "${volume_label_key}" | sed -E 's/^de\.panzer1119\.docker\.volume\.(.*)\.(cifs|sshfs|rclone).(type|host|port|path|share|username|password|extra_options|ssh_key|ssh_key_file)$/\3/')
 
       # If the key is empty or null, skip
       [ -z "${key}" ] || [ "${key}" == "null" ] && continue
