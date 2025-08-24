@@ -5,7 +5,6 @@
   ],
   "extends": [
     "config:best-practices",
-    ":assignee('Panzer1119')",
     ":automergeAll",
     ":automergeBranch",
     ":automergeDigest",
