@@ -1,7 +1,7 @@
 ---
 services:
   tubearchivist:
-    image: bbilly1/tubearchivist:v0.5.7
+    image: bbilly1/tubearchivist:v0.5.7@sha256:20ce26849d0bf00db9d85300f8205af24d4cd507dd7ab53b55d48a33544ce5b6
     container_name: tubearchivist
     hostname: tubearchivist
     depends_on:
@@ -33,7 +33,7 @@ services:
       service: logging-gelf
 
   archivist-redis:
-    image: redis:8
+    image: redis:8@sha256:cc2dfb8f5151da2684b4a09bd04b567f92d07591d91980eb3eca21df07e12760
     container_name: archivist-redis
     depends_on:
       - archivist-es
@@ -48,7 +48,7 @@ services:
 
   archivist-es:
     # only for amd64, or use official es 8.18.2
-    image: bbilly1/tubearchivist-es:8.18.2
+    image: bbilly1/tubearchivist-es:8.18.2@sha256:58007d1cf7a3b9f3ae4a8e0d2798b05d9c7dd768877b1fe908fd4142da4c68b6
     container_name: archivist-es
     env_file:
       - elasticsearch.env
