@@ -11,12 +11,14 @@ services:
       - tubearchivist.env
     volumes:
       - media:/youtube
-      - /docker/data/tubearchivist/data:/cache
+      - cache:/cache
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/TubeArchivist/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/TubeArchivist/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/TubeArchivist/CIFS/Password"
       - "de.panzer1119.docker.volume.tubearchivist_media.cifs.share=op://Docker/TubeArchivist/CIFS/Share_Media"
+      - "de.panzer1119.docker.volume.tubearchivist_cache.cifs.share=op://Docker/TubeArchivist/CIFS/Share_Cache"
+      - "de.panzer1119.docker.volume.tubearchivist_cache.cifs.extra_options=nobrl"
     ports:
       - "8376:8000"
     healthcheck:
@@ -72,5 +74,9 @@ services:
 volumes:
   media:
     name: tubearchivist_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  cache:
+    name: tubearchivist_cache
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
