@@ -11,7 +11,7 @@ services:
       - tubearchivist.env
     volumes:
       - media:/youtube
-      - /docker/data/tubearchivist/data:/cache
+      - /docker/cache/tubearchivist:/cache
       - /data/tubearchivist:/cache/download
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/TubeArchivist/CIFS/Host"
