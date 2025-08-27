@@ -76,6 +76,7 @@ def json_to_yaml(json_path: Path, yaml_path: Path) -> None:
             indent=2,
             allow_unicode=True,
             sort_keys=False,
+            width=200
         )
 
 
