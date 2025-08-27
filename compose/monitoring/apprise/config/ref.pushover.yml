@@ -1,303 +1,245 @@
 ---
 version: 1
 urls:
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}?priority=low:
   - tag: arrowverse-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}?priority=moderate:
   - tag: arrowverse-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}?priority=normal:
   - tag: arrowverse, arrowverse-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}?priority=high:
   - tag: arrowverse-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}:
-  - tag: arrowverse-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}?priority=low:
   - tag: backblaze-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}?priority=moderate:
   - tag: backblaze-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}?priority=normal:
   - tag: backblaze, backblaze-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}?priority=high:
   - tag: backblaze-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}:
-  - tag: backblaze-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}?priority=low:
   - tag: cine-meet-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}?priority=moderate:
   - tag: cine-meet-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}?priority=normal:
   - tag: cine-meet, cine-meet-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}?priority=high:
   - tag: cine-meet-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}:
-  - tag: cine-meet-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}?priority=low:
   - tag: cine-meet-dev-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}?priority=moderate:
   - tag: cine-meet-dev-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}?priority=normal:
   - tag: cine-meet-dev, cine-meet-dev-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}?priority=high:
   - tag: cine-meet-dev-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}:
-  - tag: cine-meet-dev-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}?priority=low:
   - tag: f5bot-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}?priority=moderate:
   - tag: f5bot-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}?priority=normal:
   - tag: f5bot, f5bot-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}?priority=high:
   - tag: f5bot-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}:
-  - tag: f5bot-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}?priority=low:
   - tag: github-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}?priority=moderate:
   - tag: github-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}?priority=normal:
   - tag: github, github-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}?priority=high:
   - tag: github-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}:
-  - tag: github-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}?priority=low:
   - tag: grafana-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}?priority=moderate:
   - tag: grafana-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}?priority=normal:
   - tag: grafana, grafana-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}?priority=high:
   - tag: grafana-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}:
-  - tag: grafana-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}?priority=low:
   - tag: home-assistant-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}:
-  - tag: home-assistant-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}:
+- ? pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}?priority=moderate
+  : - tag: home-assistant-moderate
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}?priority=normal:
   - tag: home-assistant, home-assistant-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}?priority=high:
   - tag: home-assistant-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}:
-  - tag: home-assistant-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}?priority=low:
   - tag: house-of-usenet-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}:
-  - tag: house-of-usenet-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}:
+- ? pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}?priority=moderate
+  : - tag: house-of-usenet-moderate
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}?priority=normal:
   - tag: house-of-usenet, house-of-usenet-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}?priority=high:
   - tag: house-of-usenet-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}:
-  - tag: house-of-usenet-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}?priority=low:
   - tag: influxdb-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}?priority=moderate:
   - tag: influxdb-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}?priority=normal:
   - tag: influxdb, influxdb-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}?priority=high:
   - tag: influxdb-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}:
-  - tag: influxdb-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}?priority=low:
   - tag: jellyseerr-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}?priority=moderate:
   - tag: jellyseerr-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}?priority=normal:
   - tag: jellyseerr, jellyseerr-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}?priority=high:
   - tag: jellyseerr-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}:
-  - tag: jellyseerr-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}?priority=low:
   - tag: lhs500-low, docker-media-test-vm-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}?priority=moderate:
   - tag: lhs500-moderate, docker-media-test-vm-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}?priority=normal:
   - tag: lhs500, docker-media-test-vm, lhs500-normal, docker-media-test-vm-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}?priority=high:
   - tag: lhs500-high, docker-media-test-vm-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}:
-  - tag: lhs500-emergency, docker-media-test-vm-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}?priority=low:
   - tag: ncbw-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}?priority=moderate:
   - tag: ncbw-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}?priority=normal:
   - tag: ncbw, ncbw-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}?priority=high:
   - tag: ncbw-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}:
-  - tag: ncbw-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}?priority=low:
   - tag: overseerr-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}?priority=moderate:
   - tag: overseerr-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}?priority=normal:
   - tag: overseerr, overseerr-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}?priority=high:
   - tag: overseerr-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}:
-  - tag: overseerr-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}?priority=low:
   - tag: paperless-low, paperless-ng-low, paperless-ngx-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}?priority=moderate:
   - tag: paperless-moderate, paperless-ng-moderate, paperless-ngx-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}?priority=normal:
   - tag: paperless, paperless-ng, paperless-ngx, paperless-normal, paperless-ng-normal, paperless-ngx-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}?priority=high:
   - tag: paperless-high, paperless-ng-high, paperless-ngx-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
-  - tag: paperless-emergency, paperless-ng-emergency, paperless-ngx-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}?priority=low:
   - tag: pi-hole-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}?priority=moderate:
   - tag: pi-hole-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}?priority=normal:
   - tag: pi-hole, pi-hole-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}?priority=high:
   - tag: pi-hole-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}:
-  - tag: pi-hole-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}?priority=low:
   - tag: prowlarr-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}?priority=moderate:
   - tag: prowlarr-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}?priority=normal:
   - tag: prowlarr, prowlarr-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}?priority=high:
   - tag: prowlarr-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}:
-  - tag: prowlarr-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}?priority=low:
   - tag: proxmox-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}?priority=moderate:
   - tag: proxmox-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}?priority=normal:
   - tag: proxmox, proxmox-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}?priority=high:
   - tag: proxmox-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}:
-  - tag: proxmox-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}?priority=low:
   - tag: radarr-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}?priority=moderate:
   - tag: radarr-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}?priority=normal:
   - tag: radarr, radarr-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}?priority=high:
   - tag: radarr-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}:
-  - tag: radarr-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}?priority=low:
   - tag: radrr-4k-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}?priority=moderate:
   - tag: radrr-4k-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}?priority=normal:
   - tag: radrr-4k, radrr-4k-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}?priority=high:
   - tag: radrr-4k-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}:
-  - tag: radrr-4k-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}?priority=low:
   - tag: radarr-anime-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}?priority=moderate:
   - tag: radarr-anime-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}?priority=normal:
   - tag: radarr-anime, radarr-anime-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}?priority=high:
   - tag: radarr-anime-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}:
-  - tag: radarr-anime-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}?priority=low:
   - tag: sabnzbd-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}?priority=moderate:
   - tag: sabnzbd-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}?priority=normal:
   - tag: sabnzbd, sabnzbd-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}?priority=high:
   - tag: sabnzbd-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}:
-  - tag: sabnzbd-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}?priority=low:
   - tag: scrutiny-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}?priority=moderate:
   - tag: scrutiny-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}?priority=normal:
   - tag: scrutiny, scrutiny-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}?priority=high:
   - tag: scrutiny-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}:
-  - tag: scrutiny-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}?priority=low:
   - tag: sonarr-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}?priority=moderate:
   - tag: sonarr-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}?priority=normal:
   - tag: sonarr, sonarr-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}?priority=high:
   - tag: sonarr-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}:
-  - tag: sonarr-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}?priority=low:
   - tag: sonarr-4k-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}?priority=moderate:
   - tag: sonarr-4k-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}?priority=normal:
   - tag: sonarr-4k, sonarr-4k-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}?priority=high:
   - tag: sonarr-4k-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}:
-  - tag: sonarr-4k-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}?priority=low:
   - tag: sonarr-anime-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}?priority=moderate:
   - tag: sonarr-anime-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}?priority=normal:
   - tag: sonarr-anime, sonarr-anime-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}?priority=high:
   - tag: sonarr-anime-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}:
-  - tag: sonarr-anime-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}?priority=low:
   - tag: tautulli-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}?priority=moderate:
   - tag: tautulli-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}?priority=normal:
   - tag: tautulli, tautulli-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}?priority=high:
   - tag: tautulli-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}:
-  - tag: tautulli-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}?priority=low:
   - tag: test-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}?priority=moderate:
   - tag: test, test-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}?priority=normal:
   - tag: test-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}?priority=high:
   - tag: test-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}?priority=emergency:
   - tag: test-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}?priority=low:
   - tag: truenas-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}?priority=moderate:
   - tag: truenas-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}?priority=normal:
   - tag: truenas, truenas-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}?priority=high:
   - tag: truenas-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}:
-  - tag: truenas-emergency
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}?priority=low:
   - tag: uptime-kuma-low
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}?priority=moderate:
   - tag: uptime-kuma-moderate
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}?priority=normal:
   - tag: uptime-kuma, uptime-kuma-normal
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}:
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}?priority=high:
   - tag: uptime-kuma-high
-- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}:
-  - tag: uptime-kuma-emergency
