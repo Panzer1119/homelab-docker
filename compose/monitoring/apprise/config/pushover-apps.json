@@ -1,95 +1,155 @@
 {
-  "Arrowverse": [
-    "arrowverse"
-  ],
-  "Backblaze": [
-    "backblaze"
-  ],
-  "CineMeet": [
-    "cine-meet"
-  ],
-  "CineMeet-Dev": [
-    "cine-meet-dev"
-  ],
-  "F5Bot": [
-    "f5bot"
-  ],
-  "GitHub": [
-    "github"
-  ],
-  "Grafana": [
-    "grafana"
-  ],
-  "Home-Assistant": [
-    "home-assistant"
-  ],
-  "House-of-Usenet": [
-    "house-of-usenet"
-  ],
-  "InfluxDB": [
-    "influxdb"
-  ],
-  "Jellyseerr": [
-    "jellyseerr"
-  ],
-  "LHS500": [
-    "lhs500",
-    "docker-media-test-vm"
-  ],
-  "NCBW": [
-    "ncbw"
-  ],
-  "Overseerr": [
-    "overseerr"
-  ],
-  "Paperless": [
-    "paperless",
-    "paperless-ng",
-    "paperless-ngx"
-  ],
-  "Pi-hole": [
-    "pi-hole"
-  ],
-  "Prowlarr": [
-    "prowlarr"
-  ],
-  "Proxmox": [
-    "proxmox"
-  ],
-  "Radarr": [
-    "radarr"
-  ],
-  "Radarr-4K": [
-    "radrr-4k"
-  ],
-  "Radarr-Anime": [
-    "radarr-anime"
-  ],
-  "SABnzbd": [
-    "sabnzbd"
-  ],
-  "Scrutiny": [
-    "scrutiny"
-  ],
-  "Sonarr": [
-    "sonarr"
-  ],
-  "Sonarr-4K": [
-    "sonarr-4k"
-  ],
-  "Sonarr-Anime": [
-    "sonarr-anime"
-  ],
-  "Tautulli": [
-    "tautulli"
-  ],
-  "Test": [
-    "test"
-  ],
-  "TrueNAS": [
-    "truenas"
-  ],
-  "Uptime-Kuma": [
-    "uptime-kuma"
-  ]
+  "Arrowverse": {
+    "tags": [
+      "arrowverse"
+    ]
+  },
+  "Backblaze": {
+    "tags": [
+      "backblaze"
+    ]
+  },
+  "CineMeet": {
+    "tags": [
+      "cine-meet"
+    ]
+  },
+  "CineMeet-Dev": {
+    "tags": [
+      "cine-meet-dev"
+    ]
+  },
+  "F5Bot": {
+    "tags": [
+      "f5bot"
+    ]
+  },
+  "GitHub": {
+    "tags": [
+      "github"
+    ]
+  },
+  "Grafana": {
+    "tags": [
+      "grafana"
+    ]
+  },
+  "Home-Assistant": {
+    "tags": [
+      "home-assistant"
+    ]
+  },
+  "House-of-Usenet": {
+    "tags": [
+      "house-of-usenet"
+    ]
+  },
+  "InfluxDB": {
+    "tags": [
+      "influxdb"
+    ]
+  },
+  "Jellyseerr": {
+    "tags": [
+      "jellyseerr"
+    ]
+  },
+  "LHS500": {
+    "tags": [
+      "lhs500",
+      "docker-media-test-vm"
+    ]
+  },
+  "NCBW": {
+    "tags": [
+      "ncbw"
+    ]
+  },
+  "Overseerr": {
+    "tags": [
+      "overseerr"
+    ]
+  },
+  "Paperless": {
+    "tags": [
+      "paperless",
+      "paperless-ng",
+      "paperless-ngx"
+    ]
+  },
+  "Pi-hole": {
+    "tags": [
+      "pi-hole"
+    ]
+  },
+  "Prowlarr": {
+    "tags": [
+      "prowlarr"
+    ]
+  },
+  "Proxmox": {
+    "tags": [
+      "proxmox"
+    ]
+  },
+  "Radarr": {
+    "tags": [
+      "radarr"
+    ]
+  },
+  "Radarr-4K": {
+    "tags": [
+      "radrr-4k"
+    ]
+  },
+  "Radarr-Anime": {
+    "tags": [
+      "radarr-anime"
+    ]
+  },
+  "SABnzbd": {
+    "tags": [
+      "sabnzbd"
+    ]
+  },
+  "Scrutiny": {
+    "tags": [
+      "scrutiny"
+    ]
+  },
+  "Sonarr": {
+    "tags": [
+      "sonarr"
+    ]
+  },
+  "Sonarr-4K": {
+    "tags": [
+      "sonarr-4k"
+    ]
+  },
+  "Sonarr-Anime": {
+    "tags": [
+      "sonarr-anime"
+    ]
+  },
+  "Tautulli": {
+    "tags": [
+      "tautulli"
+    ]
+  },
+  "Test": {
+    "tags": [
+      "test"
+    ]
+  },
+  "TrueNAS": {
+    "tags": [
+      "truenas"
+    ]
+  },
+  "Uptime-Kuma": {
+    "tags": [
+      "uptime-kuma"
+    ]
+  }
 }
