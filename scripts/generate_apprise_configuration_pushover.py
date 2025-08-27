@@ -4,20 +4,36 @@ import argparse
 from pathlib import Path
 from typing import Any
 
+DEFAULT_PRIORITIES = [-2, -1, 0, 1, 2]
+
+
+def app_to_yaml_entry(app: dict[str, Any]) -> dict[str, Any]:
+    """
+    Convert a single App definition to a YAML URL entry.
+    Priorities are normalized but currently ignored in YAML output.
+    """
+    name: str = app["name"]
+    tags: list[str] = app.get("tags", [])
+    priorities: list[int] = app.get("priorities") or DEFAULT_PRIORITIES
+
+    # Normalize priorities to always be a non-empty list
+    if not priorities:
+        priorities = DEFAULT_PRIORITIES
+
+    joined_tags = ", ".join(tags)
+
+    url = (
+        f"pover://{{{{ op://Docker/Apprise/Pushover/User-Key }}}}"
+        f"@{{{{ op://Docker/Apprise/Pushover/{name}-Key }}}}"
+    )
+
+    # Currently only tags are included in YAML, priorities ignored
+    return {url: [{"tag": joined_tags}]}
+
 
 def json_to_yaml(json_path: Path, yaml_path: Path) -> None:
     """
     Convert a JSON array of apps into a YAML file with a custom format.
-
-    JSON structure:
-    [
-      {
-        "name": "AppName",
-        "tags": ["tag1", "tag2"],
-        "priorities": [1, 2]   # optional
-      },
-      ...
-    ]
     """
     try:
         with open(json_path, "r", encoding="utf-8") as f:
@@ -25,27 +41,7 @@ def json_to_yaml(json_path: Path, yaml_path: Path) -> None:
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON file: {json_path}\n{e}")
 
-    output_list = []
-
-    for app in apps:
-        name = app["name"]
-        tags = app.get("tags", [])
-        priorities = app.get("priorities", [])
-
-        joined_tags = ", ".join(tags)
-        joined_priorities = ", ".join(str(p) for p in priorities) if priorities else None
-
-        url = (
-            f"pover://{{{{ op://Docker/Apprise/Pushover/User-Key }}}}"
-            f"@{{{{ op://Docker/Apprise/Pushover/{name}-Key }}}}"
-        )
-
-        entry = {url: [{"tag": joined_tags}]}
-
-        if joined_priorities:
-            entry[url].append({"priority": joined_priorities})
-
-        output_list.append(entry)
+    output_list = [app_to_yaml_entry(app) for app in apps]
 
     final_output = {"version": 1, "urls": output_list}
 
