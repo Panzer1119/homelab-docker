@@ -5,30 +5,40 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_PRIORITIES = [-2, -1, 0, 1, 2]
+PRIORITY_NAMES = {
+    -2: "low",
+    -1: "moderate",
+    0: "normal",
+    1: "high",
+    2: "emergency",
+}
 
 
-def app_to_yaml_entry(app: dict[str, Any]) -> dict[str, Any]:
+def app_to_yaml_entries(app: dict[str, Any]) -> list[dict[str, Any]]:
     """
-    Convert a single App definition to a YAML URL entry.
-    Priorities are normalized but currently ignored in YAML output.
+    Convert a single App definition to multiple YAML URL entries,
+    one for each priority level.
     """
     name: str = app["name"]
     tags: list[str] = app.get("tags", [])
     priorities: list[int] = app.get("priorities") or DEFAULT_PRIORITIES
 
-    # Normalize priorities to always be a non-empty list
     if not priorities:
         priorities = DEFAULT_PRIORITIES
-
-    joined_tags = ", ".join(tags)
 
     url = (
         f"pover://{{{{ op://Docker/Apprise/Pushover/User-Key }}}}"
         f"@{{{{ op://Docker/Apprise/Pushover/{name}-Key }}}}"
     )
 
-    # Currently only tags are included in YAML, priorities ignored
-    return {url: [{"tag": joined_tags}]}
+    entries = []
+    for prio in priorities:
+        prio_name = PRIORITY_NAMES.get(prio, str(prio))  # fallback to str if unknown
+        tagged = [f"{tag}-{prio_name}" for tag in tags]
+        joined_tags = ", ".join(tagged)
+        entries.append({url: [{"tag": joined_tags}]})
+
+    return entries
 
 
 def json_to_yaml(json_path: Path, yaml_path: Path) -> None:
@@ -41,7 +51,9 @@ def json_to_yaml(json_path: Path, yaml_path: Path) -> None:
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON file: {json_path}\n{e}")
 
-    output_list = [app_to_yaml_entry(app) for app in apps]
+    output_list = []
+    for app in apps:
+        output_list.extend(app_to_yaml_entries(app))
 
     final_output = {"version": 1, "urls": output_list}
 
