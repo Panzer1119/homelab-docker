@@ -1,0 +1,95 @@
+{
+  "Arrowverse": [
+    "arrowverse"
+  ],
+  "Backblaze": [
+    "backblaze"
+  ],
+  "CineMeet": [
+    "cine-meet"
+  ],
+  "CineMeet-Dev": [
+    "cine-meet-dev"
+  ],
+  "F5Bot": [
+    "f5bot"
+  ],
+  "GitHub": [
+    "github"
+  ],
+  "Grafana": [
+    "grafana"
+  ],
+  "Home-Assistant": [
+    "home-assistant"
+  ],
+  "House-of-Usenet": [
+    "house-of-usenet"
+  ],
+  "InfluxDB": [
+    "influxdb"
+  ],
+  "Jellyseerr": [
+    "jellyseerr"
+  ],
+  "LHS500": [
+    "lhs500",
+    "docker-media-test-vm"
+  ],
+  "NCBW": [
+    "ncbw"
+  ],
+  "Overseerr": [
+    "overseerr"
+  ],
+  "Paperless": [
+    "paperless",
+    "paperless-ng",
+    "paperless-ngx"
+  ],
+  "Pi-hole": [
+    "pi-hole"
+  ],
+  "Prowlarr": [
+    "prowlarr"
+  ],
+  "Proxmox": [
+    "proxmox"
+  ],
+  "Radarr": [
+    "radarr"
+  ],
+  "Radarr-4K": [
+    "radrr-4k"
+  ],
+  "Radarr-Anime": [
+    "radarr-anime"
+  ],
+  "SABnzbd": [
+    "sabnzbd"
+  ],
+  "Scrutiny": [
+    "scrutiny"
+  ],
+  "Sonarr": [
+    "sonarr"
+  ],
+  "Sonarr-4K": [
+    "sonarr-4k"
+  ],
+  "Sonarr-Anime": [
+    "sonarr-anime"
+  ],
+  "Tautulli": [
+    "tautulli"
+  ],
+  "Test": [
+    "test"
+  ],
+  "TrueNAS": [
+    "truenas"
+  ],
+  "Uptime-Kuma": [
+    "uptime-kuma"
+  ]
+}
