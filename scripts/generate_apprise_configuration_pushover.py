@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_PRIORITIES = [-2, -1, 0, 1, 2]
+DEFAULT_PRIORITY = 0
 PRIORITY_NAMES = {
     -2: "low",
     -1: "moderate",
@@ -18,11 +19,13 @@ def app_to_yaml_entries(app: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Convert a single App definition to multiple YAML URL entries,
     one for each priority level.
-    For priority 0 ("normal"), also include the raw tags alongside the suffixed ones.
+    If the current priority equals the app's defaultPriority,
+    include the raw tags as well as the suffixed tags.
     """
     name: str = app["name"]
     tags: list[str] = app.get("tags", [])
     priorities: list[int] = app.get("priorities") or DEFAULT_PRIORITIES
+    default_priority: int = app.get("defaultPriority", DEFAULT_PRIORITY)
 
     if not priorities:
         priorities = DEFAULT_PRIORITIES
@@ -36,9 +39,9 @@ def app_to_yaml_entries(app: dict[str, Any]) -> list[dict[str, Any]]:
     for prio in priorities:
         prio_name = PRIORITY_NAMES.get(prio, str(prio))  # fallback to str if unknown
 
-        if prio == 0:
-            # include both raw tags and -normal tags
-            tagged = tags + [f"{tag}-normal" for tag in tags]
+        if prio == default_priority:
+            # include both raw tags and suffixed tags
+            tagged = tags + [f"{tag}-{prio_name}" for tag in tags]
         else:
             tagged = [f"{tag}-{prio_name}" for tag in tags]
 
