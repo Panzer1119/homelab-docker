@@ -275,9 +275,9 @@ urls:
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
   - tag: test-low
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
-  - tag: test-moderate
+  - tag: test, test-moderate
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
-  - tag: test, test-normal
+  - tag: test-normal
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
   - tag: test-high
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:

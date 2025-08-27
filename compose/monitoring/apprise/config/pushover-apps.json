@@ -175,7 +175,8 @@
       0,
       1,
       2
-    ]
+    ],
+    "defaultPriority": -1
   },
   {
     "name": "TrueNAS",
