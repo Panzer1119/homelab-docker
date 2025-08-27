@@ -6,6 +6,7 @@ Tracking performance, logging, usage, health, etc.
 
 ## Projects
 
+- [Apprise](./apprise/README.md)
 - [Checkmk Raw](./check-mk-raw/README.md)
 - [Graylog](./graylog/README.md)
 - [Scrutiny](./scrutiny/README.md)

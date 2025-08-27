@@ -1,0 +1,24 @@
+---
+name: apprise
+
+services:
+  apprise:
+    image: caronc/apprise:1.2
+    container_name: apprise
+    hostname: apprise
+    environment:
+      - TZ=Europe/Berlin
+      - PGID=1000
+      - PUID=1000
+      - APPRISE_DEFAULT_THEME=dark
+      - APPRISE_STATEFUL_MODE=simple
+      - APPRISE_CONFIG_LOCK=yes
+    volumes:
+      - /docker/config/apprise:/config
+    ports:
+      - "8116:8000"
+    network_mode: bridge
+    restart: always
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
