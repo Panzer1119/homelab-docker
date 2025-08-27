@@ -4,14 +4,14 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-DEFAULT_PRIORITIES = [-2, -1, 0, 1, 2]
+DEFAULT_PRIORITIES = [-2, -1, 0, 1]  # emergency removed
 DEFAULT_PRIORITY = 0
 PRIORITY_NAMES = {
     -2: "low",
     -1: "moderate",
     0: "normal",
     1: "high",
-    2: "emergency",
+    2: "emergency",  # still valid if explicitly provided in JSON
 }
 
 
@@ -30,14 +30,16 @@ def app_to_yaml_entries(app: dict[str, Any]) -> list[dict[str, Any]]:
     if not priorities:
         priorities = DEFAULT_PRIORITIES
 
-    url = (
-        f"pover://{{{{ op://Docker/Apprise/Pushover/User-Key }}}}"
-        f"@{{{{ op://Docker/Apprise/Pushover/{name}-Key }}}}"
-    )
-
     entries = []
     for prio in priorities:
         prio_name = PRIORITY_NAMES.get(prio, str(prio))  # fallback to str if unknown
+
+        # Construct URL with ?priority= suffix
+        url = (
+            f"pover://{{{{ op://Docker/Apprise/Pushover/User-Key }}}}"
+            f"@{{{{ op://Docker/Apprise/Pushover/{name}-Key }}}}"
+            f"?priority={prio_name}"
+        )
 
         if prio == default_priority:
             # include both raw tags and suffixed tags
