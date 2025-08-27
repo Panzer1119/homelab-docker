@@ -13,6 +13,7 @@ services:
       - APPRISE_DEFAULT_THEME=dark
       - APPRISE_STATEFUL_MODE=simple
       - APPRISE_CONFIG_LOCK=yes
+      - APPRISE_WORKER_COUNT=4
     volumes:
       - /docker/config/apprise:/config
       - ./config/pushover.yml:/config/pushover.yml:ro
