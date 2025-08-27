@@ -146,8 +146,7 @@ urls:
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
   - tag: paperless-moderate, paperless-ng-moderate, paperless-ngx-moderate
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
-  - tag: paperless, paperless-ng, paperless-ngx, paperless-normal, paperless-ng-normal,
-      paperless-ngx-normal
+  - tag: paperless, paperless-ng, paperless-ngx, paperless-normal, paperless-ng-normal, paperless-ngx-normal
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
   - tag: paperless-high, paperless-ng-high, paperless-ngx-high
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
