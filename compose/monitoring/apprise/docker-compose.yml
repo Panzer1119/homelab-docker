@@ -15,6 +15,7 @@ services:
       - APPRISE_CONFIG_LOCK=yes
     volumes:
       - /docker/config/apprise:/config
+      - ./config/pushover.yml:/config/pushover.yml:ro
     ports:
       - "8116:8000"
     network_mode: bridge
