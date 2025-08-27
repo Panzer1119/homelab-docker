@@ -18,6 +18,7 @@ def app_to_yaml_entries(app: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Convert a single App definition to multiple YAML URL entries,
     one for each priority level.
+    For priority 0 ("normal"), also include the raw tags alongside the suffixed ones.
     """
     name: str = app["name"]
     tags: list[str] = app.get("tags", [])
@@ -34,7 +35,13 @@ def app_to_yaml_entries(app: dict[str, Any]) -> list[dict[str, Any]]:
     entries = []
     for prio in priorities:
         prio_name = PRIORITY_NAMES.get(prio, str(prio))  # fallback to str if unknown
-        tagged = [f"{tag}-{prio_name}" for tag in tags]
+
+        if prio == 0:
+            # include both raw tags and -normal tags
+            tagged = tags + [f"{tag}-normal" for tag in tags]
+        else:
+            tagged = [f"{tag}-{prio_name}" for tag in tags]
+
         joined_tags = ", ".join(tagged)
         entries.append({url: [{"tag": joined_tags}]})
 
