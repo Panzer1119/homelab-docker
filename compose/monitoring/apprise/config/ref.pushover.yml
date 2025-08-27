@@ -1,64 +1,63 @@
 ---
 version: 1
-
 urls:
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}:
-      - tag: arrowverse
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}:
-      - tag: backblaze
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}:
-      - tag: cine-meet
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}:
-      - tag: cine-meet-dev
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}:
-      - tag: f5bot
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}:
-      - tag: github
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}:
-      - tag: grafana
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}:
-      - tag: home-assistant
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}:
-      - tag: house-of-usenet
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}:
-      - tag: influxdb
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}:
-      - tag: jellyseerr
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}:
-      - tag: lhs500, docker-media-test-vm
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}:
-      - tag: ncbw
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}:
-      - tag: overseerr
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
-      - tag: paperless, paperless-ng, paperless-ngx
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}:
-      - tag: pi-hole
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}:
-      - tag: prowlarr
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}:
-      - tag: proxmox
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}:
-      - tag: radarr
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}:
-      - tag: radrr-4k
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}:
-      - tag: radarr-anime
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}:
-      - tag: sabnzbd
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}:
-      - tag: scrutiny
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}:
-      - tag: sonarr
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}:
-      - tag: sonarr-4k
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}:
-      - tag: sonarr-anime
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}:
-      - tag: tautulli
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
-      - tag: test
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}:
-      - tag: truenas
-  - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}:
-      - tag: uptime-kuma
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Arrowverse-Key }}:
+  - tag: arrowverse
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Backblaze-Key }}:
+  - tag: backblaze
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Key }}:
+  - tag: cine-meet
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/CineMeet-Dev-Key }}:
+  - tag: cine-meet-dev
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/F5Bot-Key }}:
+  - tag: f5bot
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/GitHub-Key }}:
+  - tag: github
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Grafana-Key }}:
+  - tag: grafana
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Home-Assistant-Key }}:
+  - tag: home-assistant
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/House-of-Usenet-Key }}:
+  - tag: house-of-usenet
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/InfluxDB-Key }}:
+  - tag: influxdb
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Jellyseerr-Key }}:
+  - tag: jellyseerr
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/LHS500-Key }}:
+  - tag: lhs500, docker-media-test-vm
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/NCBW-Key }}:
+  - tag: ncbw
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Overseerr-Key }}:
+  - tag: overseerr
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Paperless-Key }}:
+  - tag: paperless, paperless-ng, paperless-ngx
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Pi-hole-Key }}:
+  - tag: pi-hole
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Prowlarr-Key }}:
+  - tag: prowlarr
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Proxmox-Key }}:
+  - tag: proxmox
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}:
+  - tag: radarr
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}:
+  - tag: radrr-4k
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}:
+  - tag: radarr-anime
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/SABnzbd-Key }}:
+  - tag: sabnzbd
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Scrutiny-Key }}:
+  - tag: scrutiny
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Key }}:
+  - tag: sonarr
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-4K-Key }}:
+  - tag: sonarr-4k
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Sonarr-Anime-Key }}:
+  - tag: sonarr-anime
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Tautulli-Key }}:
+  - tag: tautulli
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Test-Key }}:
+  - tag: test
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/TrueNAS-Key }}:
+  - tag: truenas
+- pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Uptime-Kuma-Key }}:
+  - tag: uptime-kuma
