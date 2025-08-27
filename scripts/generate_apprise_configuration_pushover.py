@@ -21,9 +21,15 @@ def json_to_yaml(json_path, yaml_path):
             ]
         })
 
+    # Prepare the final YAML content with version at the top
+    final_output = {
+        "version": 1,
+        "urls": output_list
+    }
+
     # Write YAML to file
     with open(yaml_path, 'w', encoding='utf-8') as f:
-        yaml.dump(output_list, f, sort_keys=False, allow_unicode=True)
+        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 
 
 if __name__ == "__main__":
