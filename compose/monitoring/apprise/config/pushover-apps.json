@@ -1,143 +1,171 @@
-{
-  "Arrowverse": {
+[
+  {
+    "name": "Arrowverse",
     "tags": [
       "arrowverse"
     ]
   },
-  "Backblaze": {
+  {
+    "name": "Backblaze",
     "tags": [
       "backblaze"
     ]
   },
-  "CineMeet": {
+  {
+    "name": "CineMeet",
     "tags": [
       "cine-meet"
     ]
   },
-  "CineMeet-Dev": {
+  {
+    "name": "CineMeet-Dev",
     "tags": [
       "cine-meet-dev"
     ]
   },
-  "F5Bot": {
+  {
+    "name": "F5Bot",
     "tags": [
       "f5bot"
     ]
   },
-  "GitHub": {
+  {
+    "name": "GitHub",
     "tags": [
       "github"
     ]
   },
-  "Grafana": {
+  {
+    "name": "Grafana",
     "tags": [
       "grafana"
     ]
   },
-  "Home-Assistant": {
+  {
+    "name": "Home-Assistant",
     "tags": [
       "home-assistant"
     ]
   },
-  "House-of-Usenet": {
+  {
+    "name": "House-of-Usenet",
     "tags": [
       "house-of-usenet"
     ]
   },
-  "InfluxDB": {
+  {
+    "name": "InfluxDB",
     "tags": [
       "influxdb"
     ]
   },
-  "Jellyseerr": {
+  {
+    "name": "Jellyseerr",
     "tags": [
       "jellyseerr"
     ]
   },
-  "LHS500": {
+  {
+    "name": "LHS500",
     "tags": [
       "lhs500",
       "docker-media-test-vm"
     ]
   },
-  "NCBW": {
+  {
+    "name": "NCBW",
     "tags": [
       "ncbw"
     ]
   },
-  "Overseerr": {
+  {
+    "name": "Overseerr",
     "tags": [
       "overseerr"
     ]
   },
-  "Paperless": {
+  {
+    "name": "Paperless",
     "tags": [
       "paperless",
       "paperless-ng",
       "paperless-ngx"
     ]
   },
-  "Pi-hole": {
+  {
+    "name": "Pi-hole",
     "tags": [
       "pi-hole"
     ]
   },
-  "Prowlarr": {
+  {
+    "name": "Prowlarr",
     "tags": [
       "prowlarr"
     ]
   },
-  "Proxmox": {
+  {
+    "name": "Proxmox",
     "tags": [
       "proxmox"
     ]
   },
-  "Radarr": {
+  {
+    "name": "Radarr",
     "tags": [
       "radarr"
     ]
   },
-  "Radarr-4K": {
+  {
+    "name": "Radarr-4K",
     "tags": [
       "radrr-4k"
     ]
   },
-  "Radarr-Anime": {
+  {
+    "name": "Radarr-Anime",
     "tags": [
       "radarr-anime"
     ]
   },
-  "SABnzbd": {
+  {
+    "name": "SABnzbd",
     "tags": [
       "sabnzbd"
     ]
   },
-  "Scrutiny": {
+  {
+    "name": "Scrutiny",
     "tags": [
       "scrutiny"
     ]
   },
-  "Sonarr": {
+  {
+    "name": "Sonarr",
     "tags": [
       "sonarr"
     ]
   },
-  "Sonarr-4K": {
+  {
+    "name": "Sonarr-4K",
     "tags": [
       "sonarr-4k"
     ]
   },
-  "Sonarr-Anime": {
+  {
+    "name": "Sonarr-Anime",
     "tags": [
       "sonarr-anime"
     ]
   },
-  "Tautulli": {
+  {
+    "name": "Tautulli",
     "tags": [
       "tautulli"
     ]
   },
-  "Test": {
+  {
+    "name": "Test",
     "tags": [
       "test"
     ],
@@ -149,14 +177,16 @@
       2
     ]
   },
-  "TrueNAS": {
+  {
+    "name": "TrueNAS",
     "tags": [
       "truenas"
     ]
   },
-  "Uptime-Kuma": {
+  {
+    "name": "Uptime-Kuma",
     "tags": [
       "uptime-kuma"
     ]
   }
-}
+]
