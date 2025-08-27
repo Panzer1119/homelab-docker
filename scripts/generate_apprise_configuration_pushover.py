@@ -27,9 +27,20 @@ def json_to_yaml(json_path, yaml_path):
         "urls": output_list
     }
 
-    # Write YAML to file
+    # Write YAML with pretty formatting and --- at the top
     with open(yaml_path, 'w', encoding='utf-8') as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
+        yaml.dump(
+            final_output,
+            f,
+            # default_style='"', # Quotes everything
+            default_flow_style=False,  # Makes it block style (pretty)
+            # encoding='utf-8',
+            explicit_start=True,
+            # explicit_end=True, # Adds three dots at the end of the file
+            indent=2,
+            allow_unicode=True,
+            sort_keys=False,
+        )
 
 
 if __name__ == "__main__":
