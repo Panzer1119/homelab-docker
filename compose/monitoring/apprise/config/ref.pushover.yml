@@ -154,13 +154,13 @@ urls:
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Key }}?priority=high:
   - tag: radarr-high
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}?priority=low:
-  - tag: radrr-4k-low
+  - tag: radarr-4k-low
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}?priority=moderate:
-  - tag: radrr-4k-moderate
+  - tag: radarr-4k-moderate
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}?priority=normal:
-  - tag: radrr-4k, radrr-4k-normal
+  - tag: radarr-4k, radarr-4k-normal
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-4K-Key }}?priority=high:
-  - tag: radrr-4k-high
+  - tag: radarr-4k-high
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}?priority=low:
   - tag: radarr-anime-low
 - pover://{{ op://Docker/Apprise/Pushover/User-Key }}@{{ op://Docker/Apprise/Pushover/Radarr-Anime-Key }}?priority=moderate:
