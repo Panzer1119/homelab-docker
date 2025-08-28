@@ -15,6 +15,7 @@ services:
       - APPRISE_CONFIG_LOCK=yes
       - APPRISE_WORKER_COUNT=4
     volumes:
+      - "/etc/localtime:/etc/localtime:ro"
       - /docker/config/apprise:/config
       - ./config/pushover.yml:/config/pushover.yml:ro
     ports:
