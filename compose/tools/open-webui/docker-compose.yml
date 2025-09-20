@@ -1,0 +1,22 @@
+---
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    hostname: open-webui
+    env_file:
+      - open-webui.env
+    volumes:
+      - "/docker/data/open-webui:/app/backend/data"
+      - "/docker/cache/open-webui:/app/backend/data/cache"
+    network_mode: bridge
+    ports:
+      - "3059:8080"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+volumes:
+  open-webui:
+    external: true

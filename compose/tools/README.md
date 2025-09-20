@@ -8,3 +8,4 @@ Tools that support other services or are useful in general
 
 - [DevDocs](./devdocs/README.md)
 - [FlareSolverr](./flaresolverr/README.md)
+- [Open WebUI](./open-webui/README.md)
