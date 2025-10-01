@@ -1,0 +1,17 @@
+---
+services:
+  lostmediafinder:
+    #image: thetechrobo/findyoutubevideo
+    image: panzer1119/lostmediafinder
+    container_name: lostmediafinder
+    hostname: lostmediafinder
+    environment:
+      - GUNICORN_WORKERS=4
+    network_mode: bridge
+    ports:
+      - "8426:8000"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...
