@@ -1,0 +1,90 @@
+---
+# Global User-Agent
+user_agent: "LostMediaFinder/1.0 operated by Panzer1119"
+
+# Enable or disable various archiving/retrieval methods.
+methods:
+  youtube:
+    title: YouTube
+    enabled: true
+
+  ia_wayback:
+    title: Wayback Machine
+    enabled: true
+
+  ia_details:
+    title: Archive.org Details
+    enabled: true
+
+  ia_cdx:
+    title: Archive.org CDX
+    enabled: true
+
+  ghostarchive:
+    title: GhostArchive
+    enabled: true
+
+  hackint_ya:
+    # "Too late, the cloud storage ended | We kept only the ones gone from YouTube;
+    #  go re-archive all still-live videos you want | No, we don't have time to retrieve things from offline drives"
+    title: "#youtubearchive"
+    enabled: false
+    username:
+    password:
+
+  distributed_youtube_archive:
+    title: Distributed YouTube Archive
+    enabled: true
+
+  hobune_stream:
+    title: Hobune.stream
+    enabled: true
+
+  filmot:
+    # Requires an API key, which I do not have.
+    # "you should join the discord server to ask the dev to get access to the api"
+    # See https://github.com/dusking/filmot/issues/1 for more details.
+    title: Filmot
+    enabled: false
+    api_key:
+
+  playboard_co:
+    # It instantly says "You have been rate-limited by Playboard."
+    title: Playboard.co
+    enabled: false
+    user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.%s.0.0 Safari/537.36"
+
+  removededm:
+    title: Removed.edm
+    enabled: true
+
+  odysee:
+    title: Odysee
+    enabled: true
+
+  altcensored:
+    title: altCensored
+    enabled: false
+    # "altCensored uses IA for its distribution, so not much point having it listed separately. [...]"
+    # See https://github.com/TheTechRobo/youtubevideofinder/issues/89 for details.
+
+  preservetube:
+    title: PreserveTube
+    enabled: true
+
+  nyaneonline:
+    title: Nyane.online
+    enabled: true
+
+# Sets the experiment base URL. *If you want to disable experiments, set this to null.*
+# Occasionally, there might be something I want to test; for example, looking for
+# edge cases in an API endpoint.
+# If experiments are on, the site will send the results of these experiments to my server.
+# The following information will be included in the report:
+# - video ID
+# - any necessary additional information
+# Your IP address WILL NOT be associated with the report.
+# Current list of experiments is in EXPERIMENTS.txt.
+#experiment_base_url: "https://fyt-helper.thetechrobo.ca/experiment"
+experiment_base_url: null
+...

@@ -7,6 +7,8 @@ services:
     hostname: lostmediafinder
     environment:
       - GUNICORN_WORKERS=4
+    volumes:
+      - ./config/config.yml:/app/config.yml:ro
     network_mode: bridge
     ports:
       - "8426:8000"
