@@ -45,7 +45,7 @@ services:
       service: logging-gelf
 
   broker:
-    image: redis:7@sha256:edfad62e79bbbad4bc6efd528f6a7ca95546f4c0ab5ca504a83952a8cbdc13ae
+    image: redis:7@sha256:90e7a336d044f1abc9e9dbc05d65566850896d11453bbd1dd0fb7e5059f0e8fb
     volumes:
       - /docker/cache/paperless-ngx/broker:/data
     restart: unless-stopped
