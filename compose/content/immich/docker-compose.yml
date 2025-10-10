@@ -52,7 +52,7 @@ services:
       service: logging-gelf
 
   redis:
-    image: docker.io/redis:6.2-alpine@sha256:2185e741f4c1e7b0ea9ca1e163a3767c4270a73086b6bbea2049a7203212fb7f
+    image: docker.io/redis:6.2-alpine@sha256:3148a32742f80c3b85a988e60d9f5d39d8eccde859bda69960349ef03e1d5160
     container_name: immich_redis
     healthcheck:
       test: redis-cli ping || exit 1
