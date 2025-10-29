@@ -73,6 +73,27 @@ services:
       file: ../../common/docker-compose.yml
       service: logging-gelf
 
+  power-tools:
+    image: ghcr.io/varun-raj/immich-power-tools:0.19.0
+    container_name: immich_power_tools
+    depends_on:
+      - immich-server
+      - database
+    env_file:
+      - power-tools.env
+    ports:
+      - "8132:3000"
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
 volumes:
   model-cache:
   upload:
