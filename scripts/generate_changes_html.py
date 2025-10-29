@@ -20,8 +20,8 @@ COMMAND_TEMPLATE = (
     "cd /home/panzer1119/repositories/git/homelab-docker/compose/{section}/{project} && "
     "CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD) && "
     "git stash && git checkout {commit} && "
-    "sudo bash ../../../scripts/snapshot_docker_compose_stack.sh -v -c {container} -u -D -C {commit} && "
-    "git checkout $CURRENT_BRANCH && git stash pop"
+    "sudo bash ../../../scripts/snapshot_docker_compose_stack.sh -v -c {container} -u -D -C {commit}; "
+    "git checkout $CURRENT_BRANCH && git stash pop && cd -"
 )
 
 
