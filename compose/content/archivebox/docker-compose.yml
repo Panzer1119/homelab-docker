@@ -139,7 +139,7 @@ services:
   ### Example: Run PYWB in parallel and auto-import WARCs from ArchiveBox
 
   pywb:
-    image: webrecorder/pywb:2.9.0@sha256:4544d6c54ca09a21db33e33f95e645cc08bc381d113db58d41db7611c85c3aee
+    image: webrecorder/pywb:2.9.1@sha256:1bda1f1a5c8422515b59983e775451a440289b911cba461a1d27f0bc6857e4d0
     container_name: archivebox_pywb
     #    entrypoint: /bin/sh -c '(wb-manager init default || test $$? -eq 2) && wb-manager add default /archivebox/archive/*/warc/*.warc.gz; wayback;'
     #    environment:
