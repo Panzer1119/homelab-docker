@@ -1,0 +1,25 @@
+---
+services:
+  betterbahn:
+    #TODO There are no semver tagged versions https://github.com/users/l2xu/packages/container/betterbahn/versions
+    image: ghcr.io/l2xu/betterbahn:latest
+    container_name: betterbahn
+    hostname: betterbahn
+    environment:
+      - TZ=Europe/Berlin
+    read_only: true
+    user: "1000:1000"
+    tmpfs:
+      - /tmp
+    privileged: false
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges=true
+    network_mode: bridge
+    ports:
+      - "8645:3000"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
