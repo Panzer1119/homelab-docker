@@ -2,7 +2,7 @@
 services:
   betterbahn:
     #TODO There are no semver tagged versions https://github.com/users/l2xu/packages/container/betterbahn/versions
-    image: ghcr.io/l2xu/betterbahn:latest
+    image: ghcr.io/l2xu/betterbahn:latest@sha256:8e4e9a0c8059665fd366c3b98aab67defd7873fc8ba6bf309da29ec74e198658
     container_name: betterbahn
     hostname: betterbahn
     environment:
