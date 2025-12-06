@@ -74,6 +74,27 @@ services:
       file: ../../common/docker-compose.yml
       service: logging-gelf
 
+  paperless-ai:
+    image: clusterzx/paperless-ai:3.0.9
+    container_name: paperless-ai
+    hostname: paperless-ai
+    depends_on:
+      - webserver
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges=true
+    env_file:
+      - paperless-ai.env
+    volumes:
+      - /docker/data/paperless-ngx/paperless-ai:/app/data
+    ports:
+      - "3467:3000"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
 volumes:
   consume-tn-main-1:
     name: paperless-ngx_consume_tn-main-1
