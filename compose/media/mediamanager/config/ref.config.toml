@@ -144,7 +144,7 @@ enabled = true
 url = "op://Docker/MediaManager/Prowlarr/URL"
 api_key = "op://Docker/MediaManager/Prowlarr/API-Key"
 reject_torrents_on_url_error = true
-timeout_seconds = 120
+#timeout_seconds = 120 #TODO This is not available in v1.10.0 or earlier
 
 # Jackett settings
 [indexers.jackett]
@@ -152,7 +152,7 @@ enabled = false
 url = "http://localhost:9117"
 api_key = ""
 indexers = ["1337x", "torrentleech"]  # List of indexer names to use
-timeout_seconds = 60
+#timeout_seconds = 60 #TODO This is not available in v1.10.0 or earlier
 
 # Title-based scoring rules
 [[indexers.title_scoring_rules]]
