@@ -13,6 +13,7 @@ compose/monitoring/apprise/config/pushover.yml
 compose/monitoring/scrutiny/collector.yml
 compose/monitoring/scrutiny/scrutiny.yml
 compose/media/kometa/config/config.yml
+compose/media/mediamanager/config/config.toml
 compose/media/sabnzbd/create_backup.sh
 
 ### JetBrains template

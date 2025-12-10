@@ -1,0 +1,109 @@
+---
+name: mediamanager
+
+services:
+  mediamanager:
+    image: ghcr.io/maxdorninger/mediamanager/mediamanager:1.10
+    container_name: mediamanager
+    hostname: mediamanager
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: mediamanager.env
+    volumes:
+      # Config folder for application configuration
+      - ./config:/app/config/
+      #- /docker/config/mediamanager:/app/config/
+      # Image folder
+      - /docker/cache/mediamanager:/data/images/
+      # Usenet
+      - /data/usenet:/data/torrents/:ro
+      # Mount your actual media directories here - these paths should match your config.toml
+      #      - ./data/:/data/  # Example: change ./data/ to your actual media root
+      - /data/empty:/data/tv:ro
+      - /data/empty:/data/movies:ro
+      - radarr_media:/data/media/radarr:ro
+      - radarr_media-4k:/data/media/radarr-4k:ro
+      - radarr_media-anime:/data/media/radarr-anime:ro
+      - sonarr_media:/data/media/sonarr:ro
+      - sonarr_media-4k:/data/media/sonarr-4k:ro
+      - sonarr_media-anime:/data/media/sonarr-anime:ro
+    labels:
+      # CIFS Credentials
+      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/MediaManager/CIFS/Host"
+      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/MediaManager/CIFS/Username"
+      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/MediaManager/CIFS/Password"
+      # Radarr Volumes
+      ## Standard
+      - "de.panzer1119.docker.volume.radarr_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup"
+      - "de.panzer1119.docker.volume.radarr_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Media"
+      - "de.panzer1119.docker.volume.radarr_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Trash"
+      ## 4K
+      - "de.panzer1119.docker.volume.radarr-4k_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup_4K"
+      - "de.panzer1119.docker.volume.radarr-4k_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Media_4K"
+      - "de.panzer1119.docker.volume.radarr-4k_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Trash_4K"
+      ## Anime
+      - "de.panzer1119.docker.volume.radarr-anime_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup_Anime"
+      - "de.panzer1119.docker.volume.radarr-anime_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Media_Anime"
+      - "de.panzer1119.docker.volume.radarr-anime_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Trash_Anime"
+      # Sonarr Volumes
+      ## Standard
+      - "de.panzer1119.docker.volume.sonarr_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Backup"
+      - "de.panzer1119.docker.volume.sonarr_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Media"
+      - "de.panzer1119.docker.volume.sonarr_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Trash"
+      ## 4K
+      - "de.panzer1119.docker.volume.sonarr-4k_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Backup_4K"
+      - "de.panzer1119.docker.volume.sonarr-4k_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Media_4K"
+      - "de.panzer1119.docker.volume.sonarr-4k_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Trash_4K"
+      ## Anime
+      - "de.panzer1119.docker.volume.sonarr-anime_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Backup_Anime"
+      - "de.panzer1119.docker.volume.sonarr-anime_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Media_Anime"
+      - "de.panzer1119.docker.volume.sonarr-anime_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Trash_Anime"
+    ports:
+      - "8736:8000"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  db:
+    image: postgres:17
+    env_file: db.env
+    volumes:
+      - /docker/data/mediamanager:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+volumes:
+  radarr_media:
+    name: radarr_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  radarr_media-4k:
+    name: radarr-4k_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  radarr_media-anime:
+    name: radarr-anime_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  sonarr_media:
+    name: sonarr_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  sonarr_media-4k:
+    name: sonarr-4k_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  sonarr_media-anime:
+    name: sonarr-anime_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+...

@@ -9,6 +9,7 @@ Apps for downloading, enriching, and managing movies, shows, etc.
 - [Jellyseerr](./jellyseerr/README.md)
 - [Kometa](./kometa/README.md)
 - [Lidarr](./lidarr/README.md) #TODO
+- [MediaManager](./mediamanager/README.md)
 - [Overseerr](./overseerr/README.md)
 - [PlexAniSync](./plexanisync/README.md)
 - [Prowlarr](./prowlarr/README.md)
