@@ -3,7 +3,7 @@ name: mediamanager
 
 services:
   mediamanager:
-    image: ghcr.io/maxdorninger/mediamanager/mediamanager:1.10
+    image: ghcr.io/maxdorninger/mediamanager/mediamanager:1.10@sha256:ba0eea0866bd95279749277e499fd15f283a6df4c121e160fa152459ec35380d
     container_name: mediamanager
     hostname: mediamanager
     depends_on:
@@ -67,7 +67,7 @@ services:
       service: logging-gelf
 
   db:
-    image: postgres:17
+    image: postgres:17@sha256:929190a12e0833c89276f78c7cf665aaaa62b5930e6f852e9f733f8b737d3f8f
     env_file: db.env
     volumes:
       - /docker/data/mediamanager:/var/lib/postgresql/data
