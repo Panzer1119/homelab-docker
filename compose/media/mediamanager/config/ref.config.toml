@@ -30,6 +30,14 @@ development = false
 #path = "/data/movies/documentary"  # Change this to match your actual movies location
 
 [[misc.movie_libraries]]
+name = "Test Movies"
+path = "/data/movies/test"
+
+[[misc.tv_libraries]]
+name = "Test TV Shows"
+path = "/data/tv/test"
+
+[[misc.movie_libraries]]
 name = "Standard"
 path = "/data/media/radarr"
 

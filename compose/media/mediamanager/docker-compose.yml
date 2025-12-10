@@ -20,11 +20,13 @@ services:
       - /data/usenet:/data/torrents/:ro
       # Mount your actual media directories here - these paths should match your config.toml
       #      - ./data/:/data/  # Example: change ./data/ to your actual media root
-      - /data/empty:/data/tv:ro
-      - /data/empty:/data/movies:ro
+      - media_movies:/data/movies
+      - media_tv:/data/tv
+      # Radarr media folders
       - radarr_media:/data/media/radarr:ro
       - radarr_media-4k:/data/media/radarr-4k:ro
       - radarr_media-anime:/data/media/radarr-anime:ro
+      # Sonarr media folders
       - sonarr_media:/data/media/sonarr:ro
       - sonarr_media-4k:/data/media/sonarr-4k:ro
       - sonarr_media-anime:/data/media/sonarr-anime:ro
@@ -33,6 +35,9 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/MediaManager/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/MediaManager/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/MediaManager/CIFS/Password"
+      # MediaManager Volumes
+      - "de.panzer1119.docker.volume.media_movies.cifs.share=op://Docker/MediaManager/CIFS/Share_Media_Movies"
+      - "de.panzer1119.docker.volume.media_tv.cifs.share=op://Docker/MediaManager/CIFS/Share_Media_TV"
       # Radarr Volumes
       ## Standard
       - "de.panzer1119.docker.volume.radarr_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup"
@@ -82,6 +87,14 @@ services:
       service: logging-gelf
 
 volumes:
+  media_movies:
+    name: mediamanager_media_movies
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  media_tv:
+    name: mediamanager_media_tv
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
   radarr_media:
     name: radarr_media
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
