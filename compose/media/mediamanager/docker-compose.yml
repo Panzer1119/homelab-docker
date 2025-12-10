@@ -16,8 +16,10 @@ services:
       #- /docker/config/mediamanager:/app/config/
       # Image folder
       - /docker/cache/mediamanager:/data/images/
-      # Usenet
-      - /data/usenet:/data/torrents/:ro
+      # Download clients
+      - /data/mediamanager:/data/torrents
+      #- /data/usenet:/data/torrents/usenet
+      #- /data/torrents:/data/torrents/torrents
       # Mount your actual media directories here - these paths should match your config.toml
       #      - ./data/:/data/  # Example: change ./data/ to your actual media root
       - media_movies:/data/movies
