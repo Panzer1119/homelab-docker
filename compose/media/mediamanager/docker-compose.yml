@@ -36,8 +36,8 @@ services:
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/MediaManager/CIFS/Username"
       - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/MediaManager/CIFS/Password"
       # MediaManager Volumes
-      - "de.panzer1119.docker.volume.media_movies.cifs.share=op://Docker/MediaManager/CIFS/Share_Media_Movies"
-      - "de.panzer1119.docker.volume.media_tv.cifs.share=op://Docker/MediaManager/CIFS/Share_Media_TV"
+      - "de.panzer1119.docker.volume.mediamanager_media_movies.cifs.share=op://Docker/MediaManager/CIFS/Share_Media_Movies"
+      - "de.panzer1119.docker.volume.mediamanager_media_tv.cifs.share=op://Docker/MediaManager/CIFS/Share_Media_TV"
       # Radarr Volumes
       ## Standard
       - "de.panzer1119.docker.volume.radarr_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup"
