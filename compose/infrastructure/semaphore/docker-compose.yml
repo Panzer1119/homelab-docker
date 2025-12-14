@@ -34,7 +34,7 @@ services:
     env_file:
       - tofu_backend.env
     volumes:
-      - /docker/data/semaphore-tofu_backend:/var/lib/postgresql/data
+      - /docker/data/semaphore-tofu_backend:/var/lib/postgresql
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
