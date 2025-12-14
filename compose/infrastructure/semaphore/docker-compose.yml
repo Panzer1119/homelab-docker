@@ -12,6 +12,7 @@ services:
       - /docker/config/semaphore:/etc/semaphore:rw
     depends_on:
       - postgres
+      - tofu_backend
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
@@ -23,6 +24,17 @@ services:
       - db.env
     volumes:
       - /docker/data/semaphore:/var/lib/postgresql/data
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  tofu_backend:
+    image: postgres:18
+    env_file:
+      - tofu_backend.env
+    volumes:
+      - /docker/data/semaphore-tofu_backend:/var/lib/postgresql/data
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
