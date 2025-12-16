@@ -6,8 +6,10 @@ services:
     hostname: cadvisor
     privileged: true
     command:
-      - --housekeeping_interval=10s
-      - --max_housekeeping_interval=15s
+      #- --allow_dynamic_housekeeping=true
+      - --global_housekeeping_interval=1m0s
+      - --housekeeping_interval=1s
+      - --max_housekeeping_interval=1m0s
       - --storage_driver=influxdb
       - --storage_driver_host=${INFLUXDB_HOST}
       - --storage_driver_secure=${INFLUXDB_SECURE}
