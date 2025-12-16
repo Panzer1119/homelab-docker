@@ -1,0 +1,31 @@
+---
+services:
+  cadvisor:
+    image: gcr.io/google/cadvisor:v0.54.1
+    container_name: cadvisor
+    hostname: cadvisor
+    privileged: true
+    command:
+      - --housekeeping_interval=10s
+      - --max_housekeeping_interval=15s
+      - --storage_driver=influxdb
+      - --storage_driver_host=${INFLUXDB_HOST}
+      - --storage_driver_db=${INFLUXDB_DB}
+      - --storage_driver_user=${INFLUXDB_USER}
+      - --storage_driver_password=${INFLUXDB_PASSWORD}
+    volumes:
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /var/run:/var/run:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    network_mode: bridge
+    ports:
+      - "8392:8080"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...
