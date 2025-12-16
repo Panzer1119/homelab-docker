@@ -6,5 +6,5 @@ scrape_configs:
   - job_name: "cadvisor"
 
     static_configs:
-      - targets: [ "{{ op://Docker/Prometheus/cAdvisor/Metrics-URL }}" ]
+      - targets: [ "{{ op://Docker/Prometheus/cAdvisor/Host }}" ]
 ...
