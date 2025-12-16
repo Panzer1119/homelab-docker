@@ -9,7 +9,7 @@ services:
       - /docker/data/prometheus:/prometheus
     network_mode: bridge
     ports:
-      - "9090:9090"
+      - "9189:9090"
     restart: always
     extends:
       file: ../../common/docker-compose.yml
