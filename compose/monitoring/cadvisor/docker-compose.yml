@@ -10,6 +10,7 @@ services:
       - --max_housekeeping_interval=15s
       - --storage_driver=influxdb
       - --storage_driver_host=${INFLUXDB_HOST}
+      - --storage_driver_secure=${INFLUXDB_SECURE}
       - --storage_driver_db=${INFLUXDB_DB}
       - --storage_driver_user=${INFLUXDB_USER}
       - --storage_driver_password=${INFLUXDB_PASSWORD}
