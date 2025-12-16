@@ -1,0 +1,44 @@
+---
+services:
+  dockerstats:
+    image: drakonis96/dockerstats:v0.7.0
+    container_name: docker-stats
+    hostname: docker-stats
+    env_file: dockerstats.env
+    # For hosts with an NVIDIA GPU and the NVIDIA Container Toolkit, you can uncomment the deploy/resources/devices section.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /docker/config/dockerstats/users.db:/app/users.db
+    ports:
+      - "5431:5000"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  cadvisor:
+    image: ghcr.io/google/cadvisor:0.54.1
+    container_name: cadvisor
+    privileged: true
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=10s
+    volumes:
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /var/run:/var/run:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    expose:
+      - "8080"
+    #ports:
+    #  - "8080:8080" # You can change the external port if you wish
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...

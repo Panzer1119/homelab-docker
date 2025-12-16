@@ -8,6 +8,7 @@ Tracking performance, logging, usage, health, etc.
 
 - [Apprise](./apprise/README.md)
 - [cAdvisor](./cadvisor/README.md)
+- [dockerstats](./dockerstats/README.md)
 - [Checkmk Raw](./check-mk-raw/README.md)
 - [Graylog](./graylog/README.md)
 - [Scrutiny](./scrutiny/README.md)
