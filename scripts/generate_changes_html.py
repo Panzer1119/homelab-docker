@@ -47,32 +47,144 @@ def generate_html(data):
     <meta charset="UTF-8">
     <title>Commit Container Updates</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        code { background-color: #f4f4f4; padding: 2px 5px; border-radius: 4px; cursor: pointer; }
+        /* ---------- Theme variables ---------- */
+        :root {
+            --bg: #ffffff;
+            --fg: #000000;
+            --muted: #666;
+            --code-bg: #f4f4f4;
+            --border: #ccc;
+            --section: #444;
+            --btn-bg: #f7f7f7;
+            --btn-hover: #eee;
+        }
+
+        body.dark {
+            --bg: #121212;
+            --fg: #e6e6e6;
+            --muted: #aaa;
+            --code-bg: #1e1e1e;
+            --border: #555;
+            --section: #888;
+            --btn-bg: #2a2a2a;
+            --btn-hover: #3a3a3a;
+        }
+
+        /* ---------- Base styles ---------- */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: var(--bg);
+            color: var(--fg);
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            padding: 2px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
         .commit { margin-bottom: 20px; }
-        .project { margin-left: 20px; margin-bottom: 10px; padding-left: 10px; border-left: 2px solid #ccc; }
+
+        .project {
+            margin-left: 20px;
+            margin-bottom: 10px;
+            padding-left: 10px;
+            border-left: 2px solid var(--border);
+        }
+
         .container { margin-left: 40px; }
+
         .created { color: green; font-weight: bold; }
-        .updated { color: blue; font-weight: bold; }
+        .updated { color: dodgerblue; font-weight: bold; }
         .deleted { color: red; font-weight: bold; }
-        .section-divider { border-top: 3px solid #444; margin-top: 20px; padding-top: 10px; }
-        .project-divider { border-top: 2px dashed #999; margin-top: 15px; padding-top: 5px; }
+
+        .section-divider {
+            border-top: 3px solid var(--section);
+            margin-top: 20px;
+            padding-top: 10px;
+        }
+
+        .project-divider {
+            border-top: 2px dashed var(--border);
+            margin-top: 15px;
+            padding-top: 5px;
+        }
+
         .ut-repo { color: red; font-weight: bold; }
         .ut-image { color: orange; font-weight: bold; }
         .ut-tag { color: green; font-weight: bold; }
-        .ut-sha { color: blue; font-weight: bold; }
-        .image-info { font-family: "Lucida Console", "Menlo", "Monaco", "Courier", monospace; }
-        fieldset { display: inline-block; margin-right: 20px; vertical-align: top; }
+        .ut-sha { color: dodgerblue; font-weight: bold; }
+
+        .image-info {
+            font-family: "Lucida Console", "Menlo", "Monaco", "Courier", monospace;
+        }
+
+        fieldset {
+            display: inline-block;
+            margin-right: 20px;
+            vertical-align: top;
+            border-color: var(--border);
+        }
+
         legend { font-weight: bold; }
+
         .filters { margin: 10px 0 20px; }
 
-        /* Buttons */
-        .project-controls { margin: 6px 0 8px; display: inline-block; }
-        .btn { border: 1px solid #888; background: #f7f7f7; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; }
-        .btn:hover { background: #eee; }
-        .section-header { display: flex; align-items: center; gap: 8px; }
+        /* ---------- Buttons ---------- */
+        .project-controls {
+            margin: 6px 0 8px;
+            display: inline-block;
+        }
+
+        .btn {
+            border: 1px solid #888;
+            background: var(--btn-bg);
+            color: var(--fg);
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn:hover { background: var(--btn-hover); }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ---------- Dark mode toggle ---------- */
+        .theme-toggle {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            font-size: 12px;
+        }
     </style>
     <script>
+        // Dark mode toggle
+        document.addEventListener("DOMContentLoaded", () => {
+            const body = document.body;
+            const toggle = document.getElementById("themeToggle");
+
+            // Load saved preference
+            if (localStorage.getItem("theme") === "dark") {
+                body.classList.add("dark");
+            }
+
+            toggle.addEventListener("click", () => {
+                body.classList.toggle("dark");
+                localStorage.setItem(
+                    "theme",
+                    body.classList.contains("dark") ? "dark" : "light"
+                );
+            });
+        });
+    
         // Safer checkbox lookup helpers
         function getCheckboxByNameValue(name, value) {
             // Try CSS.escape if available
@@ -236,11 +348,16 @@ def generate_html(data):
 <body>
 <h1>Commit Container Updates</h1>
 <div>
-    <label for="viewMode">View mode:</label>
-    <select id="viewMode" onchange="toggleView()">
-        <option value="commitView">Chronologically</option>
-        <option value="sectionView" selected>Grouped by Section</option>
-    </select>
+    <div>
+        <label for="viewMode">View mode:</label>
+        <select id="viewMode" onchange="toggleView()">
+            <option value="commitView">Chronologically</option>
+            <option value="sectionView" selected>Grouped by Section</option>
+        </select>
+    </div>
+    <div class="theme-toggle">
+        <button id="themeToggle" class="btn theme-toggle" title="Toggle dark/light theme">Toggle Dark Mode</button>
+    </div>
 </div>
 <div class="filters">
     <fieldset>
