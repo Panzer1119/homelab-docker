@@ -1,7 +1,7 @@
 ---
 services:
   dockerstats:
-    image: drakonis96/dockerstats:v0.7.0
+    image: drakonis96/dockerstats:v0.7.0@sha256:a9becfcb0b89b20aec3e7b99cbfb0ec0e613f83ccf0f412dd07372590b46a0af
     container_name: docker-stats
     hostname: docker-stats
     env_file: dockerstats.env
@@ -22,7 +22,7 @@ services:
       service: logging-gelf
 
   cadvisor:
-    image: ghcr.io/google/cadvisor:0.54.1
+    image: ghcr.io/google/cadvisor:0.54.1@sha256:80e55785e1fa6bcf2b2f372eec4859608f1fe9646bb087f05c7916118b541552
     container_name: cadvisor
     privileged: true
     command:
