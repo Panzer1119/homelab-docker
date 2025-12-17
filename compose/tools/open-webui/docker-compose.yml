@@ -1,7 +1,7 @@
 ---
 services:
   open-webui:
-    image: ghcr.io/open-webui/open-webui:main@sha256:c8e04b9319257448fa4e7ad140cb6596994217ec83d6e7656ccba649bf557318
+    image: ghcr.io/open-webui/open-webui:v0.6.41
     container_name: open-webui
     hostname: open-webui
     env_file:
