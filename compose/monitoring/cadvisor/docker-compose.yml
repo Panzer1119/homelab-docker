@@ -1,7 +1,7 @@
 ---
 services:
   cadvisor:
-    image: ghcr.io/google/cadvisor:0.54.1@sha256:80e55785e1fa6bcf2b2f372eec4859608f1fe9646bb087f05c7916118b541552
+    image: ghcr.io/google/cadvisor:0.55.1@sha256:e02855207ec07bb45ee41f720645945251f093f24c28f8c29cf718490f784922
     container_name: cadvisor
     hostname: cadvisor
     privileged: true
