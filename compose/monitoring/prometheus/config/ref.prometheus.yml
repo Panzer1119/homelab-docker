@@ -7,4 +7,16 @@ scrape_configs:
 
     static_configs:
       - targets: [ "{{ op://Docker/Prometheus/cAdvisor/Host }}" ]
+
+  - job_name: "homelab-argocd-k3s-test-cluster"
+    scheme: "https"
+    authorization:
+      type: "Bearer"
+      credentials: "{{ op://Docker/Prometheus/homelab-argocd-k3s-test-cluster/Token }}"
+
+    static_configs:
+      - targets: [ "{{ op://Docker/Prometheus/homelab-argocd-k3s-test-cluster/Host }}" ]
+
+    tls_config:
+      insecure_skip_verify: true
 ...
