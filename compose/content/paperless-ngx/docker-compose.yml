@@ -35,7 +35,7 @@ services:
       service: logging-gelf
 
   db:
-    image: postgres:16@sha256:056b54f00419b49289227ab12d09df508543883f407fe9935a2cec430ef8aa8d
+    image: postgres:16@sha256:803ea6da631eab4a350da4ba87541e4737197b8c26ec0feb23ff6f9714212d1d
     env_file: db.env
     volumes:
       - /docker/data/paperless-ngx/postgres:/var/lib/postgresql/data
