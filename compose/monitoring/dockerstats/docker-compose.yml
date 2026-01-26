@@ -22,7 +22,7 @@ services:
       service: logging-gelf
 
   cadvisor:
-    image: ghcr.io/google/cadvisor:0.55.1@sha256:e02855207ec07bb45ee41f720645945251f093f24c28f8c29cf718490f784922
+    image: ghcr.io/google/cadvisor:0.56.2@sha256:5534ae91cbf3428998d60428d107cfdd97272d80658534ac6e54d8ce3b0c4d72
     container_name: cadvisor
     privileged: true
     command:
