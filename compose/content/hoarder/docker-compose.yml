@@ -38,7 +38,7 @@ services:
       service: logging-gelf
 
   meilisearch:
-    image: getmeili/meilisearch:v1.11@sha256:6f8f1fc29d1ff67b4d8d503bb4e0a69b55c8d42600decafde951344218193a27
+    image: getmeili/meilisearch:v1.35@sha256:348ba1c1f61101130304370a9522cc5405e6906b64a426dc2fcd5c428a516a98
     env_file:
       - meilisearch.env
     volumes:
