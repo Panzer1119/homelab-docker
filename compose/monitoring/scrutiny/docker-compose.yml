@@ -1,7 +1,7 @@
 ---
 services:
   web:
-    image: ghcr.io/analogj/scrutiny:v0.8.1-web@sha256:dbb6b56e5d3dfa9256fea8ef9b9fd8fb302c555ddd0554b8ad958ec050a14994
+    image: ghcr.io/analogj/scrutiny:v0.8.6-web@sha256:9eadf87322a7826924a835c9bf5632d52bc2d8d1576f04749eda627da3898518
     container_name: scrutiny-web
     hostname: scrutiny-web
     env_file:
