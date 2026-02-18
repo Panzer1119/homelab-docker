@@ -47,7 +47,7 @@ services:
 
   archivist-es:
     # only for amd64, or use official es 8.18.2
-    image: bbilly1/tubearchivist-es:8.18.2@sha256:58007d1cf7a3b9f3ae4a8e0d2798b05d9c7dd768877b1fe908fd4142da4c68b6
+    image: bbilly1/tubearchivist-es:8.19.0@sha256:9da63fb1973ec3d57daf6916be948eddd0d8a404cc8e447c938480c85fe2c554
     container_name: archivist-es
     env_file:
       - elasticsearch.env
