@@ -1,0 +1,30 @@
+---
+services:
+  seerr:
+    # No LinuxServer.io image available yet, so we use the official one
+    #image: ghcr.io/linuxserver/seerr:version-v3.0.1
+    image: ghcr.io/seerr-team/seerr:v3.0.1
+    container_name: seerr
+    hostname: seerr
+    init: true
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Europe/Berlin
+      #- PGID=1000
+      #- PUID=1000
+    volumes:
+      #- /docker/config/seerr:/config
+      - /docker/config/seerr:/app/config
+    network_mode: bridge
+    ports:
+      - "5055:5055"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
