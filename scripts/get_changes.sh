@@ -223,12 +223,28 @@ compare_images() {
     if [ "${old_sha}" != "${new_sha}" ]; then updates+=("sha"); fi
 
     updates_json=$(printf '%s\n' "${updates[@]}" | jq -R . | jq -s .)
+    old_image_json=$(jq -n \
+      --arg repo "${old_repo}" \
+      --arg user "${old_user}" \
+      --arg image "${old_image}" \
+      --arg tag "${old_tag}" \
+      --arg sha "${old_sha}" \
+      '{repo: $repo, user: $user, image: $image, tag: $tag, sha: $sha}')
+    new_image_json=$(jq -n \
+      --arg repo "${new_repo}" \
+      --arg user "${new_user}" \
+      --arg image "${new_image}" \
+      --arg tag "${new_tag}" \
+      --arg sha "${new_sha}" \
+      '{repo: $repo, user: $user, image: $image, tag: $tag, sha: $sha}')
     containers_json=$(jq -n \
       --arg name "${container}" \
       --arg old "${old}" \
       --arg new "${new}" \
       --argjson changes "${updates_json}" \
-      '$ARGS.named | {container_name: .name, old_image: .old, new_image: .new, update_types: $changes}' | \
+      --argjson old_image "${old_image_json}" \
+      --argjson new_image "${new_image_json}" \
+      '$ARGS.named | {container_name: .name, old_image: .old, new_image: .new, update_types: $changes, image: {old: .old_image, new: .new_image}}' | \
       jq --argjson existing "${containers_json}" '$existing + [.]')
   done
 
