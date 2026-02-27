@@ -9,6 +9,8 @@ UPDATE_TYPES = ["repo", "user", "image", "tag", "sha"]
 CHANGE_TYPES = ["created", "updated", "deleted"]
 
 UPDATE_TYPE_CLASSES = {
+    "separator": "ut-separator",
+    "none": "ut-none",
     "repo": "ut-repo",
     "user": "ut-repo",
     "image": "ut-image",
@@ -113,6 +115,8 @@ def generate_html(data):
             padding-top: 5px;
         }
 
+        .ut-none { }
+        .ut-separator { color: gray; }
         .ut-repo { color: red; font-weight: bold; }
         .ut-image { color: orange; font-weight: bold; }
         .ut-tag { color: green; font-weight: bold; }
@@ -410,11 +414,12 @@ def generate_html(data):
                 styled_updates = ' '.join([
                     f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
                 ])
+                old_image_html, new_image_html = image_diff_to_html(container['image']['old'], container['image']['new'])
                 containers_html += f'''<div class="container" data-update-types="{update_types}">
                     <strong>Container:</strong> <code>{container['container_name']}</code><br>
                     <div class="image-info">
-                        <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
-                        <strong>New Image:</strong> <code>{container['new_image']}</code><br>
+                        <strong>Old Image:</strong> <code>{old_image_html}</code><br>
+                        <strong>New Image:</strong> <code>{new_image_html}</code><br>
                     </div>
                     <strong>Update Types:</strong> {styled_updates}<br>
                     <strong>Command:</strong> <code>{command}</code>
@@ -470,11 +475,12 @@ def generate_html(data):
                     styled_updates = ' '.join([
                         f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
                     ])
+                    old_image_html, new_image_html = image_diff_to_html(container['image']['old'], container['image']['new'])
                     containers_html += f'''<div class="container" data-update-types="{update_types}">
                         <strong>Container:</strong> <code>{container['container_name']}</code><br>
                         <div class="image-info">
-                            <strong>Old Image:</strong> <code>{container['old_image']}</code><br>
-                            <strong>New Image:</strong> <code>{container['new_image']}</code><br>
+                            <strong>Old Image:</strong> <code>{old_image_html}</code><br>
+                            <strong>New Image:</strong> <code>{new_image_html}</code><br>
                         </div>
                         <strong>Update Types:</strong> {styled_updates}<br>
                         <strong>Command:</strong> <code>{command}</code>
@@ -498,6 +504,69 @@ def generate_html(data):
     html += section_html
     html += '</body>\n</html>'
     return html
+
+
+def image_diff_to_html(old_image_json: dict, new_image_json: dict, only_exact: bool = True) -> tuple[str, str]:
+    # Old image
+    old_repo: str = old_image_json['repo']
+    old_user: str = old_image_json['user']
+    old_image: str = old_image_json['image']
+    old_tag: str = old_image_json['tag']
+    old_sha: str = old_image_json['sha']
+    # New image
+    new_repo: str = new_image_json['repo']
+    new_user: str = new_image_json['user']
+    new_image: str = new_image_json['image']
+    new_tag: str = new_image_json['tag']
+    new_sha: str = new_image_json['sha']
+    if only_exact:
+        # Color only the characters that changed, using difflib.SequenceMatcher
+        from difflib import SequenceMatcher
+        def color_diff(update_type: str, old: str, new: str) -> tuple[str, str]:
+            matcher = SequenceMatcher(None, old, new)
+            old_colored = ''
+            new_colored = ''
+            for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+                old_part = old[i1:i2]
+                new_part = new[j1:j2]
+                if tag == 'equal' or old_part == new_part:
+                    old_colored += old_part
+                    new_colored += new_part
+                elif tag == 'delete':
+                    old_colored += f'<span class="{UPDATE_TYPE_CLASSES[update_type]}">{old_part}</span>'
+                elif tag == 'insert':
+                    new_colored += f'<span class="{UPDATE_TYPE_CLASSES[update_type]}">{new_part}</span>'
+                else:
+                    old_colored += f'<span class="{UPDATE_TYPE_CLASSES[update_type]}">{old_part}</span>'
+                    new_colored += f'<span class="{UPDATE_TYPE_CLASSES[update_type]}">{new_part}</span>'
+            return old_colored, new_colored
+        old_repo_html, new_repo_html = color_diff("repo", old_repo, new_repo)
+        old_user_html, new_user_html = color_diff("user", old_user, new_user)
+        old_image_html, new_image_html = color_diff("image", old_image, new_image)
+        old_tag_html, new_tag_html = color_diff("tag", old_tag, new_tag)
+        #old_sha_html, new_sha_html = color_diff("sha", old_sha, new_sha)
+        old_sha_html, new_sha_html = color_diff("none", old_sha, new_sha)
+        old_image_html = f'{old_repo_html}<span class="ut-separator">/</span>{old_user_html}<span class="ut-separator">/</span>{old_image_html}<span class="ut-separator">:</span>{old_tag_html}<span class="ut-separator">@</span>{old_sha_html}'
+        new_image_html = f'{new_repo_html}<span class="ut-separator">/</span>{new_user_html}<span class="ut-separator">/</span>{new_image_html}<span class="ut-separator">:</span>{new_tag_html}<span class="ut-separator">@</span>{new_sha_html}'
+    else:
+        # Diffs
+        is_repo_updated = old_repo != new_repo
+        is_user_updated = old_user != new_user
+        is_image_updated = old_image != new_image
+        is_tag_updated = old_tag != new_tag
+        is_sha_updated = old_sha != new_sha
+        # Color changed parts in old image red and in new image green
+        old_image_html = f'<span class="{is_repo_updated and UPDATE_TYPE_CLASSES["repo"]}">{old_repo}</span><span class="ut-separator">/</span>' \
+                         f'<span class="{is_user_updated and UPDATE_TYPE_CLASSES["user"]}">{old_user}</span><span class="ut-separator">/</span>' \
+                         f'<span class="{is_image_updated and UPDATE_TYPE_CLASSES["image"]}">{old_image}</span><span class="ut-separator">:</span>' \
+                         f'<span class="{is_tag_updated and UPDATE_TYPE_CLASSES["tag"]}">{old_tag}</span><span class="ut-separator">@</span>' \
+                         f'<span class="{is_sha_updated and UPDATE_TYPE_CLASSES["sha"]}">{old_sha}</span>'
+        new_image_html = f'<span class="{is_repo_updated and UPDATE_TYPE_CLASSES["repo"]}">{new_repo}</span><span class="ut-separator">/</span>' \
+                         f'<span class="{is_user_updated and UPDATE_TYPE_CLASSES["user"]}">{new_user}</span><span class="ut-separator">/</span>' \
+                         f'<span class="{is_image_updated and UPDATE_TYPE_CLASSES["image"]}">{new_image}</span><span class="ut-separator">:</span>' \
+                         f'<span class="{is_tag_updated and UPDATE_TYPE_CLASSES["tag"]}">{new_tag}</span><span class="ut-separator">@</span>' \
+                         f'<span class="{is_sha_updated and UPDATE_TYPE_CLASSES["sha"]}">{new_sha}</span>'
+    return old_image_html, new_image_html
 
 
 def main():
