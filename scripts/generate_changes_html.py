@@ -545,7 +545,13 @@ def image_diff_to_html(old_image_json: dict, new_image_json: dict, only_exact: b
         old_image_html, new_image_html = color_diff("image", old_image, new_image)
         old_tag_html, new_tag_html = color_diff("tag", old_tag, new_tag)
         #old_sha_html, new_sha_html = color_diff("sha", old_sha, new_sha)
-        old_sha_html, new_sha_html = color_diff("none", old_sha, new_sha)
+        #old_sha_html, new_sha_html = color_diff("none", old_sha, new_sha)
+        if old_sha == new_sha:
+            old_sha_html = old_sha
+            new_sha_html = new_sha
+        else:
+            old_sha_html = f'<span class="{UPDATE_TYPE_CLASSES["sha"]}">{old_sha}</span>'
+            new_sha_html = f'<span class="{UPDATE_TYPE_CLASSES["sha"]}">{new_sha}</span>'
         old_image_html = f'{old_repo_html}<span class="ut-separator">/</span>{old_user_html}<span class="ut-separator">/</span>{old_image_html}<span class="ut-separator">:</span>{old_tag_html}<span class="ut-separator">@</span>{old_sha_html}'
         new_image_html = f'{new_repo_html}<span class="ut-separator">/</span>{new_user_html}<span class="ut-separator">/</span>{new_image_html}<span class="ut-separator">:</span>{new_tag_html}<span class="ut-separator">@</span>{new_sha_html}'
     else:
