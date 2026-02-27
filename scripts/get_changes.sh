@@ -128,7 +128,7 @@ extract_images_from_compose() {
   local -n ref=${3}
 
   local services
-  services=$(echo "${yaml_content}" | yq -r '.services // {} | to_entries[] | @base64')
+  services=$(echo "${yaml_content}" | yq -r '.services // {} | to_entries[] | @json | @base64')
 
   for row in ${services}; do
     _jq() { echo "${row}" | base64 --decode | jq -r "${1}"; }
