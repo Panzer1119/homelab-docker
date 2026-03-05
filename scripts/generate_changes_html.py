@@ -26,10 +26,10 @@ COMMAND_TEMPLATE = Template(
     "git -C $${REPO} worktree remove --force $${WT} 2>/dev/null || true; "
     "rm -rf $${WT}; "
     "} && "
-    "trap cleanup EXIT && "
     "git -C $${REPO} worktree add --detach $${WT} ${commit} && "
     "cd $${WT}/compose/${section}/${project} && "
-    "sudo bash ../../../scripts/snapshot_docker_compose_stack.sh -v -c ${container} -u -D -C ${commit}"
+    "sudo bash ../../../scripts/snapshot_docker_compose_stack.sh -v -c ${container} -u -D -C ${commit}; "
+    "cleanup"
 )
 
 
