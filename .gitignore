@@ -9,13 +9,13 @@ compose/common/docker-compose.yml
 compose/content/paperless-ngx/scripts/post-consumption-paperparrot.sh
 compose/content/paperless-ngx/scripts/post-consumption-pushover.sh
 compose/content/paperless-ngx/scripts/send_pushover_message.sh
+compose/media/kometa/config/config.yml
+compose/media/mediamanager/config/config.toml
+compose/media/sabnzbd/create_backup.sh
 compose/monitoring/apprise/config/pushover.yml
 compose/monitoring/prometheus/config/prometheus.yml
 compose/monitoring/scrutiny/collector.yml
 compose/monitoring/scrutiny/scrutiny.yml
-compose/media/kometa/config/config.yml
-compose/media/mediamanager/config/config.toml
-compose/media/sabnzbd/create_backup.sh
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
