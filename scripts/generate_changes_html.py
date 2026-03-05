@@ -20,23 +20,39 @@ UPDATE_TYPE_CLASSES = {
 }
 
 COMMAND_TEMPLATE = Template(
+    # Variables
     "REPO=/home/panzer1119/repositories/git/homelab-docker && "
-    "WT=$$(mktemp -d) && "
+    "WT=\"$$(mktemp -d)\" && "
+
+    # Cleanup after execution
     "cleanup() { "
-    "git -C $${REPO} worktree remove --force $${WT} && "
-    "rm -rf $${WT} && "
+    "git -C \"$${REPO}\" worktree remove --force \"$${WT}\" && "
+    "rm -rf \"$${WT}\" && "
     "cd -; "
     "} && "
-    "git -C $${REPO} worktree add --detach $${WT} ${commit} && "
-    "awk '/^# Ignore injected ref files/ {flag=1; next} "
-    "flag && NF==0 {exit} "
-    "flag {print}' \"$${REPO}/.gitignore\" | "
+
+    # Add worktree
+    "git -C \"$${REPO}\" worktree add --detach \"$${WT}\" ${commit} && "
+
+    # Copy injected ref.* files
+    "awk '/^# Ignore injected ref files/ {flag=1; next} flag && "
+    "NF==0 {exit} flag {print}' \"$${REPO}/.gitignore\" | "
     "while read f; do "
-    "mkdir -p \"$$(dirname \"\"$${WT}/$${f}\"\")\" && "
+    "mkdir -p \"$$(dirname \"$${WT}/$${f}\")\" && "
     "cp \"$${REPO}/$${f}\" \"$${WT}/$${f}\"; "
     "done && "
-    "cd $${WT}/compose/${section}/${project} && "
+
+    # Copy all .env files except ref.* (use find)
+    "find \"$${REPO}\" -type f -name '*.env' ! -name 'ref.*' | while read f; do "
+    "mkdir -p \"$$(dirname \"$${WT}/$$(realpath --relative-to=\"$${REPO}\" \"$${f}\")\")\" && "
+    "cp \"$${f}\" \"$${WT}/$$(realpath --relative-to=\"$${REPO}\" \"$${f}\")\"; "
+    "done && "
+
+    # Run snapshot
+    "cd \"$${WT}/compose/${section}/${project}\" && "
     "sudo bash ../../../scripts/snapshot_docker_compose_stack.sh -v -c ${container} -u -D -C ${commit}; "
+
+    # Explicit cleanup
     "cleanup"
 )
 
