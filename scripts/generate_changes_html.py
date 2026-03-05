@@ -1,6 +1,7 @@
 import json
 import os
 from collections import defaultdict
+from string import Template
 
 INPUT_JSON = os.getenv('INPUT_JSON', 'commits.json')
 OUTPUT_HTML = os.getenv('OUTPUT_HTML', 'commits.html')
@@ -18,17 +19,22 @@ UPDATE_TYPE_CLASSES = {
     "sha": "ut-sha",
 }
 
-COMMAND_TEMPLATE = (
-    "cd /home/panzer1119/repositories/git/homelab-docker/compose/{section}/{project} && "
-    "CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD) && "
-    "git stash && git checkout {commit} && "
-    "sudo bash ../../../scripts/snapshot_docker_compose_stack.sh -v -c {container} -u -D -C {commit}; "
-    "git checkout $CURRENT_BRANCH && git stash pop && cd -"
+COMMAND_TEMPLATE = Template(
+    "REPO=/home/panzer1119/repositories/git/homelab-docker && "
+    "WT=$$(mktemp -d) && "
+    "cleanup() { "
+    "git -C $${REPO} worktree remove --force $${WT} 2>/dev/null || true; "
+    "rm -rf $${WT}; "
+    "} && "
+    "trap cleanup EXIT && "
+    "git -C $${REPO} worktree add --detach $${WT} ${commit} && "
+    "cd $${WT}/compose/${section}/${project} && "
+    "sudo bash ../../../scripts/snapshot_docker_compose_stack.sh -v -c ${container} -u -D -C ${commit}"
 )
 
 
 def format_command(section, project, container, commit):
-    return COMMAND_TEMPLATE.format(section=section, project=project, container=container, commit=commit)
+    return COMMAND_TEMPLATE.substitute(section=section, project=project, container=container, commit=commit)
 
 
 def generate_html(data):
