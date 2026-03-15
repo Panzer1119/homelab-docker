@@ -1,7 +1,7 @@
 ---
 services:
   dockerstats:
-    image: drakonis96/dockerstats:v0.7.0@sha256:a9becfcb0b89b20aec3e7b99cbfb0ec0e613f83ccf0f412dd07372590b46a0af
+    image: drakonis96/dockerstats:v0.8.2@sha256:4f9bc9a515607735c480f043dee583ffd8e6b0cd74dc8392344127e51a17a791
     container_name: docker-stats
     hostname: docker-stats
     env_file: dockerstats.env
