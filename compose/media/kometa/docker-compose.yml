@@ -8,6 +8,7 @@ services:
       - kometa.env
     volumes:
       - /docker/config/kometa:/config
+      #FIXME PWD is not compatible with Git Worktrees when updating the docker containers
       - "${PWD}/config/config.yml:/config/config.yml" #FIXME "PWD" might not work in all environments
     network_mode: bridge
     restart: no

@@ -8,6 +8,7 @@ services:
       - plexanisync.env
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
+      #FIXME PWD is not compatible with Git Worktrees when updating the docker containers
       - "${PWD}/config/custom_mappings.yaml:/plexanisync/custom_mappings.yaml" #FIXME "PWD" might not work in all environments
       - "${PWD}/config/TautulliSyncHelper.py:/plexanisync/TautulliSyncHelper.py" #FIXME "PWD" might not work in all environments
     network_mode: bridge
