@@ -12,6 +12,7 @@ Python replacement for `snapshot_docker_compose_stack.sh` with built-in git work
 - Infers section/stack from `--directory` (same behavior as the shell script).
 - If `--target-container` is omitted, picks the first service in compose config for image metadata.
 - Snapshots bind-mounted ZFS datasets under default base prefixes.
+- By default, places a ZFS hold (`stack-checkpoint`) on each snapshot; configure via `--hold-name` or disable with `--no-hold-snapshots`.
 - If `--up-after` is set and compose files use `PWD` paths, it skips `up` in worktree and prints a manual `cd ... && docker compose up -d` command.
 
 ### Example
