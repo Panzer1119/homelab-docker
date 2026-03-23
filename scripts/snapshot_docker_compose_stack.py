@@ -329,19 +329,6 @@ def derive_metadata_from_running_stack(
         return None
 
 
-def read_file_from_commit(git_dir: Path, commit_ref: str, rel_path: Path) -> str | None:
-    git_path = rel_path.as_posix()
-    exists = subprocess.run(
-        ["git", "-C", str(git_dir), "cat-file", "-e", f"{commit_ref}:{git_path}"],
-        text=True,
-        capture_output=True,
-    )
-    if exists.returncode != 0:
-        return None
-    result = run_command(["git", "-C", str(git_dir), "show", f"{commit_ref}:{git_path}"], capture_output=True)
-    return result.stdout
-
-
 def derive_metadata_from_previous_commit(
     *,
     git_dir: Path,
@@ -352,30 +339,10 @@ def derive_metadata_from_previous_commit(
 ) -> tuple[str, str, str] | None:
     previous_ref = f"{commit_ref}^"
     try:
-        with tempfile.TemporaryDirectory(prefix="homelab-docker-prev-commit-") as tmp:
-            tmp_dir = Path(tmp)
-            primary: Path | None = None
-            override: Path | None = None
-
-            for candidate in ("docker-compose.yml", "docker-compose.yaml"):
-                rel = stack_rel / candidate
-                content = read_file_from_commit(git_dir, previous_ref, rel)
-                if content is not None:
-                    primary = tmp_dir / candidate
-                    primary.write_text(content, encoding="utf-8")
-                    break
-
-            if primary is None:
-                return None
-
-            for candidate in ("docker-compose.override.yml", "docker-compose.override.yaml"):
-                rel = stack_rel / candidate
-                content = read_file_from_commit(git_dir, previous_ref, rel)
-                if content is not None:
-                    override = tmp_dir / candidate
-                    override.write_text(content, encoding="utf-8")
-                    break
-
+        # Reuse existing worktree preparation to ensure injected/env files are present.
+        with maybe_worktree(git_dir, previous_ref, use_worktree=True, keep_worktree=False) as previous_base:
+            previous_stack_dir = previous_base / stack_rel
+            primary, override = compose_files(previous_stack_dir)
             config = docker_compose_json(primary, override, dry_run=dry_run)
             service_name = choose_service(config, target_container)
             if service_name is None:
