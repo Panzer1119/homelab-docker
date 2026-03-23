@@ -219,6 +219,13 @@ def docker_compose_json(primary: Path, override: Path | None, *, dry_run: bool) 
     return json.loads(result.stdout)
 
 
+def compose_cmd(primary: Path, override: Path | None) -> list[str]:
+    command = ["docker", "compose", "-f", str(primary)]
+    if override:
+        command.extend(["-f", str(override)])
+    return command
+
+
 def choose_service(compose_config: dict, target_container: str | None) -> str | None:
     services = compose_config.get("services", {})
     if not isinstance(services, dict) or not services:
@@ -292,6 +299,95 @@ def derive_target_metadata(
         target_sha256 if target_sha256 is not None else parsed_sha,
         service_name,
     )
+
+
+def derive_metadata_from_running_stack(
+    *,
+    primary: Path,
+    override: Path | None,
+    target_container: str | None,
+    dry_run: bool,
+) -> tuple[str, str, str] | None:
+    if dry_run:
+        return None
+
+    config = docker_compose_json(primary, override, dry_run=False)
+    service_name = choose_service(config, target_container)
+    if service_name is None:
+        return None
+
+    command = compose_cmd(primary, override)
+    result = run_command(command + ["ps", "-q", service_name], capture_output=True)
+    container_ids = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if not container_ids:
+        return None
+
+    inspect = run_command(["docker", "inspect", "--format", "{{.Config.Image}}", container_ids[0]], capture_output=True)
+    image_ref = inspect.stdout.strip()
+    if not image_ref:
+        return None
+    return parse_image_reference(image_ref)
+
+
+def read_file_from_commit(repo_root: Path, commit_ref: str, rel_path: Path) -> str | None:
+    git_path = rel_path.as_posix()
+    exists = subprocess.run(
+        ["git", "-C", str(repo_root), "cat-file", "-e", f"{commit_ref}:{git_path}"],
+        text=True,
+        capture_output=True,
+    )
+    if exists.returncode != 0:
+        return None
+    result = run_command(["git", "-C", str(repo_root), "show", f"{commit_ref}:{git_path}"], capture_output=True)
+    return result.stdout
+
+
+def derive_metadata_from_previous_commit(
+    *,
+    repo_root: Path,
+    stack_rel: Path,
+    target_container: str | None,
+    commit_sha1: str,
+    dry_run: bool,
+) -> tuple[str, str, str] | None:
+    if dry_run:
+        return None
+
+    previous_ref = f"{commit_sha1}^"
+    with tempfile.TemporaryDirectory(prefix="homelab-docker-prev-commit-") as tmp:
+        tmp_dir = Path(tmp)
+        primary: Path | None = None
+        override: Path | None = None
+
+        for candidate in ("docker-compose.yml", "docker-compose.yaml"):
+            rel = stack_rel / candidate
+            content = read_file_from_commit(repo_root, previous_ref, rel)
+            if content is not None:
+                primary = tmp_dir / candidate
+                primary.write_text(content, encoding="utf-8")
+                break
+
+        if primary is None:
+            return None
+
+        for candidate in ("docker-compose.override.yml", "docker-compose.override.yaml"):
+            rel = stack_rel / candidate
+            content = read_file_from_commit(repo_root, previous_ref, rel)
+            if content is not None:
+                override = tmp_dir / candidate
+                override.write_text(content, encoding="utf-8")
+                break
+
+        config = docker_compose_json(primary, override, dry_run=False)
+        service_name = choose_service(config, target_container)
+        if service_name is None:
+            return None
+
+        service = config.get("services", {}).get(service_name, {})
+        image_ref = service.get("image") if isinstance(service, dict) else None
+        if not image_ref:
+            return None
+        return parse_image_reference(image_ref)
 
 
 def extract_bind_datasets(compose_config: dict) -> list[str]:
@@ -486,6 +582,23 @@ def main(argv: list[str] | None = None) -> int:
         if args.hold_snapshots and not hold_name:
             raise CliError("--hold-name must not be empty when snapshot holds are enabled.")
 
+        real_primary, real_override = compose_files(location.stack_dir)
+        running_metadata = derive_metadata_from_running_stack(
+            primary=real_primary,
+            override=real_override,
+            target_container=args.target_container,
+            dry_run=args.dry_run,
+        )
+        previous_commit_metadata = None
+        if running_metadata is None:
+            previous_commit_metadata = derive_metadata_from_previous_commit(
+                repo_root=repo_root,
+                stack_rel=stack_rel,
+                target_container=args.target_container,
+                commit_sha1=commit_sha1,
+                dry_run=args.dry_run,
+            )
+
         with maybe_worktree(repo_root, commit_sha1, use_worktree=use_worktree, keep_worktree=args.keep_worktree) as base:
             effective_stack_dir = (base / stack_rel) if use_worktree else location.stack_dir
             primary, override = compose_files(effective_stack_dir)
@@ -501,15 +614,26 @@ def main(argv: list[str] | None = None) -> int:
             if service_name:
                 logging.info("Using service for metadata: %s", service_name)
 
+            if running_metadata:
+                source_image, source_tag, source_sha = running_metadata
+                logging.info("Using image metadata from running stack")
+                target_image = args.target_image or source_image
+                target_tag = args.target_tag or source_tag
+                target_sha256 = args.target_sha256 if args.target_sha256 is not None else source_sha
+            elif previous_commit_metadata:
+                source_image, source_tag, source_sha = previous_commit_metadata
+                logging.info("Stack not running; using image metadata from previous commit compose")
+                target_image = args.target_image or source_image
+                target_tag = args.target_tag or source_tag
+                target_sha256 = args.target_sha256 if args.target_sha256 is not None else source_sha
+
             datasets = extract_bind_datasets(compose_config)
             allowed_datasets = [d for d in datasets if dataset_allowed(d, base_datasets)]
             snapshot_name = generate_snapshot_name(args.snapshot_prefix)
 
-            compose_cmd = ["docker", "compose", "-f", str(primary)]
-            if override:
-                compose_cmd.extend(["-f", str(override)])
+            compose_cmdline = compose_cmd(primary, override)
 
-            run_command(compose_cmd + ["down"], dry_run=args.dry_run)
+            run_command(compose_cmdline + ["down"], dry_run=args.dry_run)
 
             for dataset in allowed_datasets:
                 snapshot_dataset(
@@ -536,7 +660,7 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     logging.warning("Manual recovery command: %s", manual_cmd)
                 else:
-                    run_command(compose_cmd + ["up", "-d"], dry_run=args.dry_run)
+                    run_command(compose_cmdline + ["up", "-d"], dry_run=args.dry_run)
 
         logging.info("Done.")
         return 0
