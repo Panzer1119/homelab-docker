@@ -272,34 +272,6 @@ def parse_image_reference(image_ref: str) -> tuple[str, str, str]:
     return image_path, tag, digest
 
 
-def derive_target_metadata(
-    compose_config: dict,
-    target_container: str | None,
-    target_image: str | None,
-    target_tag: str | None,
-    target_sha256: str | None,
-) -> tuple[str | None, str | None, str | None, str | None]:
-    service_name = choose_service(compose_config, target_container)
-    if service_name is None:
-        return target_image, target_tag, target_sha256, None
-
-    if target_image and target_tag and target_sha256 is not None:
-        return target_image, target_tag, target_sha256, service_name
-
-    service = compose_config.get("services", {}).get(service_name, {})
-    image_ref = service.get("image") if isinstance(service, dict) else None
-    if not image_ref:
-        return target_image, target_tag, target_sha256, service_name
-
-    parsed_image, parsed_tag, parsed_sha = parse_image_reference(image_ref)
-    return (
-        target_image or parsed_image,
-        target_tag or parsed_tag,
-        target_sha256 if target_sha256 is not None else parsed_sha,
-        service_name,
-    )
-
-
 def derive_metadata_from_running_stack(
     *,
     primary: Path,
@@ -578,16 +550,13 @@ def main(argv: list[str] | None = None) -> int:
                 else:
                     raise
 
-            target_image, target_tag, target_sha256, service_name = derive_target_metadata(
-                compose_config,
-                args.target_container,
-                args.target_image,
-                args.target_tag,
-                args.target_sha256,
-            )
-            if service_name:
+            service_name = choose_service(compose_config, args.target_container)
+            if service_name is not None:
                 logging.info("Using service for metadata: %s", service_name)
 
+            target_image = args.target_image
+            target_tag = args.target_tag
+            target_sha256 = args.target_sha256
             if running_metadata:
                 source_image, source_tag, source_sha = running_metadata
                 logging.info("Using image metadata from running stack")
