@@ -25,6 +25,7 @@ KEY_TARGET_SHA256 = "de.panzer1119.docker:target_sha256"
 KEY_GIT_COMMIT_SHA1 = "de.panzer1119.docker:git_commit_sha1"
 
 DEFAULT_SNAPSHOT_PREFIX = "stack-checkpoint"
+DEFAULT_HOLD_NAME = "stack-checkpoint"
 DEFAULT_BASE_DATASETS = [
     "docker/config",
     "docker/data",
@@ -74,6 +75,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--keep-worktree", action="store_true", help="Keep temporary worktree for inspection")
 
     parser.add_argument("-p", "--snapshot-prefix", default=DEFAULT_SNAPSHOT_PREFIX, help="Snapshot name prefix")
+    parser.add_argument(
+        "--hold-name",
+        default=DEFAULT_HOLD_NAME,
+        help="ZFS hold tag used for created snapshots (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--no-hold-snapshots",
+        dest="hold_snapshots",
+        action="store_false",
+        help="Do not place a ZFS hold on created snapshots",
+    )
+    parser.set_defaults(hold_snapshots=True)
     parser.add_argument(
         "-b",
         "--base-dataset",
@@ -335,6 +348,8 @@ def snapshot_dataset(
     dataset: str,
     snapshot_name: str,
     *,
+    hold_snapshots: bool,
+    hold_name: str,
     section: str,
     stack: str,
     target_image: str | None,
@@ -345,6 +360,8 @@ def snapshot_dataset(
 ) -> None:
     snapshot = f"{dataset}@{snapshot_name}"
     run_command(["zfs", "snapshot", snapshot], dry_run=dry_run)
+    if hold_snapshots:
+        run_command(["zfs", "hold", hold_name, snapshot], dry_run=dry_run)
     set_snapshot_property(snapshot, KEY_SECTION_NAME, section, dry_run=dry_run)
     set_snapshot_property(snapshot, KEY_STACK_NAME, stack, dry_run=dry_run)
     set_snapshot_property(snapshot, KEY_TARGET_IMAGE, target_image or "", dry_run=dry_run)
@@ -464,6 +481,9 @@ def main(argv: list[str] | None = None) -> int:
 
         stack_rel = location.stack_dir.relative_to(repo_root)
         base_datasets = args.base_datasets or DEFAULT_BASE_DATASETS
+        hold_name = args.hold_name.strip()
+        if args.hold_snapshots and not hold_name:
+            raise CliError("--hold-name must not be empty when snapshot holds are enabled.")
 
         with maybe_worktree(repo_root, commit_sha1, use_worktree=use_worktree, keep_worktree=args.keep_worktree) as base:
             effective_stack_dir = (base / stack_rel) if use_worktree else location.stack_dir
@@ -494,6 +514,8 @@ def main(argv: list[str] | None = None) -> int:
                 snapshot_dataset(
                     dataset,
                     snapshot_name,
+                    hold_snapshots=args.hold_snapshots,
+                    hold_name=hold_name,
                     section=location.section,
                     stack=location.stack,
                     target_image=target_image,
