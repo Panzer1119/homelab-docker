@@ -450,8 +450,9 @@ def should_skip_up_in_worktree(primary: Path, override: Path | None) -> bool:
 
 
 def ensure_requirements(*, dry_run: bool, use_worktree: bool) -> None:
-    for cmd_name in ("docker", "git", "zfs"):
-        if shutil.which(cmd_name) is None:
+    commands: tuple[str, ...] = ("docker", "git", "zfs")
+    for cmd_name in commands:
+        if shutil.which(str(cmd_name)) is None:
             raise CliError(f"Missing required command: {cmd_name}")
 
     if not dry_run and os.geteuid() != 0:
