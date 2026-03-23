@@ -9,6 +9,7 @@ Python replacement for `snapshot_docker_compose_stack.sh` with built-in git work
 ### Highlights
 
 - Uses a temporary git worktree at `--commit` (default: `HEAD`) and copies injected/non-`ref.*` env files.
+- Accepts multiple override files via repeatable `--override-file` / `-f` arguments.
 - Infers section/stack from `--directory` (same behavior as the shell script).
 - If `--target-container` is omitted, picks the first service in compose config for image metadata.
 - Derives image/tag/sha metadata from the currently running stack first; if not running, falls back to the previous commit's compose file.
