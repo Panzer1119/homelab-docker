@@ -213,8 +213,7 @@ def docker_compose_json(primary: Path, override: Path | None, *, dry_run: bool) 
         command.extend(["-f", str(override)])
     command.extend(["config", "--format", "json"])
     if dry_run:
-        logging.info("[DRY RUN] Would resolve compose config for %s", primary.parent)
-        return {}
+        logging.info("[DRY RUN] Running read-only compose config for %s", primary.parent)
     result = run_command(command, capture_output=True)
     return json.loads(result.stdout)
 
@@ -308,25 +307,26 @@ def derive_metadata_from_running_stack(
     target_container: str | None,
     dry_run: bool,
 ) -> tuple[str, str, str] | None:
-    if dry_run:
-        return None
+    try:
+        config = docker_compose_json(primary, override, dry_run=dry_run)
+        service_name = choose_service(config, target_container)
+        if service_name is None:
+            return None
 
-    config = docker_compose_json(primary, override, dry_run=False)
-    service_name = choose_service(config, target_container)
-    if service_name is None:
-        return None
+        command = compose_cmd(primary, override)
+        result = run_command(command + ["ps", "-q", service_name], capture_output=True)
+        container_ids = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+        if not container_ids:
+            return None
 
-    command = compose_cmd(primary, override)
-    result = run_command(command + ["ps", "-q", service_name], capture_output=True)
-    container_ids = [line.strip() for line in result.stdout.splitlines() if line.strip()]
-    if not container_ids:
+        inspect = run_command(["docker", "inspect", "--format", "{{.Config.Image}}", container_ids[0]], capture_output=True)
+        image_ref = inspect.stdout.strip()
+        if not image_ref:
+            return None
+        return parse_image_reference(image_ref)
+    except subprocess.CalledProcessError as exc:
+        logging.warning("Could not derive metadata from running stack: %s", exc.stderr.strip() if exc.stderr else exc)
         return None
-
-    inspect = run_command(["docker", "inspect", "--format", "{{.Config.Image}}", container_ids[0]], capture_output=True)
-    image_ref = inspect.stdout.strip()
-    if not image_ref:
-        return None
-    return parse_image_reference(image_ref)
 
 
 def read_file_from_commit(repo_root: Path, commit_ref: str, rel_path: Path) -> str | None:
@@ -350,44 +350,45 @@ def derive_metadata_from_previous_commit(
     commit_sha1: str,
     dry_run: bool,
 ) -> tuple[str, str, str] | None:
-    if dry_run:
-        return None
-
     previous_ref = f"{commit_sha1}^"
-    with tempfile.TemporaryDirectory(prefix="homelab-docker-prev-commit-") as tmp:
-        tmp_dir = Path(tmp)
-        primary: Path | None = None
-        override: Path | None = None
+    try:
+        with tempfile.TemporaryDirectory(prefix="homelab-docker-prev-commit-") as tmp:
+            tmp_dir = Path(tmp)
+            primary: Path | None = None
+            override: Path | None = None
 
-        for candidate in ("docker-compose.yml", "docker-compose.yaml"):
-            rel = stack_rel / candidate
-            content = read_file_from_commit(repo_root, previous_ref, rel)
-            if content is not None:
-                primary = tmp_dir / candidate
-                primary.write_text(content, encoding="utf-8")
-                break
+            for candidate in ("docker-compose.yml", "docker-compose.yaml"):
+                rel = stack_rel / candidate
+                content = read_file_from_commit(repo_root, previous_ref, rel)
+                if content is not None:
+                    primary = tmp_dir / candidate
+                    primary.write_text(content, encoding="utf-8")
+                    break
 
-        if primary is None:
-            return None
+            if primary is None:
+                return None
 
-        for candidate in ("docker-compose.override.yml", "docker-compose.override.yaml"):
-            rel = stack_rel / candidate
-            content = read_file_from_commit(repo_root, previous_ref, rel)
-            if content is not None:
-                override = tmp_dir / candidate
-                override.write_text(content, encoding="utf-8")
-                break
+            for candidate in ("docker-compose.override.yml", "docker-compose.override.yaml"):
+                rel = stack_rel / candidate
+                content = read_file_from_commit(repo_root, previous_ref, rel)
+                if content is not None:
+                    override = tmp_dir / candidate
+                    override.write_text(content, encoding="utf-8")
+                    break
 
-        config = docker_compose_json(primary, override, dry_run=False)
-        service_name = choose_service(config, target_container)
-        if service_name is None:
-            return None
+            config = docker_compose_json(primary, override, dry_run=dry_run)
+            service_name = choose_service(config, target_container)
+            if service_name is None:
+                return None
 
-        service = config.get("services", {}).get(service_name, {})
-        image_ref = service.get("image") if isinstance(service, dict) else None
-        if not image_ref:
-            return None
-        return parse_image_reference(image_ref)
+            service = config.get("services", {}).get(service_name, {})
+            image_ref = service.get("image") if isinstance(service, dict) else None
+            if not image_ref:
+                return None
+            return parse_image_reference(image_ref)
+    except subprocess.CalledProcessError as exc:
+        logging.warning("Could not derive metadata from previous commit compose: %s", exc.stderr.strip() if exc.stderr else exc)
+        return None
 
 
 def extract_bind_datasets(compose_config: dict) -> list[str]:
@@ -546,7 +547,7 @@ def should_skip_up_in_worktree(primary: Path, override: Path | None) -> bool:
 
 
 def ensure_requirements(*, dry_run: bool, use_worktree: bool) -> None:
-    commands: tuple[str, ...] = ("docker", "git", "zfs")
+    commands: tuple[str, ...] = ("docker", "git") if dry_run else ("docker", "git", "zfs")
     for cmd_name in commands:
         if shutil.which(str(cmd_name)) is None:
             raise CliError(f"Missing required command: {cmd_name}")
@@ -554,11 +555,10 @@ def ensure_requirements(*, dry_run: bool, use_worktree: bool) -> None:
     if not dry_run and os.geteuid() != 0:
         raise CliError("This script must run as root (or via sudo) unless --dry-run is used.")
 
-    if dry_run:
-        return
-
+    # Keep dry-run informative by validating read-only Docker/Git access.
     run_command(["docker", "ps"], capture_output=True)
-    run_command(["zfs", "list"], capture_output=True)
+    if not dry_run:
+        run_command(["zfs", "list"], capture_output=True)
     if use_worktree:
         run_command(["git", "worktree", "list"], capture_output=True)
 
@@ -602,7 +602,14 @@ def main(argv: list[str] | None = None) -> int:
         with maybe_worktree(repo_root, commit_sha1, use_worktree=use_worktree, keep_worktree=args.keep_worktree) as base:
             effective_stack_dir = (base / stack_rel) if use_worktree else location.stack_dir
             primary, override = compose_files(effective_stack_dir)
-            compose_config = docker_compose_json(primary, override, dry_run=args.dry_run)
+            try:
+                compose_config = docker_compose_json(primary, override, dry_run=args.dry_run)
+            except subprocess.CalledProcessError:
+                if args.dry_run:
+                    logging.warning("Could not resolve compose config in dry-run mode; continuing with empty config")
+                    compose_config = {}
+                else:
+                    raise
 
             target_image, target_tag, target_sha256, service_name = derive_target_metadata(
                 compose_config,
