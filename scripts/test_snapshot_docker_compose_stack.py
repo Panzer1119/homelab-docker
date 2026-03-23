@@ -6,10 +6,19 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from snapshot_docker_compose_stack import parse_image_reference, should_skip_up_in_worktree
+from snapshot_docker_compose_stack import parse_args, parse_image_reference, should_skip_up_in_worktree
 
 
 class SnapshotCliTests(unittest.TestCase):
+    def test_hold_defaults_enabled(self) -> None:
+        args = parse_args([])
+        self.assertTrue(args.hold_snapshots)
+        self.assertEqual(args.hold_name, "stack-checkpoint")
+
+    def test_hold_can_be_disabled(self) -> None:
+        args = parse_args(["--no-hold-snapshots"])
+        self.assertFalse(args.hold_snapshots)
+
     def test_parse_image_reference_with_digest(self) -> None:
         image, tag, digest = parse_image_reference("ghcr.io/linuxserver/jellyfin:10.10.7@sha256:deadbeef")
         self.assertEqual(image, "ghcr.io/linuxserver/jellyfin")
