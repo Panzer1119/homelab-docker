@@ -73,6 +73,13 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--repo", help="Git repository root (default: auto-detected from --directory)")
     parser.add_argument("--no-worktree", action="store_true", help="Run directly in repository instead of temp worktree")
     parser.add_argument("--keep-worktree", action="store_true", help="Keep temporary worktree for inspection")
+    parser.add_argument(
+        "-f",
+        "--override-file",
+        action="append",
+        dest="override_files",
+        help="Additional docker compose override file (repeatable, path relative to stack dir)",
+    )
 
     parser.add_argument("-p", "--snapshot-prefix", default=DEFAULT_SNAPSHOT_PREFIX, help="Snapshot name prefix")
     parser.add_argument(
@@ -188,7 +195,33 @@ def resolve_stack_location(args: argparse.Namespace) -> StackLocation:
     return StackLocation(compose_root=compose_root, section=section, stack=stack, stack_dir=stack_dir)
 
 
-def compose_files(stack_dir: Path) -> tuple[Path, Path | None]:
+def resolve_override_files(stack_dir: Path, override_files: list[str] | None, *, use_worktree: bool) -> list[Path]:
+    if not override_files:
+        resolved: list[Path] = []
+        for candidate in ("docker-compose.override.yml", "docker-compose.override.yaml"):
+            path = stack_dir / candidate
+            if path.is_file():
+                resolved.append(path)
+        return resolved
+
+    resolved = []
+    for override in override_files:
+        candidate = Path(override)
+        if candidate.is_absolute() and use_worktree:
+            raise CliError("Absolute --override-file paths are not allowed when using worktrees; use paths relative to stack dir.")
+        override_path = candidate if candidate.is_absolute() else (stack_dir / candidate)
+        if not override_path.is_file():
+            raise CliError(f"Override file not found: {override_path}")
+        resolved.append(override_path)
+    return resolved
+
+
+def compose_files(
+    stack_dir: Path,
+    override_files: list[str] | None,
+    *,
+    use_worktree: bool,
+) -> tuple[Path, list[Path]]:
     primary = None
     for candidate in ("docker-compose.yml", "docker-compose.yaml"):
         path = stack_dir / candidate
@@ -198,18 +231,13 @@ def compose_files(stack_dir: Path) -> tuple[Path, Path | None]:
     if primary is None:
         raise CliError(f"No docker-compose file found in {stack_dir}")
 
-    override = None
-    for candidate in ("docker-compose.override.yml", "docker-compose.override.yaml"):
-        path = stack_dir / candidate
-        if path.is_file():
-            override = path
-            break
-    return primary, override
+    overrides = resolve_override_files(stack_dir, override_files, use_worktree=use_worktree)
+    return primary, overrides
 
 
-def docker_compose_json(primary: Path, override: Path | None, *, dry_run: bool) -> dict:
+def docker_compose_json(primary: Path, overrides: list[Path], *, dry_run: bool) -> dict:
     command = ["docker", "compose", "-f", str(primary)]
-    if override:
+    for override in overrides:
         command.extend(["-f", str(override)])
     command.extend(["config", "--format", "json"])
     if dry_run:
@@ -218,9 +246,9 @@ def docker_compose_json(primary: Path, override: Path | None, *, dry_run: bool) 
     return json.loads(result.stdout)
 
 
-def compose_cmd(primary: Path, override: Path | None) -> list[str]:
+def compose_cmd(primary: Path, overrides: list[Path]) -> list[str]:
     command = ["docker", "compose", "-f", str(primary)]
-    if override:
+    for override in overrides:
         command.extend(["-f", str(override)])
     return command
 
@@ -275,17 +303,17 @@ def parse_image_reference(image_ref: str) -> tuple[str, str, str]:
 def derive_metadata_from_running_stack(
     *,
     primary: Path,
-    override: Path | None,
+    overrides: list[Path],
     target_container: str | None,
     dry_run: bool,
 ) -> tuple[str, str, str] | None:
     try:
-        config = docker_compose_json(primary, override, dry_run=dry_run)
+        config = docker_compose_json(primary, overrides, dry_run=dry_run)
         service_name = choose_service(config, target_container)
         if service_name is None:
             return None
 
-        command = compose_cmd(primary, override)
+        command = compose_cmd(primary, overrides)
         result = run_command(command + ["ps", "-q", service_name], capture_output=True)
         container_ids = [line.strip() for line in result.stdout.splitlines() if line.strip()]
         if not container_ids:
@@ -305,6 +333,7 @@ def derive_metadata_from_previous_commit(
     *,
     git_dir: Path,
     stack_rel: Path,
+    override_files: list[str] | None,
     target_container: str | None,
     commit_ref: str,
     dry_run: bool,
@@ -314,8 +343,8 @@ def derive_metadata_from_previous_commit(
         # Reuse existing worktree preparation to ensure injected/env files are present.
         with maybe_worktree(git_dir, previous_ref, use_worktree=True, keep_worktree=False) as previous_base:
             previous_stack_dir = previous_base / stack_rel
-            primary, override = compose_files(previous_stack_dir)
-            config = docker_compose_json(primary, override, dry_run=dry_run)
+            primary, overrides = compose_files(previous_stack_dir, override_files, use_worktree=True)
+            config = docker_compose_json(primary, overrides, dry_run=dry_run)
             service_name = choose_service(config, target_container)
             if service_name is None:
                 return None
@@ -467,16 +496,16 @@ def maybe_worktree(repo: Path, commit: str, use_worktree: bool, keep_worktree: b
             shutil.rmtree(worktree_path, ignore_errors=True)
 
 
-def compose_command_for_manual_up(primary: Path, override: Path | None, stack_dir: Path) -> str:
+def compose_command_for_manual_up(primary: Path, overrides: list[Path], stack_dir: Path) -> str:
     parts = [f"cd {shlex_quote(str(stack_dir))}", "&&", "docker", "compose", "-f", shlex_quote(primary.name)]
-    if override:
+    for override in overrides:
         parts.extend(["-f", shlex_quote(override.name)])
     parts.extend(["up", "-d"])
     return " ".join(parts)
 
 
-def should_skip_up_in_worktree(primary: Path, override: Path | None) -> bool:
-    files = [primary] + ([override] if override else [])
+def should_skip_up_in_worktree(primary: Path, overrides: list[Path] | None) -> bool:
+    files = [primary, *(overrides or [])]
     for file_path in files:
         content = file_path.read_text(encoding="utf-8")
         if PWD_PATTERN.search(content):
@@ -523,11 +552,11 @@ def main(argv: list[str] | None = None) -> int:
             logging.info("Using commit: %s", commit_sha1)
 
             effective_stack_dir = (base / stack_rel) if use_worktree else location.stack_dir
-            primary, override = compose_files(effective_stack_dir)
+            primary, overrides = compose_files(effective_stack_dir, args.override_files, use_worktree=use_worktree)
 
             running_metadata = derive_metadata_from_running_stack(
                 primary=primary,
-                override=override,
+                overrides=overrides,
                 target_container=args.target_container,
                 dry_run=args.dry_run,
             )
@@ -536,13 +565,14 @@ def main(argv: list[str] | None = None) -> int:
                 previous_commit_metadata = derive_metadata_from_previous_commit(
                     git_dir=base,
                     stack_rel=stack_rel,
+                    override_files=args.override_files,
                     target_container=args.target_container,
                     commit_ref="HEAD",
                     dry_run=args.dry_run,
                 )
 
             try:
-                compose_config = docker_compose_json(primary, override, dry_run=args.dry_run)
+                compose_config = docker_compose_json(primary, overrides, dry_run=args.dry_run)
             except subprocess.CalledProcessError:
                 if args.dry_run:
                     logging.warning("Could not resolve compose config in dry-run mode; continuing with empty config")
@@ -574,7 +604,7 @@ def main(argv: list[str] | None = None) -> int:
             allowed_datasets = [d for d in datasets if dataset_allowed(d, base_datasets)]
             snapshot_name = generate_snapshot_name(args.snapshot_prefix)
 
-            compose_cmdline = compose_cmd(primary, override)
+            compose_cmdline = compose_cmd(primary, overrides)
 
             run_command(compose_cmdline + ["down"], dry_run=args.dry_run)
 
@@ -594,11 +624,16 @@ def main(argv: list[str] | None = None) -> int:
                 )
 
             if args.up_after:
-                skip_up = use_worktree and should_skip_up_in_worktree(primary, override)
+                skip_up = use_worktree and should_skip_up_in_worktree(primary, overrides)
                 if skip_up:
+                    manual_overrides = resolve_override_files(
+                        location.stack_dir,
+                        args.override_files,
+                        use_worktree=False,
+                    )
                     manual_cmd = compose_command_for_manual_up(
                         location.stack_dir / primary.name,
-                        location.stack_dir / override.name if override else None,
+                        manual_overrides,
                         location.stack_dir,
                     )
                     logging.warning("Manual recovery command: %s", manual_cmd)
