@@ -10,6 +10,10 @@ from snapshot_docker_compose_stack import parse_args, parse_image_reference, sho
 
 
 class SnapshotCliTests(unittest.TestCase):
+    def test_override_files_are_repeatable(self) -> None:
+        args = parse_args(["-f", "docker-compose.a.yml", "-f", "docker-compose.b.yml"])
+        self.assertEqual(args.override_files, ["docker-compose.a.yml", "docker-compose.b.yml"])
+
     def test_hold_defaults_enabled(self) -> None:
         args = parse_args([])
         self.assertTrue(args.hold_snapshots)
