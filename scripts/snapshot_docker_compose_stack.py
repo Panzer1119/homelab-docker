@@ -155,11 +155,11 @@ def detect_repo_root(directory: Path, explicit_repo: str | None) -> Path:
         if not repo.is_dir():
             raise CliError(f"Repository does not exist: {repo}")
         return repo
-    try:
-        output = command_output(["git", "-C", str(directory), "rev-parse", "--show-toplevel"])
-    except subprocess.CalledProcessError as exc:
-        raise CliError("Could not detect git repository root. Use --repo.") from exc
-    return Path(output).resolve()
+    current = directory
+    for candidate in [current, *current.parents]:
+        if (candidate / ".git").exists():
+            return candidate.resolve()
+    raise CliError("Could not detect git repository root. Use --repo.")
 
 
 def resolve_stack_location(args: argparse.Namespace) -> StackLocation:
@@ -329,28 +329,28 @@ def derive_metadata_from_running_stack(
         return None
 
 
-def read_file_from_commit(repo_root: Path, commit_ref: str, rel_path: Path) -> str | None:
+def read_file_from_commit(git_dir: Path, commit_ref: str, rel_path: Path) -> str | None:
     git_path = rel_path.as_posix()
     exists = subprocess.run(
-        ["git", "-C", str(repo_root), "cat-file", "-e", f"{commit_ref}:{git_path}"],
+        ["git", "-C", str(git_dir), "cat-file", "-e", f"{commit_ref}:{git_path}"],
         text=True,
         capture_output=True,
     )
     if exists.returncode != 0:
         return None
-    result = run_command(["git", "-C", str(repo_root), "show", f"{commit_ref}:{git_path}"], capture_output=True)
+    result = run_command(["git", "-C", str(git_dir), "show", f"{commit_ref}:{git_path}"], capture_output=True)
     return result.stdout
 
 
 def derive_metadata_from_previous_commit(
     *,
-    repo_root: Path,
+    git_dir: Path,
     stack_rel: Path,
     target_container: str | None,
-    commit_sha1: str,
+    commit_ref: str,
     dry_run: bool,
 ) -> tuple[str, str, str] | None:
-    previous_ref = f"{commit_sha1}^"
+    previous_ref = f"{commit_ref}^"
     try:
         with tempfile.TemporaryDirectory(prefix="homelab-docker-prev-commit-") as tmp:
             tmp_dir = Path(tmp)
@@ -359,7 +359,7 @@ def derive_metadata_from_previous_commit(
 
             for candidate in ("docker-compose.yml", "docker-compose.yaml"):
                 rel = stack_rel / candidate
-                content = read_file_from_commit(repo_root, previous_ref, rel)
+                content = read_file_from_commit(git_dir, previous_ref, rel)
                 if content is not None:
                     primary = tmp_dir / candidate
                     primary.write_text(content, encoding="utf-8")
@@ -370,7 +370,7 @@ def derive_metadata_from_previous_commit(
 
             for candidate in ("docker-compose.override.yml", "docker-compose.override.yaml"):
                 rel = stack_rel / candidate
-                content = read_file_from_commit(repo_root, previous_ref, rel)
+                content = read_file_from_commit(git_dir, previous_ref, rel)
                 if content is not None:
                     override = tmp_dir / candidate
                     override.write_text(content, encoding="utf-8")
@@ -573,35 +573,35 @@ def main(argv: list[str] | None = None) -> int:
         use_worktree = not args.no_worktree
         ensure_requirements(dry_run=args.dry_run, use_worktree=use_worktree)
 
-        commit_sha1 = command_output(["git", "-C", str(repo_root), "rev-parse", args.commit])
-        logging.info("Using commit: %s", commit_sha1)
-
         stack_rel = location.stack_dir.relative_to(repo_root)
         base_datasets = args.base_datasets or DEFAULT_BASE_DATASETS
         hold_name = args.hold_name.strip()
         if args.hold_snapshots and not hold_name:
             raise CliError("--hold-name must not be empty when snapshot holds are enabled.")
 
-        real_primary, real_override = compose_files(location.stack_dir)
-        running_metadata = derive_metadata_from_running_stack(
-            primary=real_primary,
-            override=real_override,
-            target_container=args.target_container,
-            dry_run=args.dry_run,
-        )
-        previous_commit_metadata = None
-        if running_metadata is None:
-            previous_commit_metadata = derive_metadata_from_previous_commit(
-                repo_root=repo_root,
-                stack_rel=stack_rel,
-                target_container=args.target_container,
-                commit_sha1=commit_sha1,
-                dry_run=args.dry_run,
-            )
+        with maybe_worktree(repo_root, args.commit, use_worktree=use_worktree, keep_worktree=args.keep_worktree) as base:
+            commit_sha1 = command_output(["git", "-C", str(base), "rev-parse", "HEAD"])
+            logging.info("Using commit: %s", commit_sha1)
 
-        with maybe_worktree(repo_root, commit_sha1, use_worktree=use_worktree, keep_worktree=args.keep_worktree) as base:
             effective_stack_dir = (base / stack_rel) if use_worktree else location.stack_dir
             primary, override = compose_files(effective_stack_dir)
+
+            running_metadata = derive_metadata_from_running_stack(
+                primary=primary,
+                override=override,
+                target_container=args.target_container,
+                dry_run=args.dry_run,
+            )
+            previous_commit_metadata = None
+            if running_metadata is None:
+                previous_commit_metadata = derive_metadata_from_previous_commit(
+                    git_dir=base,
+                    stack_rel=stack_rel,
+                    target_container=args.target_container,
+                    commit_ref="HEAD",
+                    dry_run=args.dry_run,
+                )
+
             try:
                 compose_config = docker_compose_json(primary, override, dry_run=args.dry_run)
             except subprocess.CalledProcessError:
