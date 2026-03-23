@@ -19,19 +19,19 @@ UPDATE_TYPE_CLASSES = {
     "sha": "ut-sha",
 }
 
+REPO = "/home/panzer1119/repositories/git/homelab-docker"
+
 COMMAND_TEMPLATE = Template(
-    "REPO=/home/panzer1119/repositories/git/homelab-docker && "
-    "sudo python3 \"$${REPO}/scripts/snapshot_docker_compose_stack.py\" "
+    "sudo python3 \"${repo}/scripts/snapshot_docker_compose_stack.py\" "
     "-v -D -u "
-    "-d \"$${REPO}/compose/${section}/${project}\" "
+    "-d \"${repo}/compose/${section}/${project}\" "
     "-c ${container} "
-    "-C ${commit} "
-    "--repo \"$${REPO}\""
+    "-C ${commit}"
 )
 
 
 def format_command(section, project, container, commit):
-    return COMMAND_TEMPLATE.substitute(section=section, project=project, container=container, commit=commit)
+    return COMMAND_TEMPLATE.substitute(repo=REPO, section=section, project=project, container=container, commit=commit)
 
 
 def generate_html(data):
