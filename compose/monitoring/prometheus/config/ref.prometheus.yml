@@ -2,11 +2,14 @@
 global:
   scrape_interval: 15s
 
-scrape_configs:
-  - job_name: "cadvisor"
+rule_files:
+  - "/etc/prometheus/unbound.rules.yml"
 
-    static_configs:
-      - targets: [ "{{ op://Docker/Prometheus/cAdvisor/Host }}" ]
+scrape_configs:
+  #  - job_name: "cadvisor"
+  #
+  #    static_configs:
+  #      - targets: [ "{{ op://Docker/Prometheus/cAdvisor/Host }}" ]
 
   - job_name: "homelab-argocd-k3s-test-cluster"
     scheme: "https"
@@ -19,4 +22,15 @@ scrape_configs:
 
     tls_config:
       insecure_skip_verify: true
+
+  - job_name: "unbound"
+
+    static_configs:
+      - targets:
+          - "192.168.6.53:9167"
+        labels:
+          instance: "unbound-1-ct"
+          role: "dns"
+          runtime: "lxc"
+          site: "homelab"
 ...

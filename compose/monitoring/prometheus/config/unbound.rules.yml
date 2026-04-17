@@ -1,0 +1,33 @@
+---
+groups:
+  - name: unbound_lifetime
+    interval: 10s
+
+    rules:
+      - record: unbound_queries_lifetime
+        expr: increase(unbound_queries_total{job="unbound"}[1m])
+
+      - record: unbound_cache_hits_lifetime
+        expr: increase(unbound_cache_hit_total{job="unbound"}[1m])
+
+      - record: unbound_cache_miss_lifetime
+        expr: increase(unbound_cache_miss_total{job="unbound"}[1m])
+
+      - record: unbound_prefetch_lifetime
+        expr: increase(unbound_prefetch_total{job="unbound"}[1m])
+
+      - record: unbound_expired_lifetime
+        expr: increase(unbound_expired_total{job="unbound"}[1m])
+
+      - record: unbound_answer_secure_lifetime
+        expr: increase(unbound_answer_secure_count{job="unbound"}[1m])
+
+      - record: unbound_answer_bogus_lifetime
+        expr: increase(unbound_answer_bogus_count{job="unbound"}[1m])
+
+      - record: unbound_query_udp_lifetime
+        expr: increase(unbound_query_udpout_count{job="unbound"}[1m])
+
+      - record: unbound_query_tcp_lifetime
+        expr: increase(unbound_query_tcpout_count{job="unbound"}[1m])
+...
