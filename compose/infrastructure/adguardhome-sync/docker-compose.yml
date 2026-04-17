@@ -1,7 +1,7 @@
 ---
 services:
   adguardhome-sync:
-    image: ghcr.io/linuxserver/adguardhome-sync:version-v0.9.0@sha256:c704c7cae0cd0d26d5fed34e3fb060086f6ea0c35172c064a26abcf696e98890
+    image: ghcr.io/linuxserver/adguardhome-sync:version-v0.9.0@sha256:f9ff241a9ffce810740431f63e77f2e8458cd123c4c531f672a883e1fc4a32f3
     container_name: adguardhome-sync
     hostname: adguardhome-sync
     env_file:
