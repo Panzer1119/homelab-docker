@@ -7,7 +7,6 @@ services:
     user: "1000:1000"
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./config/unbound.rules.yml:/etc/prometheus/unbound.rules.yml:ro
       - /docker/data/prometheus:/prometheus
     network_mode: bridge
     ports:
