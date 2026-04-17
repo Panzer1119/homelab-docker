@@ -33,4 +33,7 @@ groups:
 
       - record: unbound_query_tcp_lifetime
         expr: increase(unbound_query_tcpout_count{job="unbound"}[1m])
+
+      - record: unbound_query_types_lifetime
+        expr: increase(unbound_query_types_count{job="unbound"}[1m])
 ...
