@@ -15,7 +15,7 @@ volumes:
 
 services:
   check-mk-raw:
-    image: checkmk/check-mk-raw:2.4.0-latest@sha256:1072442ab9be10c0564cc2aca5737164361789d616e616dde79a29666a256be2
+    image: checkmk/check-mk-raw:2.4.0-latest@sha256:9f334f3e93dd57cb2d037390312bccf37a494b9e1f812c391f96df9220cb9deb
     container_name: check-mk-raw
     hostname: check-mk-raw
     volumes:
