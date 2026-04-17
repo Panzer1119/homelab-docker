@@ -19,6 +19,9 @@ groups:
       - record: unbound_expired_lifetime
         expr: increase(unbound_expired_total{job="unbound"}[1m])
 
+      - record: unbound_answer_rcodes_lifetime
+        expr: increase(unbound_answer_rcodes_count{job="unbound"}[1m])
+
       - record: unbound_answer_secure_lifetime
         expr: increase(unbound_answer_secure_count{job="unbound"}[1m])
 
