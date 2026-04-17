@@ -3,7 +3,7 @@ name: stash
 
 services:
   stash:
-    image: stashapp/stash:v0.30.1@sha256:4cac18873ea052f03510602d9e1a9b29e6241a393a111479010292b7a1e28a5e
+    image: stashapp/stash:v0.31.1@sha256:df744af5a0c976e2ec671052ecc1f8a9aa757fa12b8f9930b59910b7295f0da6
     container_name: stash
     hostname: stash
     depends_on:
