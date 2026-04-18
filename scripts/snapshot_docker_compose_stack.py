@@ -514,7 +514,7 @@ def should_skip_up_in_worktree(primary: Path, overrides: list[Path] | None) -> b
     return False
 
 
-def ensure_requirements(*, dry_run: bool, use_worktree: bool) -> None:
+def ensure_requirements(*, repo_root: Path, dry_run: bool, use_worktree: bool) -> None:
     commands: tuple[str, ...] = ("docker", "git") if dry_run else ("docker", "git", "zfs")
     for cmd_name in commands:
         if shutil.which(str(cmd_name)) is None:
@@ -528,7 +528,8 @@ def ensure_requirements(*, dry_run: bool, use_worktree: bool) -> None:
     if not dry_run:
         run_command(["zfs", "list"], capture_output=True)
     if use_worktree:
-        run_command(["git", "worktree", "list"], capture_output=True)
+        # Always scope git checks to the selected repository so cwd does not matter.
+        run_command(["git", "-C", str(repo_root), "worktree", "list"], capture_output=True)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -539,7 +540,7 @@ def main(argv: list[str] | None = None) -> int:
         location = resolve_stack_location(args)
         repo_root = detect_repo_root(location.stack_dir, args.repo)
         use_worktree = not args.no_worktree
-        ensure_requirements(dry_run=args.dry_run, use_worktree=use_worktree)
+        ensure_requirements(repo_root=repo_root, dry_run=args.dry_run, use_worktree=use_worktree)
 
         stack_rel = location.stack_dir.relative_to(repo_root)
         base_datasets = args.base_datasets or DEFAULT_BASE_DATASETS
