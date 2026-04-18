@@ -7,6 +7,7 @@ Tools that support other services or are useful in general
 ## Projects
 
 - [BetterBahn](./betterbahn/README.md)
+- [Databasus](./databasus/README.md)
 - [DevDocs](./devdocs/README.md)
 - [LostMediaFinder](./lostmediafinder/README.md)
 - [FlareSolverr](./flaresolverr/README.md)

@@ -1,0 +1,16 @@
+---
+services:
+  databasus:
+    image: databasus/databasus:v3.32.1
+    container_name: databasus
+    hostname: databasus
+    volumes:
+      - /docker/data/databasus:/databasus-data
+    network_mode: bridge
+    ports:
+      - "4005:4005"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...
