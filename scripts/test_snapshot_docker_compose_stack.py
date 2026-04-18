@@ -2,11 +2,12 @@ import tempfile
 import unittest
 from pathlib import Path
 import sys
+from unittest.mock import patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from snapshot_docker_compose_stack import parse_args, parse_image_reference, should_skip_up_in_worktree
+from snapshot_docker_compose_stack import ensure_requirements, parse_args, parse_image_reference, should_skip_up_in_worktree
 
 
 class SnapshotCliTests(unittest.TestCase):
@@ -46,6 +47,16 @@ class SnapshotCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertTrue(should_skip_up_in_worktree(compose, None))
+
+    @patch("snapshot_docker_compose_stack.run_command")
+    @patch("snapshot_docker_compose_stack.shutil.which", return_value="/usr/bin/mock")
+    def test_ensure_requirements_scopes_git_checks_to_repo(self, _which_mock, run_command_mock) -> None:
+        repo_root = Path("/tmp/homelab-docker")
+        ensure_requirements(repo_root=repo_root, dry_run=True, use_worktree=True)
+
+        calls = [call.args[0] for call in run_command_mock.call_args_list]
+        self.assertIn(["docker", "ps"], calls)
+        self.assertIn(["git", "-C", str(repo_root), "worktree", "list"], calls)
 
 
 if __name__ == "__main__":
