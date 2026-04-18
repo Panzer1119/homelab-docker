@@ -40,6 +40,9 @@ services:
     env_file: db.env
     volumes:
       - /docker/data/paperless-ngx/postgres:/var/lib/postgresql/data
+    networks:
+      - default
+      - backup-net
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
@@ -101,3 +104,9 @@ volumes:
     name: paperless-ngx_consume_tn-main-1
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
+
+networks:
+  backup-net:
+    name: backup-net
+    external: true
+...
