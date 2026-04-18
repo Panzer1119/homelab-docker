@@ -6,7 +6,9 @@ services:
     hostname: databasus
     volumes:
       - /docker/data/databasus:/databasus-data
-    network_mode: bridge
+    networks:
+      - default
+      - backup-net
     ports:
       - "4005:4005"
     healthcheck:
@@ -19,4 +21,9 @@ services:
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
+
+networks:
+  backup-net:
+    name: backup-net
+    external: true
 ...
