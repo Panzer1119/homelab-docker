@@ -46,9 +46,18 @@ services:
       - db.env
     volumes:
       - /docker/data/speedtest-tracker/postgres:/var/lib/postgresql/data
+    networks:
+      - default
+      - backup-net
     #    ports:
     #      - "5434:5432"
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
+
+networks:
+  backup-net:
+    name: backup-net
+    external: true
+...
