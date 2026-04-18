@@ -30,4 +30,12 @@ scrape_configs:
           role: "dns"
           runtime: "lxc"
           site: "homelab"
+
+      - targets:
+          - "192.168.6.54:9167"
+        labels:
+          instance: "unbound-2-ct"
+          role: "dns"
+          runtime: "lxc"
+          site: "homelab"
 ...
