@@ -38,4 +38,10 @@ scrape_configs:
           role: "dns"
           runtime: "lxc"
           site: "homelab"
+
+  - job_name: "draytek"
+
+    static_configs:
+      - targets:
+          - "192.168.6.250:49265"
 ...
