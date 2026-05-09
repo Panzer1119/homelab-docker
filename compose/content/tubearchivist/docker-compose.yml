@@ -32,7 +32,7 @@ services:
       service: logging-gelf
 
   archivist-redis:
-    image: redis:8@sha256:832d7785830f3f4b559300e6191fc914b15642c1935252338825cf4332200148
+    image: redis:8@sha256:9ec28b9626938ae5dd565f3371fafd78d432cc049da5865726cd411dfb196c8d
     container_name: archivist-redis
     depends_on:
       - archivist-es
