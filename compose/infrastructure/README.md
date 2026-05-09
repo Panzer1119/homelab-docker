@@ -11,6 +11,7 @@ Apps that help to manage the homelab itself (deployment, sync, orchestration, et
 - [Dockge](./dockge/README.md) #TODO
 - [Homer](./homer/README.md) #TODO
 - [NetBox](./netbox/README.md)
+- [Network Optimizer](./network-optimizer/README.md)
 - [Portainer](./portainer/README.md) #TODO
 - [Sempahore](./semaphore/README.md)
 - [Wiki.js](./wiki/README.md)
