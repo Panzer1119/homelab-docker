@@ -11,9 +11,9 @@ services:
     environment:
       - TZ=Europe/Berlin
     volumes:
-      - ./data:/app/data              # SQLite, configs, license
-      - ./ssh-keys:/app/ssh-keys      # Optional: SSH keys for agent deployment
-      - ./logs:/app/logs              # Application logs
+      - /docker/data/network-optimizer:/app/data              # SQLite, configs, license
+      - /docker/config/network-optimizer/ssh-keys:/app/ssh-keys      # Optional: SSH keys for agent deployment
+      - /docker/cache/network-optimizer/logs:/app/logs              # Application logs
     network_mode: host
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8042/api/health"]
