@@ -169,6 +169,27 @@ def detect_repo_root(directory: Path, explicit_repo: str | None) -> Path:
     raise CliError("Could not detect git repository root. Use --repo.")
 
 
+def ensure_directory_clean_in_git(repo_root: Path, directory: Path) -> None:
+    """
+    Ensure the selected directory has no uncommitted or untracked Git changes.
+    """
+    resolved_directory = directory.resolve()
+    try:
+        relative_dir = resolved_directory.relative_to(repo_root)
+    except ValueError as exc:
+        raise CliError(f"Directory {resolved_directory} is not inside repository {repo_root}") from exc
+
+    pathspec = "." if relative_dir == Path(".") else relative_dir.as_posix()
+    status = command_output(
+        ["git", "-C", str(repo_root), "status", "--porcelain", "--untracked-files=normal", "--", pathspec]
+    )
+    if status:
+        raise CliError(
+            "Refusing to continue: selected directory has uncommitted changes in git. "
+            f"Please commit/stash/clean changes in: {resolved_directory}"
+        )
+
+
 def resolve_stack_location(args: argparse.Namespace) -> StackLocation:
     directory = Path(args.directory).expanduser().resolve()
     if not directory.is_dir():
@@ -591,6 +612,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         location = resolve_stack_location(args)
         repo_root = detect_repo_root(location.stack_dir, args.repo)
+        selected_directory = Path(args.directory).expanduser().resolve()
+        ensure_directory_clean_in_git(repo_root, selected_directory)
         use_worktree = not args.no_worktree
         ensure_requirements(repo_root=repo_root, dry_run=args.dry_run, use_worktree=use_worktree)
 
