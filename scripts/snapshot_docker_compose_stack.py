@@ -169,7 +169,7 @@ def detect_repo_root(directory: Path, explicit_repo: str | None) -> Path:
     raise CliError("Could not detect git repository root. Use --repo.")
 
 
-def ensure_directory_clean_in_git(repo_root: Path, directory: Path) -> None:
+def ensure_directory_clean_in_git(repo_root: Path, directory: Path, *, dry_run: bool) -> None:
     """
     Ensure the selected directory has no uncommitted or untracked Git changes.
     """
@@ -184,6 +184,12 @@ def ensure_directory_clean_in_git(repo_root: Path, directory: Path) -> None:
         ["git", "-C", str(repo_root), "status", "--porcelain", "--untracked-files=normal", "--", pathspec]
     )
     if status:
+        if dry_run:
+            logging.warning(
+                "Selected directory has uncommitted changes in git, but continuing because --dry-run is enabled: %s",
+                resolved_directory,
+            )
+            return
         raise CliError(
             "Refusing to continue: selected directory has uncommitted changes in git. "
             f"Please commit/stash/clean changes in: {resolved_directory}"
@@ -613,7 +619,7 @@ def main(argv: list[str] | None = None) -> int:
         location = resolve_stack_location(args)
         repo_root = detect_repo_root(location.stack_dir, args.repo)
         selected_directory = Path(args.directory).expanduser().resolve()
-        ensure_directory_clean_in_git(repo_root, selected_directory)
+        ensure_directory_clean_in_git(repo_root, selected_directory, dry_run=args.dry_run)
         use_worktree = not args.no_worktree
         ensure_requirements(repo_root=repo_root, dry_run=args.dry_run, use_worktree=use_worktree)
 
