@@ -17,7 +17,7 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - /docker/config/apprise:/config
-      - ./config/pushover.yml:/config/pushover.yml:ro
+      - "${PWD}/config/pushover.yml:/config/pushover.yml:ro"
     ports:
       - "8116:8000"
     network_mode: bridge
