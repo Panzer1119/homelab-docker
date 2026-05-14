@@ -633,7 +633,7 @@ def main(argv: list[str] | None = None) -> int:
                         use_worktree=False,
                     )
                     manual_cmd = compose_command_for_manual_up(
-                        location.stack_dir / primary.name,
+                        location.stack_dir / primary.name, #FIXME This will cd into the "live" git dir, and maybe not the state of the commit that was used in the first place when executing this script
                         manual_overrides,
                         location.stack_dir,
                     )
