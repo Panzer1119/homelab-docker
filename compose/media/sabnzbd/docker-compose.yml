@@ -1,7 +1,7 @@
 ---
 services:
   sabnzbd:
-    image: ghcr.io/linuxserver/sabnzbd:version-5.0.2
+    image: ghcr.io/linuxserver/sabnzbd:version-5.0.2@sha256:52651d44a649e135ce9cb3758ecd0294b96e6979219d9b653af724f9d198e861
     container_name: sabnzbd
     hostname: sabnzbd
     environment:
