@@ -6,7 +6,6 @@ services:
     hostname: network-optimizer
     env_file:
       - .env
-      - network-optimizer-speedtest.env
       - network-optimizer.env
     environment:
       - TZ=Europe/Berlin
@@ -46,7 +45,6 @@ services:
       # the host if desired.
     env_file:
       - .env
-      - network-optimizer-speedtest.env
     environment:
       - TZ=Europe/Berlin
     ports:
