@@ -360,6 +360,10 @@ def derive_metadata_from_previous_commit(
 
 
 def extract_bind_datasets(compose_config: dict) -> list[str]:
+    """
+    Extract bind mount paths from Docker Compose config and resolve them to ZFS dataset names.
+    Returns sorted list of unique ZFS dataset names.
+    """
     sources: set[str] = set()
 
     top_volumes = compose_config.get("volumes", {})
@@ -387,7 +391,55 @@ def extract_bind_datasets(compose_config: dict) -> list[str]:
                     if source.startswith("/"):
                         sources.add(source)
 
-    return sorted(source.lstrip("/") for source in sources)
+    # Resolve paths to ZFS dataset names
+    return resolve_bind_paths_to_datasets(sorted(sources))
+
+
+def get_all_zfs_datasets() -> list[tuple[str, str]]:
+    """
+    Fetch all ZFS datasets and their mountpoints.
+    Returns list of (dataset_name, mountpoint) tuples sorted by mountpoint length (longest first).
+    """
+    result = command_output(["zfs", "list", "-H", "-o", "name,mountpoint"])
+    datasets = []
+    for line in result.splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 2:
+            name, mountpoint = parts[0], parts[1]
+            if mountpoint and mountpoint != "-":
+                datasets.append((name, mountpoint))
+    # Sort by mountpoint length descending so longest prefix matches first
+    datasets.sort(key=lambda x: len(x[1]), reverse=True)
+    return datasets
+
+
+def find_zfs_dataset_for_path(path: str, all_datasets: list[tuple[str, str]]) -> str | None:
+    """
+    Find the ZFS dataset that contains the given path by matching the longest mountpoint prefix.
+    Returns the dataset name, or None if path is not on any ZFS dataset.
+    """
+    for dataset_name, mountpoint in all_datasets:
+        if path == mountpoint or path.startswith(f"{mountpoint}/"):
+            logging.debug("Path %s resolved to dataset %s (mountpoint: %s)", path, dataset_name, mountpoint)
+            return dataset_name
+    logging.debug("Path %s is not on any ZFS dataset", path)
+    return None
+
+
+def resolve_bind_paths_to_datasets(bind_paths: list[str]) -> list[str]:
+    """
+    Resolve a list of bind mount paths to their ZFS dataset names.
+    Returns sorted list of unique dataset names.
+    """
+    all_datasets = get_all_zfs_datasets()
+    datasets: set[str] = set()
+
+    for path in bind_paths:
+        dataset = find_zfs_dataset_for_path(path, all_datasets)
+        if dataset:
+            datasets.add(dataset)
+
+    return sorted(datasets)
 
 
 def dataset_allowed(dataset: str, allowed_prefixes: list[str]) -> bool:
@@ -601,7 +653,11 @@ def main(argv: list[str] | None = None) -> int:
                 target_tag = args.target_tag or source_tag
                 target_sha256 = args.target_sha256 if args.target_sha256 is not None else source_sha
 
+            # Extract bind mount paths and resolve to ZFS datasets
             datasets = extract_bind_datasets(compose_config)
+            logging.debug("Resolved to ZFS datasets: %s", datasets)
+
+            # Filter to allowed base datasets
             allowed_datasets = [d for d in datasets if dataset_allowed(d, base_datasets)]
             snapshot_name = generate_snapshot_name(args.snapshot_prefix)
 
