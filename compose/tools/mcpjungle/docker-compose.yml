@@ -1,0 +1,51 @@
+---
+# MCPJungle Docker Compose configuration for individual users.
+# Use this compose file if you want to run MCPJungle locally for your personal MCP management & Gateway.
+# The mcpjungle server runs in development mode.
+services:
+  db:
+    image: postgres:17
+    container_name: mcpjungle-db
+    env_file: db.env
+    volumes:
+      - /docker/data/mcpjungle:/var/lib/postgresql/data
+    networks:
+      - default
+      - backup-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -t 2 -U $$POSTGRES_USER -d $$POSTGRES_DB"] ## $$ because of docker-compose
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  mcpjungle:
+    image: ghcr.io/mcpjungle/mcpjungle:0.4.5-stdio
+    container_name: mcpjungle-server
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: mcpjungle.env
+    volumes:
+      # Mount host filesystem current directory to enable filesystem MCP server access
+      #- .:/host:ro
+      #FIXME PWD is not compatible with Git Worktrees when updating the docker containers
+      - "${PWD}:/host:ro" #FIXME "PWD" might not work in all environments
+      # Other options:
+      # - ${HOME}:/host/home:ro
+      # - /tmp:/host/tmp:rw
+    ports:
+      - "38233:8080"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+networks:
+  backup-net:
+    name: backup-net
+    external: true
+...

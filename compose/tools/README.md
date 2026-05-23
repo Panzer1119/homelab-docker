@@ -10,5 +10,6 @@ Tools that support other services or are useful in general
 - [Databasus](./databasus/README.md)
 - [DevDocs](./devdocs/README.md)
 - [LostMediaFinder](./lostmediafinder/README.md)
+- [MCPJungle](./mcpjungle/README.md)
 - [FlareSolverr](./flaresolverr/README.md)
 - [Open WebUI](./open-webui/README.md)
