@@ -40,32 +40,33 @@ services:
       # MediaManager Volumes
       - "de.panzer1119.docker.volume.mediamanager_media_movies.cifs.share=op://Docker/MediaManager/CIFS/Share_Media_Movies"
       - "de.panzer1119.docker.volume.mediamanager_media_tv.cifs.share=op://Docker/MediaManager/CIFS/Share_Media_TV"
-      # Radarr Volumes
-      ## Standard
-      - "de.panzer1119.docker.volume.radarr_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup"
-      - "de.panzer1119.docker.volume.radarr_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Media"
-      - "de.panzer1119.docker.volume.radarr_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Trash"
-      ## 4K
-      - "de.panzer1119.docker.volume.radarr-4k_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup_4K"
-      - "de.panzer1119.docker.volume.radarr-4k_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Media_4K"
-      - "de.panzer1119.docker.volume.radarr-4k_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Trash_4K"
-      ## Anime
-      - "de.panzer1119.docker.volume.radarr-anime_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup_Anime"
-      - "de.panzer1119.docker.volume.radarr-anime_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Media_Anime"
-      - "de.panzer1119.docker.volume.radarr-anime_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Trash_Anime"
-      # Sonarr Volumes
-      ## Standard
-      - "de.panzer1119.docker.volume.sonarr_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Backup"
-      - "de.panzer1119.docker.volume.sonarr_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Media"
-      - "de.panzer1119.docker.volume.sonarr_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Trash"
-      ## 4K
-      - "de.panzer1119.docker.volume.sonarr-4k_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Backup_4K"
-      - "de.panzer1119.docker.volume.sonarr-4k_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Media_4K"
-      - "de.panzer1119.docker.volume.sonarr-4k_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Trash_4K"
-      ## Anime
-      - "de.panzer1119.docker.volume.sonarr-anime_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Backup_Anime"
-      - "de.panzer1119.docker.volume.sonarr-anime_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Media_Anime"
-      - "de.panzer1119.docker.volume.sonarr-anime_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Trash_Anime"
+      #FIXME Do not touch the Radarr or Sonarr volumes, they need to use the credentials for radarr/sonarr...
+    #      # Radarr Volumes
+    #      ## Standard
+    #      - "de.panzer1119.docker.volume.radarr_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup"
+    #      - "de.panzer1119.docker.volume.radarr_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Media"
+    #      - "de.panzer1119.docker.volume.radarr_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Trash"
+    #      ## 4K
+    #      - "de.panzer1119.docker.volume.radarr-4k_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup_4K"
+    #      - "de.panzer1119.docker.volume.radarr-4k_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Media_4K"
+    #      - "de.panzer1119.docker.volume.radarr-4k_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Trash_4K"
+    #      ## Anime
+    #      - "de.panzer1119.docker.volume.radarr-anime_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Backup_Anime"
+    #      - "de.panzer1119.docker.volume.radarr-anime_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Media_Anime"
+    #      - "de.panzer1119.docker.volume.radarr-anime_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Radarr_Trash_Anime"
+    #      # Sonarr Volumes
+    #      ## Standard
+    #      - "de.panzer1119.docker.volume.sonarr_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Backup"
+    #      - "de.panzer1119.docker.volume.sonarr_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Media"
+    #      - "de.panzer1119.docker.volume.sonarr_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Trash"
+    #      ## 4K
+    #      - "de.panzer1119.docker.volume.sonarr-4k_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Backup_4K"
+    #      - "de.panzer1119.docker.volume.sonarr-4k_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Media_4K"
+    #      - "de.panzer1119.docker.volume.sonarr-4k_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Trash_4K"
+    #      ## Anime
+    #      - "de.panzer1119.docker.volume.sonarr-anime_backup.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Backup_Anime"
+    #      - "de.panzer1119.docker.volume.sonarr-anime_media.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Media_Anime"
+    #      - "de.panzer1119.docker.volume.sonarr-anime_trash.cifs.share=op://Docker/MediaManager/CIFS/Share_Sonarr_Trash_Anime"
     ports:
       - "8736:8000"
     restart: unless-stopped
