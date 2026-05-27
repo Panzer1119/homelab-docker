@@ -69,6 +69,15 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Service/container to derive image metadata from (default: first compose service)",
     )
 
+    parser.add_argument(
+        "-F",
+        "--force",
+        "--allow-dirty",
+        dest="allow_dirty",
+        action="store_true",
+        help="Continue even if selected directory has uncommitted git changes",
+    )
+
     parser.add_argument("-C", "--commit-sha1", "--commit", dest="commit", default="HEAD", help="Git commit to use")
     parser.add_argument("--repo", help="Git repository root (default: auto-detected from --directory)")
     parser.add_argument("--no-worktree", action="store_true", help="Run directly in repository instead of temp worktree")
@@ -169,7 +178,7 @@ def detect_repo_root(directory: Path, explicit_repo: str | None) -> Path:
     raise CliError("Could not detect git repository root. Use --repo.")
 
 
-def ensure_directory_clean_in_git(repo_root: Path, directory: Path, *, dry_run: bool) -> None:
+def ensure_directory_clean_in_git(repo_root: Path, directory: Path, *, dry_run: bool, allow_dirty: bool = False) -> None:
     """
     Ensure the selected directory has no uncommitted or untracked Git changes.
     """
@@ -184,9 +193,10 @@ def ensure_directory_clean_in_git(repo_root: Path, directory: Path, *, dry_run: 
         ["git", "-C", str(repo_root), "status", "--porcelain", "--untracked-files=normal", "--", pathspec]
     )
     if status:
-        if dry_run:
+        if dry_run or allow_dirty:
             logging.warning(
-                "Selected directory has uncommitted changes in git, but continuing because --dry-run is enabled: %s",
+                "Selected directory has uncommitted changes in git, but continuing because %s: %s",
+                "--dry-run" if dry_run else "--force/--allow-dirty",
                 resolved_directory,
             )
             return
@@ -619,7 +629,7 @@ def main(argv: list[str] | None = None) -> int:
         location = resolve_stack_location(args)
         repo_root = detect_repo_root(location.stack_dir, args.repo)
         selected_directory = Path(args.directory).expanduser().resolve()
-        ensure_directory_clean_in_git(repo_root, selected_directory, dry_run=args.dry_run)
+        ensure_directory_clean_in_git(repo_root, selected_directory, dry_run=args.dry_run, allow_dirty=bool(getattr(args, "allow_dirty", False)))
         use_worktree = not args.no_worktree
         ensure_requirements(repo_root=repo_root, dry_run=args.dry_run, use_worktree=use_worktree)
 
