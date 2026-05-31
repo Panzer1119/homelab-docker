@@ -1,7 +1,7 @@
 ---
 services:
   network-optimizer:
-    image: ghcr.io/ozark-connect/network-optimizer:1.17.16@sha256:9303de23fca7a9ad21e3324203fe14ec2780fa9ef6427db786252ce843248b7b
+    image: ghcr.io/ozark-connect/network-optimizer:1.17.17@sha256:10aa3fdf8692621c038419d002971af03536440d4255ec8dc6bfb7fe4c25d372
     container_name: network-optimizer
     hostname: network-optimizer
     env_file:
