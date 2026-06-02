@@ -1,10 +1,8 @@
 import json
-import os
+import sys
+import argparse
 from collections import defaultdict
 from string import Template
-
-INPUT_JSON = os.getenv('INPUT_JSON', 'commits.json')
-OUTPUT_HTML = os.getenv('OUTPUT_HTML', 'commits.html')
 
 UPDATE_TYPES = ["repo", "user", "image", "tag", "sha"]
 CHANGE_TYPES = ["created", "updated", "deleted"]
@@ -19,8 +17,6 @@ UPDATE_TYPE_CLASSES = {
     "sha": "ut-sha",
 }
 
-REPO = "/home/panzer1119/repositories/git/homelab-docker"
-
 COMMAND_TEMPLATE = Template(
     "sudo python3 \"${repo}/scripts/snapshot_docker_compose_stack.py\" "
     "-v -D -u "
@@ -30,11 +26,11 @@ COMMAND_TEMPLATE = Template(
 )
 
 
-def format_command(section, project, container, commit):
-    return COMMAND_TEMPLATE.substitute(repo=REPO, section=section, project=project, container=container, commit=commit)
+def format_command(section, project, container, commit, repo):
+    return COMMAND_TEMPLATE.substitute(repo=repo, section=section, project=project, container=container, commit=commit)
 
 
-def generate_html(data):
+def generate_html(data, repo):
     # Collect distinct sections and projects for filters
     sections_set = set()
     projects_set = set()
@@ -375,29 +371,29 @@ def generate_html(data):
     <fieldset>
         <legend>Filter by change_type:</legend>
 ''' + '\n'.join([
-                                                                                                                                        f'<label><input type="checkbox" name="changeType" value="{t}" checked onchange="applyFilters()"> {t}</label><br>'
-                                                                                                                                        for
-                                                                                                                                        t
-                                                                                                                                        in
-                                                                                                                                        CHANGE_TYPES]) + '''
+        f'<label><input type="checkbox" name="changeType" value="{t}" checked onchange="applyFilters()"> {t}</label><br>'
+        for
+        t
+        in
+        CHANGE_TYPES]) + '''
     </fieldset>
     <fieldset>
         <legend>Filter by section:</legend>
 ''' + '\n'.join([
-                                                                                                                                                                             f'<label><input type="checkbox" name="sectionFilter" value="{s}" checked onchange="applyFilters()"> {s}</label><br>'
-                                                                                                                                                                             for
-                                                                                                                                                                             s
-                                                                                                                                                                             in
-                                                                                                                                                                             sections]) + '''
+        f'<label><input type="checkbox" name="sectionFilter" value="{s}" checked onchange="applyFilters()"> {s}</label><br>'
+        for
+        s
+        in
+        sections]) + '''
     </fieldset>
     <fieldset>
         <legend>Filter by project:</legend>
 ''' + '\n'.join([
-                                                                                                                                                                                                              f'<label><input type="checkbox" name="projectFilter" value="{p}" checked onchange="applyFilters()"> {p}</label><br>'
-                                                                                                                                                                                                              for
-                                                                                                                                                                                                              p
-                                                                                                                                                                                                              in
-                                                                                                                                                                                                              projects]) + '''
+        f'<label><input type="checkbox" name="projectFilter" value="{p}" checked onchange="applyFilters()"> {p}</label><br>'
+        for
+        p
+        in
+        projects]) + '''
     </fieldset>
 </div>
 <hr>
@@ -413,11 +409,12 @@ def generate_html(data):
             for container in project['containers']:
                 update_types = ','.join(container['update_types'])
                 command = format_command(project['section'], project['project'], container['container_name'],
-                                         commit_entry['commit'])
+                                         commit_entry['commit'], repo)
                 styled_updates = ' '.join([
                     f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
                 ])
-                old_image_html, new_image_html = image_diff_to_html(container['image']['old'], container['image']['new'])
+                old_image_html, new_image_html = image_diff_to_html(container['image']['old'],
+                                                                    container['image']['new'])
                 containers_html += f'''<div class="container" data-update-types="{update_types}">
                     <strong>Container:</strong> <code>{container['container_name']}</code><br>
                     <div class="image-info">
@@ -474,11 +471,12 @@ def generate_html(data):
                 for container in project['containers']:
                     update_types = ','.join(container['update_types'])
                     command = format_command(project['section'], project['project'], container['container_name'],
-                                             item['commit'])
+                                             item['commit'], repo)
                     styled_updates = ' '.join([
                         f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
                     ])
-                    old_image_html, new_image_html = image_diff_to_html(container['image']['old'], container['image']['new'])
+                    old_image_html, new_image_html = image_diff_to_html(container['image']['old'],
+                                                                        container['image']['new'])
                     containers_html += f'''<div class="container" data-update-types="{update_types}">
                         <strong>Container:</strong> <code>{container['container_name']}</code><br>
                         <div class="image-info">
@@ -543,12 +541,13 @@ def image_diff_to_html(old_image_json: dict, new_image_json: dict, only_exact: b
                     old_colored += f'<span class="{UPDATE_TYPE_CLASSES[update_type]}">{old_part}</span>'
                     new_colored += f'<span class="{UPDATE_TYPE_CLASSES[update_type]}">{new_part}</span>'
             return old_colored, new_colored
+
         old_repo_html, new_repo_html = color_diff("repo", old_repo, new_repo)
         old_user_html, new_user_html = color_diff("user", old_user, new_user)
         old_image_html, new_image_html = color_diff("image", old_image, new_image)
         old_tag_html, new_tag_html = color_diff("tag", old_tag, new_tag)
-        #old_sha_html, new_sha_html = color_diff("sha", old_sha, new_sha)
-        #old_sha_html, new_sha_html = color_diff("none", old_sha, new_sha)
+        # old_sha_html, new_sha_html = color_diff("sha", old_sha, new_sha)
+        # old_sha_html, new_sha_html = color_diff("none", old_sha, new_sha)
         if old_sha == new_sha:
             old_sha_html = old_sha
             new_sha_html = new_sha
@@ -579,15 +578,51 @@ def image_diff_to_html(old_image_json: dict, new_image_json: dict, only_exact: b
 
 
 def main():
-    with open(INPUT_JSON, 'r') as f:
-        data = json.load(f)
+    parser = argparse.ArgumentParser(
+        description='Generate an HTML report from commit container updates JSON.'
+    )
+    parser.add_argument(
+        'input_json',
+        nargs='?',
+        default='commits.json',
+        help='Path to input JSON file (default: commits.json). Use "-" to read from stdin.'
+    )
+    parser.add_argument(
+        '-o', '--output',
+        default='commits.html',
+        help='Path to output HTML file (default: commits.html)'
+    )
+    parser.add_argument(
+        '--repo',
+        default='/home/panzer1119/repositories/git/homelab-docker',
+        help='Repository root path for command generation (default: /home/panzer1119/repositories/git/homelab-docker)'
+    )
 
-    html_content = generate_html(data)
+    args = parser.parse_args()
 
-    with open(OUTPUT_HTML, 'w') as f:
-        f.write(html_content)
+    # Read JSON input
+    try:
+        if args.input_json == '-':
+            data = json.load(sys.stdin)
+        else:
+            with open(args.input_json, 'r') as f:
+                data = json.load(f)
+    except FileNotFoundError:
+        print(f"Error: Input file '{args.input_json}' not found", file=sys.stderr)
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in '{args.input_json}': {e}", file=sys.stderr)
+        sys.exit(1)
 
-    print(f"HTML output written to {OUTPUT_HTML}")
+    html_content = generate_html(data, args.repo)
+
+    try:
+        with open(args.output, 'w') as f:
+            f.write(html_content)
+        print(f"HTML output written to {args.output}")
+    except IOError as e:
+        print(f"Error: Could not write to '{args.output}': {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
