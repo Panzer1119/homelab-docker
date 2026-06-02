@@ -22,13 +22,12 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+          pip-install: "pyyaml"
 
       - name: Generate changes JSON
         run: |
-          bash scripts/get_changes.sh > changes.json
+          python scripts/get_changes.py --skip-fetch --output changes.json --verbose
         shell: bash
-        env:
-          SKIP_FETCH: true
 
       - name: Check whether changes exist
         id: changes
