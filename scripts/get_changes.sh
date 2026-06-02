@@ -29,7 +29,7 @@ main() {
   REMOTE_HEAD=$(git rev-parse "${REMOTE}/${BRANCH}")
   COMMITS=$(git rev-list --reverse "${LAST_COMMIT}..${REMOTE_HEAD}")
 
-  [ -z "${COMMITS}" ] && { echo "No new commits to process."; exit 0; }
+  [ -z "${COMMITS}" ] && { echo "No new commits to process." >&2; echo '[]'; exit 0; }
 
   commit_count=$(git rev-list --count "${LAST_COMMIT}..${REMOTE_HEAD}")
   echo "Processing ${commit_count} new commit(s)" >&2
