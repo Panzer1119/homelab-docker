@@ -1,0 +1,67 @@
+name: Changes report
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Generate changes JSON
+        run: |
+          bash scripts/get_changes.sh > changes.json
+        shell: bash
+        env:
+          SKIP_FETCH: true
+
+      - name: Check whether changes exist
+        id: changes
+        run: |
+          if [ "$(cat changes.json)" = "[]" ]; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No changes detected, skipping HTML generation and artifact uploads"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Changes detected, proceeding with HTML generation and artifact uploads"
+          fi
+        shell: bash
+
+      - name: Generate changes HTML
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          python scripts/generate_changes_html.py --output changes.html changes.json
+        shell: bash
+
+      - name: Upload changes JSON
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: changes-json
+          path: changes.json
+          retention-days: 1
+          archive: false
+
+      - name: Upload changes HTML
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: changes-html
+          path: changes.html
+          retention-days: 1
+          archive: false
