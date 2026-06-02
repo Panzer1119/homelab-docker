@@ -7,6 +7,7 @@ REPO_DIR="$(pwd)"
 REMOTE="${REMOTE:-origin}"
 BRANCH="${BRANCH:-main}"
 TAG_LAST="${TAG:-update/last}"
+SKIP_FETCH="${SKIP_FETCH:-false}"
 
 # Check for required tools
 command -v yq >/dev/null || { echo "yq is required but not installed." >&2; exit 1; }
@@ -22,8 +23,13 @@ main() {
   fi
 
   cd "${REPO_DIR}"
-  git fetch "${REMOTE}" "${BRANCH}" --quiet
-  git fetch --force --tags "${REMOTE}" "${BRANCH}" --quiet
+  if [ "${SKIP_FETCH}" != "true" ]; then
+    echo "Fetching latest changes from ${REMOTE}/${BRANCH}..." >&2
+    git fetch "${REMOTE}" "${BRANCH}" --quiet
+    git fetch --force --tags "${REMOTE}" "${BRANCH}" --quiet
+  else
+    echo "Skipping git fetch as SKIP_FETCH is set to true" >&2
+  fi
 
   LAST_COMMIT=$(git rev-parse "${TAG_LAST}" 2>/dev/null || echo "")
   REMOTE_HEAD=$(git rev-parse "${REMOTE}/${BRANCH}")
