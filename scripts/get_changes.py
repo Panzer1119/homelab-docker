@@ -21,8 +21,11 @@ def parse_arguments() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Basic usage (uses current directory)
+  # Basic usage (uses current directory, outputs to stdout)
   ./get_changes.py
+
+  # Save results to a file
+  ./get_changes.py --output results.json
 
   # Specify a custom repository
   ./get_changes.py --repo-dir /path/to/repo
@@ -35,6 +38,9 @@ Examples:
 
   # Enable verbose output for debugging
   ./get_changes.py --verbose
+
+  # Combine options
+  ./get_changes.py --repo-dir /path/to/repo --branch develop --output changes.json --verbose
 
 Environment Variables (used as defaults):
   REPO_DIR     - Repository directory (default: current working directory)
@@ -91,6 +97,15 @@ Command-line arguments take precedence over environment variables.
         "-v",
         action="store_true",
         help="Enable verbose output for debugging",
+    )
+
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=None,
+        help="Output file for results (default: stdout)",
+        metavar="OUTPUT",
     )
 
     return parser.parse_args()
@@ -360,14 +375,18 @@ def process_project_file_change(
 
     if status == "A":
         change_type = "created"
-        new_content = run_git_command(["git", "show", f"{commit}:{filepath}"], check=False, repo_dir=repo_dir, verbose=verbose)
+        new_content = run_git_command(["git", "show", f"{commit}:{filepath}"], check=False, repo_dir=repo_dir,
+                                      verbose=verbose)
     elif status == "D":
         change_type = "deleted"
-        old_content = run_git_command(["git", "show", f"{commit}^:{filepath}"], check=False, repo_dir=repo_dir, verbose=verbose)
+        old_content = run_git_command(["git", "show", f"{commit}^:{filepath}"], check=False, repo_dir=repo_dir,
+                                      verbose=verbose)
     else:  # M or any other status
         change_type = "updated"
-        old_content = run_git_command(["git", "show", f"{commit}^:{filepath}"], check=False, repo_dir=repo_dir, verbose=verbose)
-        new_content = run_git_command(["git", "show", f"{commit}:{filepath}"], check=False, repo_dir=repo_dir, verbose=verbose)
+        old_content = run_git_command(["git", "show", f"{commit}^:{filepath}"], check=False, repo_dir=repo_dir,
+                                      verbose=verbose)
+        new_content = run_git_command(["git", "show", f"{commit}:{filepath}"], check=False, repo_dir=repo_dir,
+                                      verbose=verbose)
 
     old_images = extract_images_from_compose(old_content, project, verbose) if old_content else {}
     new_images = extract_images_from_compose(new_content, project, verbose) if new_content else {}
@@ -450,7 +469,9 @@ def main() -> None:
 
     args = parse_arguments()
 
-    verbose_print(f"Arguments: repo_dir={args.repo_dir}, remote={args.remote}, branch={args.branch}, tag={args.tag}, skip_fetch={args.skip_fetch}", args.verbose)
+    verbose_print(
+        f"Arguments: repo_dir={args.repo_dir}, remote={args.remote}, branch={args.branch}, tag={args.tag}, skip_fetch={args.skip_fetch}",
+        args.verbose)
 
     # Validate repository exists
     git_dir = Path(args.repo_dir) / ".git"
@@ -466,7 +487,8 @@ def main() -> None:
             f"Fetching latest changes from {args.remote}/{args.branch}...",
             file=sys.stderr,
         )
-        run_git_command(["git", "fetch", args.remote, args.branch, "--quiet"], repo_dir=args.repo_dir, verbose=args.verbose)
+        run_git_command(["git", "fetch", args.remote, args.branch, "--quiet"], repo_dir=args.repo_dir,
+                        verbose=args.verbose)
         run_git_command(
             ["git", "fetch", "--force", "--tags", args.remote, args.branch, "--quiet"],
             repo_dir=args.repo_dir,
@@ -505,30 +527,46 @@ def main() -> None:
 
     if not commits_output:
         print("No new commits to process.", file=sys.stderr)
-        print("[]")
-        return
+        output_json = "[]"
+    else:
+        commits = [c for c in commits_output.split("\n") if c.strip()]
+        commit_count = len(commits)
 
-    commits = [c for c in commits_output.split("\n") if c.strip()]
-    commit_count = len(commits)
+        print(f"Processing {commit_count} new commit(s)", file=sys.stderr)
+        print(f"Oldest: {last_commit or 'N/A'}", file=sys.stderr)
+        print(f"Newest: {remote_head}", file=sys.stderr)
 
-    print(f"Processing {commit_count} new commit(s)", file=sys.stderr)
-    print(f"Oldest: {last_commit or 'N/A'}", file=sys.stderr)
-    print(f"Newest: {remote_head}", file=sys.stderr)
+        verbose_print(f"Starting to process {commit_count} commit(s)", args.verbose)
 
-    verbose_print(f"Starting to process {commit_count} commit(s)", args.verbose)
+        full_output: List[Dict[str, Any]] = []
+        for idx, commit in enumerate(commits, 1):
+            verbose_print(f"[{idx}/{commit_count}] Processing {commit}", args.verbose)
+            commit_result = process_commit(commit, args.repo_dir, args.verbose)
+            if commit_result:
+                full_output.append(commit_result)
+                verbose_print(f"[{idx}/{commit_count}] Extracted {len(commit_result['projects'])} project change(s)",
+                              args.verbose)
+            else:
+                verbose_print(f"[{idx}/{commit_count}] No changes in this commit", args.verbose)
 
-    full_output: List[Dict[str, Any]] = []
-    for idx, commit in enumerate(commits, 1):
-        verbose_print(f"[{idx}/{commit_count}] Processing {commit}", args.verbose)
-        commit_result = process_commit(commit, args.repo_dir, args.verbose)
-        if commit_result:
-            full_output.append(commit_result)
-            verbose_print(f"[{idx}/{commit_count}] Extracted {len(commit_result['projects'])} project change(s)", args.verbose)
-        else:
-            verbose_print(f"[{idx}/{commit_count}] No changes in this commit", args.verbose)
+        verbose_print(f"Processing complete. Total commits with changes: {len(full_output)}", args.verbose)
 
-    verbose_print(f"Processing complete. Total commits with changes: {len(full_output)}", args.verbose)
-    print(json.dumps(full_output, indent=2))
+        # Output results
+        output_json = json.dumps(full_output, indent=2)
+
+    if args.output:
+        verbose_print(f"Writing results to file: {args.output}", args.verbose)
+        try:
+            with open(args.output, "w") as f:
+                f.write(output_json)
+            print(f"Results written to: {args.output}", file=sys.stderr)
+            verbose_print(f"Successfully wrote {len(output_json)} bytes to {args.output}", args.verbose)
+        except IOError as e:
+            print(f"Error writing to output file {args.output}: {e}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        verbose_print("Outputting results to stdout", args.verbose)
+        print(output_json)
 
 
 if __name__ == "__main__":
