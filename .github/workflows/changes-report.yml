@@ -26,8 +26,10 @@ jobs:
 
       - name: Generate changes JSON
         run: |
-          python scripts/get_changes.py --skip-fetch --output changes.json --verbose
+          bash scripts/get_changes.sh > changes.json
         shell: bash
+        env:
+          SKIP_FETCH: true
 
       - name: Check whether changes exist
         id: changes
