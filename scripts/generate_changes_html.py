@@ -585,17 +585,20 @@ def main():
         'input_json',
         nargs='?',
         default='commits.json',
-        help='Path to input JSON file (default: commits.json). Use "-" to read from stdin.'
+        help='Path to input JSON file (default: commits.json). Use "-" to read from stdin.',
+        metavar='INPUT',
     )
     parser.add_argument(
         '-o', '--output',
         default='commits.html',
-        help='Path to output HTML file (default: commits.html)'
+        help='Path to output HTML file (default: commits.html)',
+        metavar='OUTPUT',
     )
     parser.add_argument(
         '--repo',
         default='/home/panzer1119/repositories/git/homelab-docker',
-        help='Repository root path for command generation (default: /home/panzer1119/repositories/git/homelab-docker)'
+        help='Repository root path for command generation (default: /home/panzer1119/repositories/git/homelab-docker)',
+        metavar='REPO',
     )
 
     args = parser.parse_args()
