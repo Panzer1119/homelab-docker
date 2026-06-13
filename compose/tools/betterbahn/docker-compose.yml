@@ -1,7 +1,7 @@
 ---
 services:
   betterbahn:
-    image: ghcr.io/betterbahn/betterbahn:latest@sha256:7081382771d19a6a05bfecb614a26957bc2707cfdca05215c3fd5b09211c6c30
+    image: ghcr.io/betterbahn/betterbahn:latest@sha256:4345ec4a0a8136e11eab820569ffe19b32f0bd57c85ea3dcdbe5bcc8d03e9159
     container_name: betterbahn
     hostname: betterbahn
     environment:
