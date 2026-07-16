@@ -5,7 +5,7 @@ services:
     container_name: mc-router
     hostname: mc-router
     depends_on:
-      - mc_atm10
+      - server_atm10
     environment:
       TZ: "Europe/Berlin"
       IN_DOCKER: "true"
@@ -20,15 +20,15 @@ services:
       file: ../../common/docker-compose.yml
       service: logging-gelf
 
-  mc_atm10:
+  server_atm10:
     image: itzg/minecraft-server:stable-java25-jdk
     tty: true
     stdin_open: true
-    container_name: mc-atm10
-    hostname: mc-atm10
+    container_name: mc-server-atm10
+    hostname: mc-server-atm10
     env_file:
-      - mc.env
-      - mc_atm10.env
+      - server.env
+      - server_atm10.env
     volumes:
       - "./config:/config:ro"
       - "/docker/data/minecraft/atm10:/data"
