@@ -62,6 +62,7 @@ services:
     volumes:
       - "/docker/data/minecraft/atm10/server:/data:ro"
       - "/docker/data/minecraft/atm10/backup-borg:/borg"
+      - "/docker/cache/minecraft/atm10/backup-borg:/base"
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
