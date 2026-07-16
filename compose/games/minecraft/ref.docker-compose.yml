@@ -28,7 +28,7 @@ services:
     hostname: mc-server-atm10
     env_file:
       - defaults/server.env
-      - server_atm10.env
+      - atm10/server.env
     volumes:
       - "./defaults:/defaults:ro"
       - "./downloads:/downloads:ro"
@@ -55,7 +55,7 @@ services:
         condition: service_healthy
     env_file:
       - defaults/backup_borg.env
-      - backup_borg_atm10.env
+      - atm10/backup_borg.env
     #command: now
     #entrypoint: bash
     volumes:
