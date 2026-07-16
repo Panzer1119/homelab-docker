@@ -67,49 +67,49 @@ services:
       file: ../../common/docker-compose.yml
       service: logging-gelf
 
-  server_atm9_pcfreak9000:
-    image: ghcr.io/itzg/minecraft-server:stable-java25-jdk
-    tty: true
-    stdin_open: true
-    container_name: mc-server-atm9-pcfreak9000
-    hostname: mc-server-atm9-pcfreak9000
-    env_file:
-      - defaults/server.env
-      - atm9_pcfreak9000/server.env
-    volumes:
-      - "./defaults:/defaults:ro"
-      - "./downloads:/downloads:ro"
-      - "/docker/data/minecraft/atm9_pcfreak9000/server:/data"
-    labels:
-      - "mc-router.host=op://Docker/Minecraft/ATM9-pcfreak9000/MC-Router-Host"
-    healthcheck:
-      test: mc-health
-      start_period: 10m
-      interval: 5s
-      retries: 20
-    stop_grace_period: 1m
-    restart: unless-stopped
-    extends:
-      file: ../../common/docker-compose.yml
-      service: logging-gelf
-
-  backup_borg_atm9_pcfreak9000:
-    image: ghcr.io/panzer1119/mc-backup:2026.7.16
-    container_name: mc-backup-borg-atm9-pcfreak9000
-    hostname: mc-backup-borg-atm9-pcfreak9000
-    depends_on:
-      server_atm9_pcfreak9000:
-        condition: service_healthy
-    env_file:
-      - defaults/backup_borg.env
-      - atm9_pcfreak9000/backup_borg.env
-    #command: now
-    #entrypoint: bash
-    volumes:
-      - "/docker/data/minecraft/atm9_pcfreak9000/server:/data:ro"
-      - "/docker/data/minecraft/atm9_pcfreak9000/backup-borg:/borg"
-    restart: unless-stopped
-    extends:
-      file: ../../common/docker-compose.yml
-      service: logging-gelf
+#  server_atm9_pcfreak9000:
+#    image: ghcr.io/itzg/minecraft-server:stable-java25-jdk
+#    tty: true
+#    stdin_open: true
+#    container_name: mc-server-atm9-pcfreak9000
+#    hostname: mc-server-atm9-pcfreak9000
+#    env_file:
+#      - defaults/server.env
+#      - atm9_pcfreak9000/server.env
+#    volumes:
+#      - "./defaults:/defaults:ro"
+#      - "./downloads:/downloads:ro"
+#      - "/docker/data/minecraft/atm9_pcfreak9000/server:/data"
+#    labels:
+#      - "mc-router.host=op://Docker/Minecraft/ATM9-pcfreak9000/MC-Router-Host"
+#    healthcheck:
+#      test: mc-health
+#      start_period: 10m
+#      interval: 5s
+#      retries: 20
+#    stop_grace_period: 1m
+#    restart: unless-stopped
+#    extends:
+#      file: ../../common/docker-compose.yml
+#      service: logging-gelf
+#
+#  backup_borg_atm9_pcfreak9000:
+#    image: ghcr.io/panzer1119/mc-backup:2026.7.16
+#    container_name: mc-backup-borg-atm9-pcfreak9000
+#    hostname: mc-backup-borg-atm9-pcfreak9000
+#    depends_on:
+#      server_atm9_pcfreak9000:
+#        condition: service_healthy
+#    env_file:
+#      - defaults/backup_borg.env
+#      - atm9_pcfreak9000/backup_borg.env
+#    #command: now
+#    #entrypoint: bash
+#    volumes:
+#      - "/docker/data/minecraft/atm9_pcfreak9000/server:/data:ro"
+#      - "/docker/data/minecraft/atm9_pcfreak9000/backup-borg:/borg"
+#    restart: unless-stopped
+#    extends:
+#      file: ../../common/docker-compose.yml
+#      service: logging-gelf
 ...
