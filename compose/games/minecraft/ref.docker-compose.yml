@@ -32,7 +32,7 @@ services:
     volumes:
       - "./defaults:/defaults:ro"
       - "./downloads:/downloads:ro"
-      - "/docker/data/minecraft/atm10:/data"
+      - "/docker/data/minecraft/atm10/server:/data"
     labels:
       - "mc-router.host=op://Docker/Minecraft/ATM10/MC-Router-Host"
     healthcheck:
@@ -59,8 +59,8 @@ services:
     #command: now
     #entrypoint: bash
     volumes:
-      - "/docker/data/minecraft/atm10:/data:ro"
-      - "/docker/data/minecraft/atm10-backup-borg:/borg"
+      - "/docker/data/minecraft/atm10/server:/data:ro"
+      - "/docker/data/minecraft/atm10/backup-borg:/borg"
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
