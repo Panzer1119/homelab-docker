@@ -1,0 +1,47 @@
+---
+services:
+  router:
+    image: itzg/mc-router:1.44.0
+    container_name: mc-router
+    hostname: mc-router
+    depends_on:
+      - mc_atm10
+    environment:
+      TZ: "Europe/Berlin"
+      IN_DOCKER: "true"
+      METRICS_BACKEND: "prometheus"
+      RECORD_LOGINS: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "25565:25565"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
+  mc_atm10:
+    image: itzg/minecraft-server:stable-java25-jdk
+    tty: true
+    stdin_open: true
+    container_name: mc-atm10
+    hostname: mc-atm10
+    env_file:
+      - mc.env
+      - mc_atm10.env
+    volumes:
+      - "./config:/config:ro"
+      - "/docker/data/minecraft/atm10:/data"
+    labels:
+      - "mc-router.host=op://Docker/Minecraft/ATM10/MC-Router-Host"
+    healthcheck:
+      test: mc-health
+      start_period: 1m
+      interval: 5s
+      retries: 20
+    stop_grace_period: 1m
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...
