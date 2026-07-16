@@ -10,6 +10,7 @@ services:
       TZ: "Europe/Berlin"
       IN_DOCKER: "true"
       METRICS_BACKEND: "prometheus"
+      #TODO How do I access the prometheus metrics from outside the container?
       RECORD_LOGINS: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
