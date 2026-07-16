@@ -44,4 +44,24 @@ services:
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
+
+  backup_borg_atm10:
+    image: ghcr.io/panzer1119/mc-backup:2026.7.16
+    container_name: mc-backup-borg-atm10
+    hostname: mc-backup-borg-atm10
+    depends_on:
+      server_atm10:
+        condition: service_healthy
+    env_file:
+      - backup_borg.env
+      - backup_borg_atm10.env
+    #command: now
+    #entrypoint: bash
+    volumes:
+      - "/docker/data/minecraft/atm10:/data:ro"
+      - "/docker/data/minecraft/atm10-backup-borg:/borg"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
 ...
