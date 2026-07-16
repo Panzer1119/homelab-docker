@@ -31,6 +31,7 @@ services:
       - server_atm10.env
     volumes:
       - "./defaults:/defaults:ro"
+      - "./downloads:/downloads:ro"
       - "/docker/data/minecraft/atm10:/data"
     labels:
       - "mc-router.host=op://Docker/Minecraft/ATM10/MC-Router-Host"
