@@ -1,7 +1,7 @@
 ---
 services:
   router:
-    image: itzg/mc-router:1.44.0
+    image: ghcr.io/itzg/mc-router:1.44.0
     container_name: mc-router
     hostname: mc-router
     depends_on:
@@ -22,7 +22,7 @@ services:
       service: logging-gelf
 
   server_atm10:
-    image: itzg/minecraft-server:stable-java25-jdk
+    image: ghcr.io/itzg/minecraft-server:stable-java25-jdk
     tty: true
     stdin_open: true
     container_name: mc-server-atm10
