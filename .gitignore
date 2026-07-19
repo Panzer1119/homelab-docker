@@ -10,6 +10,7 @@ compose/content/paperless-ngx/scripts/post-consumption-paperparrot.sh
 compose/content/paperless-ngx/scripts/post-consumption-pushover.sh
 compose/content/paperless-ngx/scripts/send_pushover_message.sh
 compose/games/minecraft/defaults/ops.json
+compose/games/minecraft/defaults/web.json
 compose/games/minecraft/defaults/whitelist.json
 compose/games/minecraft/docker-compose.yml
 compose/media/kometa/config/config.yml

@@ -48,6 +48,24 @@ services:
       file: ../../common/docker-compose.yml
       service: logging-gelf
 
+  web_atm10:
+    # There is no newer version of itzg/rcon available, so we use the latest tag for now
+    image: itzg/rcon:latest
+    container_name: mc-web-atm10
+    hostname: mc-web-atm10
+    depends_on:
+      - server_atm10
+    env_file:
+      - defaults/web.env
+      - atm10/web.env
+    ports:
+      - "4326:4326"
+      - "4327:4327"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+
   backup_borg_atm10:
     image: ghcr.io/panzer1119/mc-backup:2026.7.16
     container_name: mc-backup-borg-atm10
