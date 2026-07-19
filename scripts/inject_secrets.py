@@ -404,9 +404,17 @@ def process_file(
                 logger.debug(f"[DRY-RUN] Content would be modified")
         else:
             output_path.parent.mkdir(parents=True, exist_ok=True)
+            exists: bool = output_path.exists()
+            is_file: bool = output_path.is_file() if exists else False
+            if exists and not is_file:
+                logger.error(f"Output path exists and is not a file: {output_path}")
+                return False
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(processed_content)
-            logger.info(f"Created: {output_path}")
+            if not exists:
+                logger.info(f"Created: {output_path}")
+            else:
+                logger.info(f"Updated: {output_path}")
 
         return True
     except Exception as e:
