@@ -46,7 +46,7 @@ def setup_logging(debug: bool = False, verbose: bool = False) -> None:
         level = logging.WARNING
 
     logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format='%(asctime)s - %(name)-10s - %(levelname)-7s - %(message)s',
         level=level
     )
 
