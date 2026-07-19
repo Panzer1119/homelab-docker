@@ -34,7 +34,7 @@ services:
       - "./defaults:/defaults:ro"
       - "./downloads:/downloads:ro"
       - "./atm10/config:/config:ro"
-      - "/docker/data/minecraft/atm10/server:/data"
+      - "/docker/data/minecraft/server/atm10:/data"
     labels:
       - "mc-router.host=op://Docker/Minecraft/ATM10/MC-Router-Host"
     healthcheck:
@@ -61,9 +61,9 @@ services:
     #command: now
     #entrypoint: bash
     volumes:
-      - "/docker/data/minecraft/atm10/server:/data:ro"
-      - "/docker/data/minecraft/atm10/backup-borg:/borg"
-      - "/docker/cache/minecraft/atm10/backup-borg:/base"
+      - "/docker/data/minecraft/server/atm10:/data:ro"
+      - "/docker/data/minecraft/backup/borg/atm10:/borg"
+      - "/docker/cache/minecraft/backup/borg/atm10:/base"
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
@@ -81,7 +81,7 @@ services:
 #    volumes:
 #      - "./defaults:/defaults:ro"
 #      - "./downloads:/downloads:ro"
-#      - "/docker/data/minecraft/atm9_pcfreak9000/server:/data"
+#      - "/docker/data/minecraft/server/atm9_pcfreak9000:/data"
 #    labels:
 #      - "mc-router.host=op://Docker/Minecraft/ATM9-pcfreak9000/MC-Router-Host"
 #    healthcheck:
@@ -108,8 +108,9 @@ services:
 #    #command: now
 #    #entrypoint: bash
 #    volumes:
-#      - "/docker/data/minecraft/atm9_pcfreak9000/server:/data:ro"
-#      - "/docker/data/minecraft/atm9_pcfreak9000/backup-borg:/borg"
+#      - "/docker/data/minecraft/server/atm9_pcfreak9000:/data:ro"
+#      - "/docker/data/minecraft/backup/borg/atm9_pcfreak9000:/borg"
+#      - "/docker/cache/minecraft/backup/borg/atm9_pcfreak9000:/base"
 #    restart: unless-stopped
 #    extends:
 #      file: ../../common/docker-compose.yml
