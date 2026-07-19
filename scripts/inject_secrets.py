@@ -210,7 +210,8 @@ def collect_secret_references(files: Set[Path]) -> Dict[str, Set[str]]:
                     exact_token = match.group(0)
                     if canonical_ref:
                         secrets.setdefault(canonical_ref, set()).add(exact_token)
-                        logger.debug(f"  Found reference: {canonical_ref!r} (token: {exact_token!r}, repr: {repr(exact_token)})")
+                        logger.debug(
+                            f"  Found reference: {canonical_ref!r} (token: {exact_token!r}, repr: {repr(exact_token)})")
         except Exception as e:
             logger.error(f"Error reading file {file_path}: {e}")
 
@@ -325,11 +326,11 @@ def prompt_for_secret(secret_ref: str) -> Optional[str]:
 
 
 async def resolve_secrets(
-    secrets: Dict[str, Set[str]],
-    cache: Dict[str, str],
-    mode: ResolutionMode,
-    dry_run: bool = False,
-    op_client=None,
+        secrets: Dict[str, Set[str]],
+        cache: Dict[str, str],
+        mode: ResolutionMode,
+        dry_run: bool = False,
+        op_client=None,
 ) -> Dict[str, str]:
     """
     Resolve all secret references based on mode.
@@ -372,11 +373,11 @@ async def resolve_secrets(
 
 
 def process_file(
-    ref_path: Path,
-    output_path: Path,
-    resolved_secrets: Dict[str, str],
-    reference_tokens: Dict[str, Set[str]],
-    dry_run: bool = False
+        ref_path: Path,
+        output_path: Path,
+        resolved_secrets: Dict[str, str],
+        reference_tokens: Dict[str, Set[str]],
+        dry_run: bool = False
 ) -> bool:
     """
     Process a single ref.* file and create output with resolved secrets.
@@ -511,6 +512,3 @@ def main() -> int:
 
 if __name__ == '__main__':
     sys.exit(main())
-
-
-
