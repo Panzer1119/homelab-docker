@@ -31,7 +31,7 @@ class ResolutionMode(Enum):
 INTEGRATION_NAME = "homelab-docker secrets injector"
 INTEGRATION_VERSION = "1.0.0"
 SECRET_REFERENCE_PATTERN = re.compile(
-    r"\{\{\s*(?P<enclosed_ref>op://.+?)\s*\}\}|(?P<plain_ref>op://.+?)(?=\s|[\]}>)'\"`,;:]|$)",
+    r"\{\{\s*(?P<enclosed_ref>op://\S.+?)\s*\}\}|(?P<plain_ref>op://\S+?)(?=\s|[\]}>)'\"`,;:]|$)",
 )
 
 
