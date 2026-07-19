@@ -41,7 +41,7 @@ sendMessages = true
 #Valid storage types: B, KB, MB, GB, TB
 maxDiskSize = "25 GB"
 #Used to define the output path.
-outputPath = "simplebackups"
+outputPath = "../backup/simplebackups/atm10"
 #Create backups, even if nobody is online
 noPlayerBackups = false
 #How many backups should be created after the last player left? Set to 0 to disable.
