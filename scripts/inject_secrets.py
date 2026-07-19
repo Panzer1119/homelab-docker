@@ -395,9 +395,9 @@ def process_file(
                 processed_content = processed_content.replace(token, value)
 
         if content == processed_content:
-            logger.warning(f"[process_file] Content UNCHANGED after all replacements for: {ref_path}")
+            logger.warning(f"Content UNCHANGED after all replacements for: {ref_path}")
         else:
-            logger.debug(f"[process_file] Content was modified successfully for: {ref_path}")
+            logger.debug(f"Content was modified successfully for: {ref_path}")
 
         if dry_run:
             logger.info(f"[DRY-RUN] Would create: {output_path}")
