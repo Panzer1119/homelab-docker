@@ -210,7 +210,7 @@ def collect_secret_references(files: Set[Path]) -> Dict[str, Set[str]]:
                     exact_token = match.group(0)
                     if canonical_ref:
                         secrets.setdefault(canonical_ref, set()).add(exact_token)
-                        logger.debug(f"  Found reference: {canonical_ref} (token: {exact_token})")
+                        logger.debug(f"  Found reference: {canonical_ref!r} (token: {exact_token!r}, repr: {repr(exact_token)})")
         except Exception as e:
             logger.error(f"Error reading file {file_path}: {e}")
 
@@ -392,6 +392,11 @@ def process_file(
         for secret_ref, value in resolved_secrets.items():
             for token in sorted(reference_tokens.get(secret_ref, set()), key=len, reverse=True):
                 processed_content = processed_content.replace(token, value)
+
+        if content == processed_content:
+            logger.warning(f"[process_file] Content UNCHANGED after all replacements for: {ref_path}")
+        else:
+            logger.debug(f"[process_file] Content was modified successfully for: {ref_path}")
 
         if dry_run:
             logger.info(f"[DRY-RUN] Would create: {output_path}")
