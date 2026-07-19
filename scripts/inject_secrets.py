@@ -409,6 +409,14 @@ def process_file(
             if exists and not is_file:
                 logger.error(f"Output path exists and is not a file: {output_path}")
                 return False
+
+            if exists:
+                with open(output_path, 'r', encoding='utf-8') as f:
+                    existing_content = f.read()
+                if existing_content == processed_content:
+                    logger.info(f"Skipped (unchanged): {output_path}")
+                    return True
+
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(processed_content)
             if not exists:
