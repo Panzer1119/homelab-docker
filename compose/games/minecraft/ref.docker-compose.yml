@@ -35,6 +35,7 @@ services:
       - "./downloads:/downloads:ro"
       - "./atm10/config:/config:ro"
       - "/docker/data/minecraft/server/atm10:/data"
+      - "/docker/data/minecraft/backup/simplebackups/atm10:/simplebackups"
     labels:
       - "mc-router.host=op://Docker/Minecraft/ATM10/MC-Router-Host"
     healthcheck:
