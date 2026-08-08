@@ -1,0 +1,19 @@
+---
+services:
+  broker:
+    image: eclipse-mosquitto:2.1.2-alpine
+    container_name: mosquitto-tls
+    hostname: mosquitto-tls
+    volumes:
+      - /docker/data/mosquitto:/mosquitto/data
+      #FIXME PWD is not compatible with Git Worktrees when updating the docker containers
+      - "${PWD}/config:/mosquitto/config" #FIXME "PWD" might not work in all environments
+      - "${PWD}/certs:/mosquitto/certs" #FIXME "PWD" might not work in all environments
+    network_mode: bridge
+    ports:
+      - "7006:7006"
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...

@@ -13,6 +13,8 @@ compose/games/minecraft/defaults/ops.json
 compose/games/minecraft/defaults/web.json
 compose/games/minecraft/defaults/whitelist.json
 compose/games/minecraft/docker-compose.yml
+compose/infrastructure/mosquitto-tls/certs/fullchain.pem
+compose/infrastructure/mosquitto-tls/certs/privkey.pem
 compose/media/kometa/config/config.yml
 compose/media/mediamanager/config/config.toml
 compose/media/sabnzbd/create_backup.sh

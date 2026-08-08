@@ -10,6 +10,7 @@ Apps that help to manage the homelab itself (deployment, sync, orchestration, et
 - [Authelia](./authelia/README.md) #TODO
 - [Dockge](./dockge/README.md) #TODO
 - [Homer](./homer/README.md) #TODO
+- [Mosquitto](mosquitto-tls/README.md)
 - [NetBox](./netbox/README.md)
 - [Network Optimizer](./network-optimizer/README.md)
 - [Portainer](./portainer/README.md) #TODO
