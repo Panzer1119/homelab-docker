@@ -12,6 +12,7 @@
     ":rebaseStalePrs",
     ":separateMultipleMajorReleases",
     ":skipStatusChecks",
+    ":prHourlyLimitNone",
     "group:recommended",
     "schedule:daily"
   ],
