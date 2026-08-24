@@ -266,7 +266,7 @@
 	# Range: 1 ~ 200
 	projectorPlaneSendInterval = 5
 	#Log aggregated statistics about projector preview packet compression. Intended as a diagnostic for scan/blockstate-heavy previews
-	projectorCompressionLogging = true
+	projectorCompressionLogging = false
 	#How many projector preview planes to aggregate before logging one compression summary line
 	# Default: 64
 	# Range: 1 ~ 100000
