@@ -28,7 +28,7 @@ services:
   # Network Optimizer Speed Test - customized OpenSpeedTest that sends results to Network Optimizer
   # Requires HOST_IP or HOST_NAME to be set in network-optimizer-speedtest.env for result reporting
   network-optimizer-speedtest:
-    image: ghcr.io/ozark-connect/speedtest:2.6.4@sha256:a2537deb4e779860d566560933688b48fbc76be4b1fb8a48416db7dd0223ba62
+    image: ghcr.io/ozark-connect/speedtest:2.8.0@sha256:9954279c201250c7be6f1eee26129dc24a353a0b02254ffc2d04297e41de41ec
     container_name: network-optimizer-speedtest
     hostname: network-optimizer-speedtest
     sysctls:
