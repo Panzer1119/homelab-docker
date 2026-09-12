@@ -14,6 +14,8 @@ services:
       - /docker/config/tautulli:/config
       - plex_logs:/logs:ro
       - plex_logs:/plex_logs:ro
+      #FIXME PWD is not compatible with Git Worktrees when updating the docker containers
+      - "${PWD}/scripts:/scripts:ro" #FIXME "PWD" might not work in all environments
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Tautulli/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Tautulli/CIFS/Username"
