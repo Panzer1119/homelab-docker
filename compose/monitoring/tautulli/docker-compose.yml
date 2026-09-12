@@ -16,6 +16,12 @@ services:
       - plex_logs:/plex_logs:ro
       #FIXME PWD is not compatible with Git Worktrees when updating the docker containers
       - "${PWD}/scripts:/scripts:ro" #FIXME "PWD" might not work in all environments
+      - radarr_media:/data/media/radarr:ro
+      - radarr-4k_media:/data/media/radarr-4k:ro
+      - radarr-anime_media:/data/media/radarr-anime:ro
+      - sonarr_media:/data/media/sonarr:ro
+      - sonarr-4k_media:/data/media/sonarr-4k:ro
+      - sonarr-anime_media:/data/media/sonarr-anime:ro
     labels:
       - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/Tautulli/CIFS/Host"
       - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/Tautulli/CIFS/Username"
@@ -43,3 +49,28 @@ volumes:
     name: tautulli_plex_logs
     # Because this is a rclone volume, and it needs credentials, it is created outside of this file
     external: true
+  radarr_media:
+    name: radarr_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  radarr-4k_media:
+    name: radarr-4k_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  radarr-anime_media:
+    name: radarr-anime_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  sonarr_media:
+    name: sonarr_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  sonarr-4k_media:
+    name: sonarr-4k_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+  sonarr-anime_media:
+    name: sonarr-anime_media
+    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+    external: true
+...
