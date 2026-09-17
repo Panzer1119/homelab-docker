@@ -1,7 +1,7 @@
 ---
 services:
   databasus:
-    image: databasus/databasus:v3.57.0@sha256:3c814cdb4de830232c0fa8b3e0dfbe3ae39f685e7e8bd3effdf3b989c9e5d74d
+    image: databasus/databasus:v3.57.1@sha256:339542fd7278a74d861cc4f537c344bec1924865be0d197202404f23cd525502
     container_name: databasus
     hostname: databasus
     volumes:
