@@ -1,7 +1,7 @@
 ---
 services:
   wiki:
-    image: requarks/wiki:2.5@sha256:68f0d1848261ae76492ba358e30a96a76fed5d97a3fff381656082bf90f70d7e
+    image: requarks/wiki:2.5@sha256:fffff288a52f76e5b8c19a4fbcd0f3e538e96edea642c4f2d813d54d59a876de
     container_name: wiki
     hostname: wiki
     depends_on:
