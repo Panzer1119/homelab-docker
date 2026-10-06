@@ -83,8 +83,11 @@ process_commit() {
 
   [ "$(echo "${project_changes}" | jq length)" -eq 0 ] && return
 
-  jq -n --arg sha "${COMMIT}" --argjson projects "${project_changes}" \
-    '{commit: $sha, projects: $projects}'
+  local TIMESTAMP
+  TIMESTAMP=$(git show -s --format=%cI "${COMMIT}")
+
+  jq -n --arg sha "${COMMIT}" --arg timestamp "${TIMESTAMP}" --argjson projects "${project_changes}" \
+    '{commit: $sha, timestamp: $timestamp, projects: $projects}'
 }
 
 process_project_file_change() {
