@@ -35,6 +35,9 @@ def generate_html(data, repo):
     sections_set = set()
     projects_set = set()
     for commit_entry in data:
+        #commit_entry['timestamp_formatted'] = commit_entry['timestamp'].replace('T', ' ').replace('Z', ' UTC')
+        #commit_entry['timestamp_formatted'] = commit_entry['timestamp'].replace('T', ' ')
+        commit_entry['timestamp_formatted'] = commit_entry['timestamp']
         for project in commit_entry['projects']:
             sections_set.add(project['section'])
             projects_set.add(project['project'])
@@ -403,6 +406,7 @@ def generate_html(data, repo):
 
     for commit_entry in data:
         commit_html = f'<div class="commit"><strong>Commit:</strong> <code>{commit_entry["commit"]}</code>'
+        commit_html += f'<br><strong>Timestamp:</strong> <code><time datetime="{commit_entry['timestamp']}">{commit_entry['timestamp_formatted']}</time></code>'
         project_htmls = []
 
         for project in commit_entry['projects']:
@@ -455,6 +459,8 @@ def generate_html(data, repo):
         for project in entry['projects']:
             section_map[project['section']].append({
                 'commit': entry['commit'],
+                'timestamp': entry['timestamp'],
+                'timestamp_formatted': entry['timestamp_formatted'],
                 'project': project
             })
 
@@ -496,6 +502,7 @@ def generate_html(data, repo):
                             <button class="btn toggle-project-btn" data-project="{project_name}" title="Disable this project in the filter">Hide project</button>
                         </div>
                         <strong>Commit:</strong> <code>{item['commit']}</code><br>
+                        <strong>Timestamp:</strong> <code><time datetime="{item['timestamp']}">{item['timestamp_formatted']}</time></code><br>
                         <strong>Change Type:</strong> <span class="{project['change_type']}">{project['change_type']}</span>
                         {containers_html}
                     </div>'''
