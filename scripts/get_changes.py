@@ -156,19 +156,19 @@ def parse_image(image_str: str) -> Dict[str, str]:
         image_str: Docker image string (e.g., "nginx:latest", "ghcr.io/user/image@sha256:...")
 
     Returns:
-        Dictionary with repo, user, image, tag, and sha keys
+        Dictionary with registry, namespace, repository, tag, and digest keys
     """
     result = {
-        "repo": "docker.io",
-        "user": "library",
-        "image": "",
+        "registry": "docker.io",
+        "namespace": "library",
+        "repository": "",
         "tag": "",
-        "sha": "",
+        "digest": "",
     }
 
-    # Extract sha256 digest if present
+    # Extract digest if present
     if "@" in image_str:
-        image_str, result["sha"] = image_str.rsplit("@", 1)
+        image_str, result["digest"] = image_str.rsplit("@", 1)
 
     # Extract tag if present
     if ":" in image_str:
@@ -178,14 +178,14 @@ def parse_image(image_str: str) -> Dict[str, str]:
     parts = image_str.split("/")
 
     if len(parts) == 3:
-        result["repo"] = parts[0]
-        result["user"] = parts[1]
-        result["image"] = parts[2]
+        result["registry"] = parts[0]
+        result["namespace"] = parts[1]
+        result["repository"] = parts[2]
     elif len(parts) == 2:
-        result["user"] = parts[0]
-        result["image"] = parts[1]
+        result["namespace"] = parts[0]
+        result["repository"] = parts[1]
     else:
-        result["image"] = parts[0]
+        result["repository"] = parts[0]
 
     return result
 
@@ -279,32 +279,32 @@ def compare_images(
         logging.getLogger(__name__).debug(f"Container {container}: {old_image or '(none)'} -> {new_image or '(none)'}")
 
         old_parsed = parse_image(old_image) if old_image else {
-            "repo": "docker.io",
-            "user": "library",
-            "image": "",
+            "registry": "docker.io",
+            "namespace": "library",
+            "repository": "",
             "tag": "",
-            "sha": "",
+            "digest": "",
         }
         new_parsed = parse_image(new_image) if new_image else {
-            "repo": "docker.io",
-            "user": "library",
-            "image": "",
+            "registry": "docker.io",
+            "namespace": "library",
+            "repository": "",
             "tag": "",
-            "sha": "",
+            "digest": "",
         }
 
         # Determine what changed
         updates = []
-        if old_parsed["repo"] != new_parsed["repo"]:
-            updates.append("repo")
-        if old_parsed["user"] != new_parsed["user"]:
-            updates.append("user")
-        if old_parsed["image"] != new_parsed["image"]:
-            updates.append("image")
+        if old_parsed["registry"] != new_parsed["registry"]:
+            updates.append("registry")
+        if old_parsed["namespace"] != new_parsed["namespace"]:
+            updates.append("namespace")
+        if old_parsed["repository"] != new_parsed["repository"]:
+            updates.append("repository")
         if old_parsed["tag"] != new_parsed["tag"]:
             updates.append("tag")
-        if old_parsed["sha"] != new_parsed["sha"]:
-            updates.append("sha")
+        if old_parsed["digest"] != new_parsed["digest"]:
+            updates.append("digest")
 
         logging.getLogger(__name__).debug(f"  Changes: {', '.join(updates)}")
 

@@ -158,39 +158,39 @@ extract_images_from_compose() {
 
 parse_image() {
   local image_str=${1}
-  local -n out_repo=${2}
-  local -n out_user=${3}
-  local -n out_image=${4}
+  local -n out_registry=${2}
+  local -n out_namespace=${3}
+  local -n out_repository=${4}
   local -n out_tag=${5}
-  local -n out_sha=${6}
+  local -n out_digest=${6}
 
   # Set default values
-  out_repo="docker.io"
-  out_user="library"
-  out_image=""
+  out_registry="docker.io"
+  out_namespace="library"
+  out_repository=""
   out_tag=""
-  out_sha=""
+  out_digest=""
 
   # shellcheck disable=SC2034
-  [[ "${image_str}" == *"@"* ]] && out_sha="${image_str##*@}"
-  local no_sha="${image_str%%@*}"
+  [[ "${image_str}" == *"@"* ]] && out_digest="${image_str##*@}"
+  local no_digest="${image_str%%@*}"
 
   # shellcheck disable=SC2034
-  [[ "${no_sha}" == *":"* ]] && out_tag="${no_sha##*:}" || out_tag=""
-  local no_tag="${no_sha%%:*}"
+  [[ "${no_digest}" == *":"* ]] && out_tag="${no_digest##*:}" || out_tag=""
+  local no_tag="${no_digest%%:*}"
 
   IFS='/' read -r -a parts <<< "${no_tag}"
 
   # shellcheck disable=SC2034
   if [ "${#parts[@]}" -eq 3 ]; then
-    out_repo="${parts[0]}"
-    out_user="${parts[1]}"
-    out_image="${parts[2]}"
+    out_registry="${parts[0]}"
+    out_namespace="${parts[1]}"
+    out_repository="${parts[2]}"
   elif [ "${#parts[@]}" -eq 2 ]; then
-    out_user="${parts[0]}"
-    out_image="${parts[1]}"
+    out_namespace="${parts[0]}"
+    out_repository="${parts[1]}"
   else
-    out_image="${parts[0]}"
+    out_repository="${parts[0]}"
   fi
 }
 
@@ -214,38 +214,38 @@ compare_images() {
 
     local updates=()
 
-    local old_repo="docker.io" old_user="library" old_image="" old_tag="" old_sha=""
-    local new_repo="docker.io" new_user="library" new_image="" new_tag="" new_sha=""
+    local old_registry="docker.io" old_namespace="library" old_repository="" old_tag="" old_digest=""
+    local new_registry="docker.io" new_namespace="library" new_repository="" new_tag="" new_digest=""
 
     if [ -n "${old}" ]; then
-      parse_image "${old}" old_repo old_user old_image old_tag old_sha
+      parse_image "${old}" old_registry old_namespace old_repository old_tag old_digest
     fi
 
     if [ -n "${new}" ]; then
-      parse_image "${new}" new_repo new_user new_image new_tag new_sha
+      parse_image "${new}" new_registry new_namespace new_repository new_tag new_digest
     fi
 
-    if [ "${old_repo}" != "${new_repo}" ]; then updates+=("repo"); fi
-    if [ "${old_user}" != "${new_user}" ]; then updates+=("user"); fi
-    if [ "${old_image}" != "${new_image}" ]; then updates+=("image"); fi
+    if [ "${old_registry}" != "${new_registry}" ]; then updates+=("registry"); fi
+    if [ "${old_namespace}" != "${new_namespace}" ]; then updates+=("namespace"); fi
+    if [ "${old_repository}" != "${new_repository}" ]; then updates+=("repository"); fi
     if [ "${old_tag}" != "${new_tag}" ]; then updates+=("tag"); fi
-    if [ "${old_sha}" != "${new_sha}" ]; then updates+=("sha"); fi
+    if [ "${old_digest}" != "${new_digest}" ]; then updates+=("digest"); fi
 
     updates_json=$(printf '%s\n' "${updates[@]}" | jq -R . | jq -s .)
     old_image_json=$(jq -n \
-      --arg repo "${old_repo}" \
-      --arg user "${old_user}" \
-      --arg image "${old_image}" \
+      --arg registry "${old_registry}" \
+      --arg namespace "${old_namespace}" \
+      --arg repository "${old_repository}" \
       --arg tag "${old_tag}" \
-      --arg sha "${old_sha}" \
-      '{repo: $repo, user: $user, image: $image, tag: $tag, sha: $sha}')
+      --arg digest "${old_digest}" \
+      '{registry: $registry, namespace: $namespace, repository: $repository, tag: $tag, digest: $digest}')
     new_image_json=$(jq -n \
-      --arg repo "${new_repo}" \
-      --arg user "${new_user}" \
-      --arg image "${new_image}" \
+      --arg registry "${new_registry}" \
+      --arg namespace "${new_namespace}" \
+      --arg repository "${new_repository}" \
       --arg tag "${new_tag}" \
-      --arg sha "${new_sha}" \
-      '{repo: $repo, user: $user, image: $image, tag: $tag, sha: $sha}')
+      --arg digest "${new_digest}" \
+      '{registry: $registry, namespace: $namespace, repository: $repository, tag: $tag, digest: $digest}')
     containers_json=$(jq -n \
       --arg name "${container}" \
       --arg old "${old}" \
