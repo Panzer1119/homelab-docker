@@ -3,7 +3,7 @@ name: apprise
 
 services:
   apprise:
-    image: caronc/apprise:1.5@sha256:c5ea17408c10fd84c8fdb05a421114a1a677b16343c274bf9b1a55701b530829
+    image: caronc/apprise:2.0@sha256:0b2913b15c8eb47c25345722985ffbfae701326edde21909c205d296d62dd52c
     container_name: apprise
     hostname: apprise
     environment:
