@@ -4,17 +4,17 @@ import argparse
 from collections import defaultdict
 from string import Template
 
-UPDATE_TYPES = ["repo", "user", "image", "tag", "sha"]
+UPDATE_TYPES = ["registry", "namespace", "repository", "tag", "digest"]
 CHANGE_TYPES = ["created", "updated", "deleted"]
 
 UPDATE_TYPE_CLASSES = {
     "separator": "ut-separator",
     "none": "ut-none",
-    "repo": "ut-repo",
-    "user": "ut-repo",
-    "image": "ut-image",
+    "registry": "ut-registry",
+    "namespace": "ut-namespace",
+    "repository": "ut-repository",
     "tag": "ut-tag",
-    "sha": "ut-sha",
+    "digest": "ut-digest",
 }
 
 COMMAND_TEMPLATE = Template(
@@ -116,10 +116,11 @@ def generate_html(data, repo):
 
         .ut-none { }
         .ut-separator { color: gray; }
-        .ut-repo { color: red; font-weight: bold; }
-        .ut-image { color: orange; font-weight: bold; }
+        .ut-registry { color: red; font-weight: bold; }
+        .ut-namespace { color: red; font-weight: bold; }
+        .ut-repository { color: orange; font-weight: bold; }
         .ut-tag { color: green; font-weight: bold; }
-        .ut-sha { color: dodgerblue; font-weight: bold; }
+        .ut-digest { color: dodgerblue; font-weight: bold; }
 
         .image-info {
             font-family: "Lucida Console", "Menlo", "Monaco", "Courier", monospace;
@@ -366,7 +367,7 @@ def generate_html(data, repo):
     <fieldset>
         <legend>Filter by update_type:</legend>
 ''' + '\n'.join([f'<label><input type="checkbox" name="updateType" value="{t}" ' + (
-        '' if t == 'sha' else 'checked') + f' onchange="applyFilters()"> {t}</label><br>' for t in UPDATE_TYPES]) + '''
+        '' if t == 'digest' else 'checked') + f' onchange="applyFilters()"> {t}</label><br>' for t in UPDATE_TYPES]) + '''
     </fieldset>
     <fieldset>
         <legend>Filter by change_type:</legend>
@@ -509,17 +510,17 @@ def generate_html(data, repo):
 
 def image_diff_to_html(old_image_json: dict, new_image_json: dict, only_exact: bool = True) -> tuple[str, str]:
     # Old image
-    old_repo: str = old_image_json['repo']
-    old_user: str = old_image_json['user']
-    old_image: str = old_image_json['image']
+    old_registry: str = old_image_json['registry']
+    old_namespace: str = old_image_json['namespace']
+    old_repository: str = old_image_json['repository']
     old_tag: str = old_image_json['tag']
-    old_sha: str = old_image_json['sha']
+    old_digest: str = old_image_json['digest']
     # New image
-    new_repo: str = new_image_json['repo']
-    new_user: str = new_image_json['user']
-    new_image: str = new_image_json['image']
+    new_registry: str = new_image_json['registry']
+    new_namespace: str = new_image_json['namespace']
+    new_repository: str = new_image_json['repository']
     new_tag: str = new_image_json['tag']
-    new_sha: str = new_image_json['sha']
+    new_digest: str = new_image_json['digest']
     if only_exact:
         # Color only the characters that changed, using difflib.SequenceMatcher
         from difflib import SequenceMatcher
@@ -542,38 +543,38 @@ def image_diff_to_html(old_image_json: dict, new_image_json: dict, only_exact: b
                     new_colored += f'<span class="{UPDATE_TYPE_CLASSES[update_type]}">{new_part}</span>'
             return old_colored, new_colored
 
-        old_repo_html, new_repo_html = color_diff("repo", old_repo, new_repo)
-        old_user_html, new_user_html = color_diff("user", old_user, new_user)
-        old_image_html, new_image_html = color_diff("image", old_image, new_image)
+        old_registry_html, new_registry_html = color_diff("registry", old_registry, new_registry)
+        old_namespace_html, new_namespace_html = color_diff("namespace", old_namespace, new_namespace)
+        old_repository_html, new_repository_html = color_diff("repository", old_repository, new_repository)
         old_tag_html, new_tag_html = color_diff("tag", old_tag, new_tag)
-        # old_sha_html, new_sha_html = color_diff("sha", old_sha, new_sha)
-        # old_sha_html, new_sha_html = color_diff("none", old_sha, new_sha)
-        if old_sha == new_sha:
-            old_sha_html = old_sha
-            new_sha_html = new_sha
+        # old_digest_html, new_digest_html = color_diff("digest", old_digest, new_digest)
+        # old_digest_html, new_digest_html = color_diff("none", old_digest, new_digest)
+        if old_digest == new_digest:
+            old_digest_html = old_digest
+            new_digest_html = new_digest
         else:
-            old_sha_html = f'<span class="{UPDATE_TYPE_CLASSES["sha"]}">{old_sha}</span>'
-            new_sha_html = f'<span class="{UPDATE_TYPE_CLASSES["sha"]}">{new_sha}</span>'
-        old_image_html = f'{old_repo_html}<span class="ut-separator">/</span>{old_user_html}<span class="ut-separator">/</span>{old_image_html}<span class="ut-separator">:</span>{old_tag_html}<span class="ut-separator">@</span>{old_sha_html}'
-        new_image_html = f'{new_repo_html}<span class="ut-separator">/</span>{new_user_html}<span class="ut-separator">/</span>{new_image_html}<span class="ut-separator">:</span>{new_tag_html}<span class="ut-separator">@</span>{new_sha_html}'
+            old_digest_html = f'<span class="{UPDATE_TYPE_CLASSES["digest"]}">{old_digest}</span>'
+            new_digest_html = f'<span class="{UPDATE_TYPE_CLASSES["digest"]}">{new_digest}</span>'
+        old_image_html = f'{old_registry_html}<span class="ut-separator">/</span>{old_namespace_html}<span class="ut-separator">/</span>{old_repository_html}<span class="ut-separator">:</span>{old_tag_html}<span class="ut-separator">@</span>{old_digest_html}'
+        new_image_html = f'{new_registry_html}<span class="ut-separator">/</span>{new_namespace_html}<span class="ut-separator">/</span>{new_repository_html}<span class="ut-separator">:</span>{new_tag_html}<span class="ut-separator">@</span>{new_digest_html}'
     else:
         # Diffs
-        is_repo_updated = old_repo != new_repo
-        is_user_updated = old_user != new_user
-        is_image_updated = old_image != new_image
+        is_registry_updated = old_registry != new_registry
+        is_namespace_updated = old_namespace != new_namespace
+        is_repository_updated = old_repository != new_repository
         is_tag_updated = old_tag != new_tag
-        is_sha_updated = old_sha != new_sha
+        is_digest_updated = old_digest != new_digest
         # Color changed parts in old image red and in new image green
-        old_image_html = f'<span class="{is_repo_updated and UPDATE_TYPE_CLASSES["repo"]}">{old_repo}</span><span class="ut-separator">/</span>' \
-                         f'<span class="{is_user_updated and UPDATE_TYPE_CLASSES["user"]}">{old_user}</span><span class="ut-separator">/</span>' \
-                         f'<span class="{is_image_updated and UPDATE_TYPE_CLASSES["image"]}">{old_image}</span><span class="ut-separator">:</span>' \
+        old_image_html = f'<span class="{is_registry_updated and UPDATE_TYPE_CLASSES["registry"]}">{old_registry}</span><span class="ut-separator">/</span>' \
+                         f'<span class="{is_namespace_updated and UPDATE_TYPE_CLASSES["namespace"]}">{old_namespace}</span><span class="ut-separator">/</span>' \
+                         f'<span class="{is_repository_updated and UPDATE_TYPE_CLASSES["repository"]}">{old_repository}</span><span class="ut-separator">:</span>' \
                          f'<span class="{is_tag_updated and UPDATE_TYPE_CLASSES["tag"]}">{old_tag}</span><span class="ut-separator">@</span>' \
-                         f'<span class="{is_sha_updated and UPDATE_TYPE_CLASSES["sha"]}">{old_sha}</span>'
-        new_image_html = f'<span class="{is_repo_updated and UPDATE_TYPE_CLASSES["repo"]}">{new_repo}</span><span class="ut-separator">/</span>' \
-                         f'<span class="{is_user_updated and UPDATE_TYPE_CLASSES["user"]}">{new_user}</span><span class="ut-separator">/</span>' \
-                         f'<span class="{is_image_updated and UPDATE_TYPE_CLASSES["image"]}">{new_image}</span><span class="ut-separator">:</span>' \
+                         f'<span class="{is_digest_updated and UPDATE_TYPE_CLASSES["digest"]}">{old_digest}</span>'
+        new_image_html = f'<span class="{is_registry_updated and UPDATE_TYPE_CLASSES["registry"]}">{new_registry}</span><span class="ut-separator">/</span>' \
+                         f'<span class="{is_namespace_updated and UPDATE_TYPE_CLASSES["namespace"]}">{new_namespace}</span><span class="ut-separator">/</span>' \
+                         f'<span class="{is_repository_updated and UPDATE_TYPE_CLASSES["repository"]}">{new_repository}</span><span class="ut-separator">:</span>' \
                          f'<span class="{is_tag_updated and UPDATE_TYPE_CLASSES["tag"]}">{new_tag}</span><span class="ut-separator">@</span>' \
-                         f'<span class="{is_sha_updated and UPDATE_TYPE_CLASSES["sha"]}">{new_sha}</span>'
+                         f'<span class="{is_digest_updated and UPDATE_TYPE_CLASSES["digest"]}">{new_digest}</span>'
     return old_image_html, new_image_html
 
 
