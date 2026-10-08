@@ -309,11 +309,9 @@ def compare_images(
         logging.getLogger(__name__).debug(f"  Changes: {', '.join(updates)}")
 
         containers.append({
-            "container_name": container,
-            "old_image": old_image,
-            "new_image": new_image,
-            "update_types": updates,
+            "containerName": container,
             "image": {
+                "changedParts": updates,
                 "old": old_parsed,
                 "new": new_parsed,
             },
@@ -325,10 +323,10 @@ def compare_images(
 
     logging.getLogger(__name__).debug(f"Found {len(containers)} image change(s) for {section}/{project}")
     return {
-        "section": section,
-        "project": project,
-        "change_type": change_type,
-        "changed_images": len(containers),
+        "sectionName": section,
+        "projectName": project,
+        "changeType": change_type,
+        "changedImageCount": len(containers),  # TODO Should we only count unique images?
         "containers": containers,
     }
 
@@ -445,7 +443,7 @@ def process_commit(revision: str, repo_dir: str, verbose: bool = False) -> Optio
 
     logging.getLogger(__name__).debug(f"Extracted {len(project_changes)} project change(s) from commit {revision}")
     return {
-        "commit": revision,
+        "revision": revision,
         "projects": project_changes,
     }
 
