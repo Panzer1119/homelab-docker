@@ -334,12 +334,12 @@ def compare_images(
 
 
 def process_project_file_change(
-        commit: str, status: str, filepath: str, repo_dir: str, verbose: bool = False
+        revision: str, status: str, filepath: str, repo_dir: str, verbose: bool = False
 ) -> Optional[Dict[str, Any]]:
     """Process a single file change in a commit.
 
     Args:
-        commit: Commit SHA
+        revision: Commit SHA
         status: Git status code (A, D, M, etc.)
         filepath: Path to the file
         repo_dir: Repository directory
@@ -366,17 +366,17 @@ def process_project_file_change(
 
     if status == "A":
         change_type = "created"
-        new_content = run_git_command(["git", "show", f"{commit}:{filepath}"], check=False, repo_dir=repo_dir,
+        new_content = run_git_command(["git", "show", f"{revision}:{filepath}"], check=False, repo_dir=repo_dir,
                                       verbose=verbose)
     elif status == "D":
         change_type = "deleted"
-        old_content = run_git_command(["git", "show", f"{commit}^:{filepath}"], check=False, repo_dir=repo_dir,
+        old_content = run_git_command(["git", "show", f"{revision}^:{filepath}"], check=False, repo_dir=repo_dir,
                                       verbose=verbose)
     else:  # M or any other status
         change_type = "updated"
-        old_content = run_git_command(["git", "show", f"{commit}^:{filepath}"], check=False, repo_dir=repo_dir,
+        old_content = run_git_command(["git", "show", f"{revision}^:{filepath}"], check=False, repo_dir=repo_dir,
                                       verbose=verbose)
-        new_content = run_git_command(["git", "show", f"{commit}:{filepath}"], check=False, repo_dir=repo_dir,
+        new_content = run_git_command(["git", "show", f"{revision}:{filepath}"], check=False, repo_dir=repo_dir,
                                       verbose=verbose)
 
     old_images = extract_images_from_compose(old_content, project, verbose) if old_content else {}
@@ -385,11 +385,11 @@ def process_project_file_change(
     return compare_images(section, project, change_type, old_images, new_images, verbose)
 
 
-def process_commit(commit: str, repo_dir: str, verbose: bool = False) -> Optional[Dict[str, Any]]:
+def process_commit(revision: str, repo_dir: str, verbose: bool = False) -> Optional[Dict[str, Any]]:
     """Process a single commit.
 
     Args:
-        commit: Commit SHA
+        revision: Commit SHA
         repo_dir: Repository directory
         verbose: If True, print verbose output
 
@@ -397,18 +397,18 @@ def process_commit(commit: str, repo_dir: str, verbose: bool = False) -> Optiona
         Dictionary with commit and projects information or None
     """
     logger = logging.getLogger(__name__)
-    logger.info(f"Processing commit {commit}")
+    logger.info(f"Processing commit {revision}")
 
     # Get changed files matching docker-compose pattern
     diff_output = run_git_command(
-        ["git", "diff", "--name-status", f"{commit}^", commit, "--", "."],
+        ["git", "diff", "--name-status", f"{revision}^", revision, "--", "."],
         check=False,
         repo_dir=repo_dir,
         verbose=verbose,
     )
 
     if not diff_output:
-        logging.getLogger(__name__).debug(f"No file changes found in commit {commit}")
+        logging.getLogger(__name__).debug(f"No file changes found in commit {revision}")
         return None
 
     # Filter for docker-compose files in compose directory
@@ -426,26 +426,26 @@ def process_commit(commit: str, repo_dir: str, verbose: bool = False) -> Optiona
             files.append((status, filepath))
 
     if not files:
-        logging.getLogger(__name__).debug(f"No docker-compose files found in commit {commit}")
+        logging.getLogger(__name__).debug(f"No docker-compose files found in commit {revision}")
         return None
 
     logger.info(f"Matched {len(files)} docker compose file(s)")
 
     project_changes = []
     for status, filepath in files:
-        result = process_project_file_change(commit, status, filepath, repo_dir, verbose)
+        result = process_project_file_change(revision, status, filepath, repo_dir, verbose)
         if result:
             project_changes.append(result)
         else:
-            logger.info(f"Commit {commit} has no docker image updates")
+            logger.info(f"Commit {revision} has no docker image updates")
 
     if not project_changes:
-        logging.getLogger(__name__).debug(f"No project changes extracted from commit {commit}")
+        logging.getLogger(__name__).debug(f"No project changes extracted from commit {revision}")
         return None
 
-    logging.getLogger(__name__).debug(f"Extracted {len(project_changes)} project change(s) from commit {commit}")
+    logging.getLogger(__name__).debug(f"Extracted {len(project_changes)} project change(s) from commit {revision}")
     return {
-        "commit": commit,
+        "commit": revision,
         "projects": project_changes,
     }
 
