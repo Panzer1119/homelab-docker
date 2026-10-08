@@ -256,10 +256,10 @@ compare_images() {
       --arg name "${container}" \
       --arg old "${old}" \
       --arg new "${new}" \
-      --argjson changes "${updates_json}" \
-      --argjson old_image "${old_image_json}" \
-      --argjson new_image "${new_image_json}" \
-      '$ARGS.named | {container_name: .name, old_image: .old, new_image: .new, update_types: $changes, image: {old: .old_image, new: .new_image}}' | \
+      --argjson changedParts "${updates_json}" \
+      --argjson oldImage "${old_image_json}" \
+      --argjson newImage "${new_image_json}" \
+      '$ARGS.named | {containerName: .name, image: {changedParts: .changedParts, old: .oldImage, new: .newImage}}' | \
       jq --argjson existing "${containers_json}" '$existing + [.]')
   done
 
