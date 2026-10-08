@@ -441,9 +441,14 @@ def process_commit(revision: str, repo_dir: str, verbose: bool = False) -> Optio
         logging.getLogger(__name__).debug(f"No project changes extracted from commit {revision}")
         return None
 
+    committed_at_epoch_seconds = int(run_git_command(["git", "show", "-s", "--format=%ct", revision], check=False, repo_dir=repo_dir, verbose=verbose))
+    authored_at_epoch_seconds = int(run_git_command(["git", "show", "-s", "--format=%at", revision], check=False, repo_dir=repo_dir, verbose=verbose))
+
     logging.getLogger(__name__).debug(f"Extracted {len(project_changes)} project change(s) from commit {revision}")
     return {
         "revision": revision,
+        "committedAtEpochSeconds": committed_at_epoch_seconds,
+        "authoredAtEpochSeconds": authored_at_epoch_seconds,
         "projects": project_changes,
     }
 
