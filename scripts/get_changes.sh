@@ -268,12 +268,12 @@ compare_images() {
   [ "${count}" -eq 0 ] && return
 
   jq -n \
-    --arg section "${section}" \
-    --arg project "${project}" \
-    --arg type "${change_type}" \
-    --argjson count "${count}" \
+    --arg sectionName "${section}" \
+    --arg projectName "${project}" \
+    --arg changeType "${change_type}" \
+    --argjson changedImageCount "${count}" \
     --argjson containers "${containers_json}" \
-    '{section: $section, project: $project, change_type: $type, changed_images: $count, containers: $containers}'
+    '{sectionName: $sectionName, projectName: $projectName, changeType: $changeType, changedImageCount: $changedImageCount, containers: $containers}'
 }
 
 main
