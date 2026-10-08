@@ -83,11 +83,17 @@ process_commit() {
 
   [ "$(echo "${project_changes}" | jq length)" -eq 0 ] && return
 
-  local TIMESTAMP
-  TIMESTAMP=$(git show -s --format=%cI "${REVISION}")
+  local COMMITTED_AT_EPOCH_SECONDS
+  COMMITTED_AT_EPOCH_SECONDS=$(git show -s --format=%ct "${REVISION}")
+  local AUTHORED_AT_EPOCH_SECONDS
+  AUTHORED_AT_EPOCH_SECONDS=$(git show -s --format=%at "${REVISION}")
 
-  jq -n --arg sha "${REVISION}" --arg timestamp "${TIMESTAMP}" --argjson projects "${project_changes}" \
-    '{commit: $sha, timestamp: $timestamp, projects: $projects}'
+  jq -n \
+    --arg revision "${REVISION}" \
+    --argjson committedAtEpochSeconds "${COMMITTED_AT_EPOCH_SECONDS}" \
+    --argjson authoredAtEpochSeconds "${AUTHORED_AT_EPOCH_SECONDS}" \
+    --argjson projects "${project_changes}" \
+    '{revision: $revision, committedAtEpochSeconds: $committedAtEpochSeconds, authoredAtEpochSeconds: $authoredAtEpochSeconds, projects: $projects}'
 }
 
 process_project_file_change() {
