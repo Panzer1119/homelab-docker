@@ -31,20 +31,20 @@ main() {
     echo "Skipping git fetch as SKIP_FETCH is set to true" >&2
   fi
 
-  LAST_COMMIT=$(git rev-parse "${TAG_LAST}" 2>/dev/null || echo "")
+  LAST_REVISION=$(git rev-parse "${TAG_LAST}" 2>/dev/null || echo "")
   REMOTE_HEAD=$(git rev-parse "${REMOTE}/${BRANCH}")
-  COMMITS=$(git rev-list --reverse "${LAST_COMMIT}..${REMOTE_HEAD}")
+  REVISIONS=$(git rev-list --reverse "${LAST_REVISION}..${REMOTE_HEAD}")
 
-  [ -z "${COMMITS}" ] && { echo "No new commits to process." >&2; echo '[]'; exit 0; }
+  [ -z "${REVISIONS}" ] && { echo "No new commits to process." >&2; echo '[]'; exit 0; }
 
-  commit_count=$(git rev-list --count "${LAST_COMMIT}..${REMOTE_HEAD}")
+  commit_count=$(git rev-list --count "${LAST_REVISION}..${REMOTE_HEAD}")
   echo "Processing ${commit_count} new commit(s)" >&2
-  echo "Oldest: ${LAST_COMMIT}" >&2
+  echo "Oldest: ${LAST_REVISION}" >&2
   echo "Newest: ${REMOTE_HEAD}" >&2
 
   local full_output="[]"
-  for COMMIT in ${COMMITS}; do
-    commit_output=$(process_commit "${COMMIT}" || echo "")
+  for REVISION in ${REVISIONS}; do
+    commit_output=$(process_commit "${REVISION}" || echo "")
     if [ -n "${commit_output}" ]; then
       full_output=$(jq -n \
         --argjson existing "${full_output}" \
@@ -57,10 +57,10 @@ main() {
 }
 
 process_commit() {
-  local COMMIT=${1}
-  echo "Processing commit ${COMMIT}" >&2
+  local REVISION=${1}
+  echo "Processing commit ${REVISION}" >&2
   local FILES
-  FILES=$(git diff --name-status "${COMMIT}^" "${COMMIT}" -- . | grep -E 'compose/.*/.*/docker-compose(\.override)?\.ya?ml' || true)
+  FILES=$(git diff --name-status "${REVISION}^" "${REVISION}" -- . | grep -E 'compose/.*/.*/docker-compose(\.override)?\.ya?ml' || true)
 
   [ -z "${FILES}" ] && return
 
@@ -70,28 +70,28 @@ process_commit() {
   local project_changes="[]"
   while read -r STATUS FILEPATH; do
     [ -z "${FILEPATH}" ] && continue
-    result=$(process_project_file_change "${COMMIT}" "${STATUS}" "${FILEPATH}" || echo "")
+    result=$(process_project_file_change "${REVISION}" "${STATUS}" "${FILEPATH}" || echo "")
     if [ -n "${result}" ]; then
       project_changes=$(jq -n \
         --argjson existing "${project_changes}" \
         --argjson new "${result}" \
         '$existing + [$new]')
     else
-      echo "Commit ${COMMIT} has no docker image updates" >&2
+      echo "Commit ${REVISION} has no docker image updates" >&2
     fi
   done <<< "${FILES}"
 
   [ "$(echo "${project_changes}" | jq length)" -eq 0 ] && return
 
   local TIMESTAMP
-  TIMESTAMP=$(git show -s --format=%cI "${COMMIT}")
+  TIMESTAMP=$(git show -s --format=%cI "${REVISION}")
 
-  jq -n --arg sha "${COMMIT}" --arg timestamp "${TIMESTAMP}" --argjson projects "${project_changes}" \
+  jq -n --arg sha "${REVISION}" --arg timestamp "${TIMESTAMP}" --argjson projects "${project_changes}" \
     '{commit: $sha, timestamp: $timestamp, projects: $projects}'
 }
 
 process_project_file_change() {
-  local COMMIT=${1}
+  local REVISION=${1}
   local STATUS=${2}
   local FILEPATH=${3}
 
@@ -108,16 +108,16 @@ process_project_file_change() {
   case "${STATUS}" in
     A)
       CHANGE_TYPE="created"
-      NEW_CONTENT=$(git show "${COMMIT}:${FILEPATH}" || true)
+      NEW_CONTENT=$(git show "${REVISION}:${FILEPATH}" || true)
       ;;
     D)
       CHANGE_TYPE="deleted"
-      OLD_CONTENT=$(git show "${COMMIT}^:${FILEPATH}" || true)
+      OLD_CONTENT=$(git show "${REVISION}^:${FILEPATH}" || true)
       ;;
     M|*)
       CHANGE_TYPE="updated"
-      OLD_CONTENT=$(git show "${COMMIT}^:${FILEPATH}" || true)
-      NEW_CONTENT=$(git show "${COMMIT}:${FILEPATH}" || true)
+      OLD_CONTENT=$(git show "${REVISION}^:${FILEPATH}" || true)
+      NEW_CONTENT=$(git show "${REVISION}:${FILEPATH}" || true)
       ;;
   esac
 
