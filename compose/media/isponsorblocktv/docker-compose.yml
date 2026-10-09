@@ -1,0 +1,14 @@
+---
+services:
+  isponsorblocktv:
+    image: ghcr.io/dmunozv04/isponsorblocktv:v2.11.0
+    container_name: isponsorblocktv
+    hostname: isponsorblocktv
+    volumes:
+      - /docker/data/isponsorblocktv:/app/data
+    network_mode: host
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...

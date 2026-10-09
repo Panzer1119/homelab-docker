@@ -6,6 +6,7 @@ Apps for downloading, enriching, and managing movies, shows, etc.
 
 ## Projects
 
+- [iSponsorBlockTV](./isponsorblocktv/README.md)
 - [Jellyseerr](./jellyseerr/README.md)
 - [Kometa](./kometa/README.md)
 - [Lidarr](./lidarr/README.md) #TODO
