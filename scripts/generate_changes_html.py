@@ -23,12 +23,12 @@ COMMAND_TEMPLATE = Template(
     "-v -D -u "
     "-d \"${repo}/compose/${section}/${project}\" "
     "-c ${container} "
-    "-C ${commit}"
+    "-C ${revision}"
 )
 
 
-def format_command(section, project, container, commit, repo):
-    return COMMAND_TEMPLATE.substitute(repo=repo, section=section, project=project, container=container, commit=commit)
+def format_command(section, project, container, revision, repo):
+    return COMMAND_TEMPLATE.substitute(repo=repo, section=section, project=project, container=container, revision=revision)
 
 
 def generate_html(data, repo):
@@ -407,7 +407,7 @@ def generate_html(data, repo):
 '''
 
     for commit_entry in data:
-        commit_html = f'<div class="commit"><strong>Commit:</strong> <code>{commit_entry["commit"]}</code>'
+        commit_html = f'<div class="commit"><strong>Commit:</strong> <code>{commit_entry["revision"]}</code>'
         commit_html += f'<br><strong>Timestamp:</strong> <code><time datetime="{commit_entry['timestamp']}">{commit_entry['timestamp_formatted']}</time></code>'
         project_htmls = []
 
@@ -416,7 +416,7 @@ def generate_html(data, repo):
             for container in project['containers']:
                 update_types = ','.join(container['update_types'])
                 command = format_command(project['section'], project['project'], container['container_name'],
-                                         commit_entry['commit'], repo)
+                                         commit_entry['revision'], repo)
                 styled_updates = ' '.join([
                     f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
                 ])
@@ -460,7 +460,7 @@ def generate_html(data, repo):
     for entry in data:
         for project in entry['projects']:
             section_map[project['section']].append({
-                'commit': entry['commit'],
+                'revision': entry['revision'],
                 'timestamp': entry['timestamp'],
                 'timestamp_formatted': entry['timestamp_formatted'],
                 'project': project
@@ -480,7 +480,7 @@ def generate_html(data, repo):
                 for container in project['containers']:
                     update_types = ','.join(container['update_types'])
                     command = format_command(project['section'], project['project'], container['container_name'],
-                                             item['commit'], repo)
+                                             item['revision'], repo)
                     styled_updates = ' '.join([
                         f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
                     ])
@@ -503,7 +503,7 @@ def generate_html(data, repo):
                         <div class="project-controls" style="float:right; margin-top:-24px;">
                             <button class="btn toggle-project-btn" data-project="{project_name}" title="Disable this project in the filter">Hide project</button>
                         </div>
-                        <strong>Commit:</strong> <code>{item['commit']}</code><br>
+                        <strong>Commit:</strong> <code>{item['revision']}</code><br>
                         <strong>Timestamp:</strong> <code><time datetime="{item['timestamp']}">{item['timestamp_formatted']}</time></code><br>
                         <strong>Change Type:</strong> <span class="{project['change_type']}">{project['change_type']}</span>
                         {containers_html}
