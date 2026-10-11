@@ -435,14 +435,14 @@ def generate_html(data, repo):
             if containers_html:
                 project_html = (
                     f'<div class="project" '
-                    f'data-change-type="{project["change_type"]}" '
+                    f'data-change-type="{project["changeType"]}" '
                     f'data-section="{project["sectionName"]}" '
                     f'data-project="{project["projectName"]}">'
                     f'<strong>Section:</strong> <code>{project["sectionName"]}</code> '
                     f'<span class="project-controls"><button class="btn toggle-section-btn" data-section="{project["sectionName"]}" title="Disable this section in the filter">Hide section</button></span><br>'
                     f'<strong>Project:</strong> <code>{project["projectName"]}</code> '
                     f'<span class="project-controls"><button class="btn toggle-project-btn" data-project="{project["projectName"]}" title="Disable this project in the filter">Hide project</button></span><br>'
-                    f'<strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>'
+                    f'<strong>Change Type:</strong> <span class="{project["changeType"]}">{project["changeType"]}</span>'
                     f'{containers_html}'
                     f'</div>'
                 )
@@ -499,7 +499,7 @@ def generate_html(data, repo):
                     </div>'''
                 if containers_html:
                     section_html += f'''<div class="project"
-                        data-change-type="{project['change_type']}"
+                        data-change-type="{project['changeType']}"
                         data-section="{section}"
                         data-project="{project_name}">
                         <div class="project-controls" style="float:right; margin-top:-24px;">
@@ -507,7 +507,7 @@ def generate_html(data, repo):
                         </div>
                         <strong>Commit:</strong> <code>{item['revision']}</code><br>
                         <strong>Timestamp:</strong> <code><time datetime="{item['timestamp']}">{item['timestamp_formatted']}</time></code><br>
-                        <strong>Change Type:</strong> <span class="{project['change_type']}">{project['change_type']}</span>
+                        <strong>Change Type:</strong> <span class="{project['changeType']}">{project['changeType']}</span>
                         {containers_html}
                     </div>'''
             section_html += '</div>'
