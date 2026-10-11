@@ -37,9 +37,7 @@ def generate_html(data, repo):
     projects_set = set()
     for commit_entry in data:
         # Parse and format the timestamp for display
-        timestamp = datetime.datetime.fromisoformat(commit_entry['timestamp']).astimezone(datetime.timezone.utc)
-        #commit_entry['timestamp_formatted'] = commit_entry['timestamp'].replace('T', ' ').replace('Z', ' UTC')
-        #commit_entry['timestamp_formatted'] = commit_entry['timestamp'].replace('T', ' ')
+        timestamp = datetime.datetime.fromtimestamp(commit_entry['committedAtEpochSeconds'], datetime.timezone.utc)
         commit_entry['timestamp'] = datetime.datetime.isoformat(timestamp).replace('+00:00', 'Z')
         commit_entry['timestamp_formatted'] = commit_entry['timestamp']
         for project in commit_entry['projects']:
