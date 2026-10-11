@@ -41,8 +41,8 @@ def generate_html(data, repo):
         commit_entry['timestamp'] = datetime.datetime.isoformat(timestamp).replace('+00:00', 'Z')
         commit_entry['timestamp_formatted'] = commit_entry['timestamp']
         for project in commit_entry['projects']:
-            sections_set.add(project['section'])
-            projects_set.add(project['project'])
+            sections_set.add(project['sectionName'])
+            projects_set.add(project['projectName'])
     sections = sorted(sections_set)
     projects = sorted(projects_set)
 
@@ -415,7 +415,7 @@ def generate_html(data, repo):
             containers_html = ''
             for container in project['containers']:
                 update_types = ','.join(container['update_types'])
-                command = format_command(project['section'], project['project'], container['container_name'],
+                command = format_command(project['sectionName'], project['projectName'], container['container_name'],
                                          commit_entry['revision'], repo)
                 styled_updates = ' '.join([
                     f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
@@ -436,12 +436,12 @@ def generate_html(data, repo):
                 project_html = (
                     f'<div class="project" '
                     f'data-change-type="{project["change_type"]}" '
-                    f'data-section="{project["section"]}" '
-                    f'data-project="{project["project"]}">'
-                    f'<strong>Section:</strong> <code>{project["section"]}</code> '
-                    f'<span class="project-controls"><button class="btn toggle-section-btn" data-section="{project["section"]}" title="Disable this section in the filter">Hide section</button></span><br>'
-                    f'<strong>Project:</strong> <code>{project["project"]}</code> '
-                    f'<span class="project-controls"><button class="btn toggle-project-btn" data-project="{project["project"]}" title="Disable this project in the filter">Hide project</button></span><br>'
+                    f'data-section="{project["sectionName"]}" '
+                    f'data-project="{project["projectName"]}">'
+                    f'<strong>Section:</strong> <code>{project["sectionName"]}</code> '
+                    f'<span class="project-controls"><button class="btn toggle-section-btn" data-section="{project["sectionName"]}" title="Disable this section in the filter">Hide section</button></span><br>'
+                    f'<strong>Project:</strong> <code>{project["projectName"]}</code> '
+                    f'<span class="project-controls"><button class="btn toggle-project-btn" data-project="{project["projectName"]}" title="Disable this project in the filter">Hide project</button></span><br>'
                     f'<strong>Change Type:</strong> <span class="{project["change_type"]}">{project["change_type"]}</span>'
                     f'{containers_html}'
                     f'</div>'
@@ -459,10 +459,12 @@ def generate_html(data, repo):
 
     for entry in data:
         for project in entry['projects']:
-            section_map[project['section']].append({
+            section_map[project['sectionName']].append({
                 'revision': entry['revision'],
                 'timestamp': entry['timestamp'],
                 'timestamp_formatted': entry['timestamp_formatted'],
+                'sectionName': project['sectionName'],
+                'projectName': project['projectName'],
                 'project': project
             })
 
@@ -470,7 +472,7 @@ def generate_html(data, repo):
         section_html += f'<div class="section-divider" data-section="{section}"><h2 class="section-header">Section: <code>{section}</code> <button class="btn toggle-section-btn" data-section="{section}" title="Disable this section in the filter">Hide section</button></h2>'
         project_groups = defaultdict(list)
         for item in section_map[section]:
-            project_groups[item['project']['project']].append(item)
+            project_groups[item['project']['projectName']].append(item)
 
         for project_name in sorted(project_groups.keys()):
             section_html += f'<div class="project-divider" data-project="{project_name}"><h3>Project: <code>{project_name}</code></h3>'
@@ -479,7 +481,7 @@ def generate_html(data, repo):
                 containers_html = ''
                 for container in project['containers']:
                     update_types = ','.join(container['update_types'])
-                    command = format_command(project['section'], project['project'], container['container_name'],
+                    command = format_command(project['sectionName'], project['projectName'], container['container_name'],
                                              item['revision'], repo)
                     styled_updates = ' '.join([
                         f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
