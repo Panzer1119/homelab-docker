@@ -5,7 +5,7 @@ import argparse
 from collections import defaultdict
 from string import Template
 
-UPDATE_TYPES = ["registry", "namespace", "repository", "tag", "digest"]
+CHANGED_PARTS = ["registry", "namespace", "repository", "tag", "digest"]
 CHANGE_TYPES = ["created", "updated", "deleted"]
 
 UPDATE_TYPE_CLASSES = {
@@ -372,7 +372,7 @@ def generate_html(data, repo):
     <fieldset>
         <legend>Filter by update_type:</legend>
 ''' + '\n'.join([f'<label><input type="checkbox" name="updateType" value="{t}" ' + (
-        '' if t == 'digest' else 'checked') + f' onchange="applyFilters()"> {t}</label><br>' for t in UPDATE_TYPES]) + '''
+        '' if t == 'digest' else 'checked') + f' onchange="applyFilters()"> {t}</label><br>' for t in CHANGED_PARTS]) + '''
     </fieldset>
     <fieldset>
         <legend>Filter by change_type:</legend>
@@ -414,15 +414,15 @@ def generate_html(data, repo):
         for project in commit_entry['projects']:
             containers_html = ''
             for container in project['containers']:
-                update_types = ','.join(container['update_types'])
+                changed_parts = ','.join(container['image']['changedParts'])
                 command = format_command(project['sectionName'], project['projectName'], container['container_name'],
                                          commit_entry['revision'], repo)
                 styled_updates = ' '.join([
-                    f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
+                    f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['image']['changedParts']
                 ])
                 old_image_html, new_image_html = image_diff_to_html(container['image']['old'],
                                                                     container['image']['new'])
-                containers_html += f'''<div class="container" data-update-types="{update_types}">
+                containers_html += f'''<div class="container" data-update-types="{changed_parts}">
                     <strong>Container:</strong> <code>{container['container_name']}</code><br>
                     <div class="image-info">
                         <strong>Old Image:</strong> <code>{old_image_html}</code><br>
@@ -480,15 +480,15 @@ def generate_html(data, repo):
                 project = item['project']
                 containers_html = ''
                 for container in project['containers']:
-                    update_types = ','.join(container['update_types'])
+                    changed_parts = ','.join(container['image']['changedParts'])
                     command = format_command(project['sectionName'], project['projectName'], container['container_name'],
                                              item['revision'], repo)
                     styled_updates = ' '.join([
-                        f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['update_types']
+                        f'<span class="{UPDATE_TYPE_CLASSES.get(t, "")}">{t}</span>' for t in container['image']['changedParts']
                     ])
                     old_image_html, new_image_html = image_diff_to_html(container['image']['old'],
                                                                         container['image']['new'])
-                    containers_html += f'''<div class="container" data-update-types="{update_types}">
+                    containers_html += f'''<div class="container" data-update-types="{changed_parts}">
                         <strong>Container:</strong> <code>{container['container_name']}</code><br>
                         <div class="image-info">
                             <strong>Old Image:</strong> <code>{old_image_html}</code><br>
