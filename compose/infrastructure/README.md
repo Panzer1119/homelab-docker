@@ -7,6 +7,7 @@ Apps that help to manage the homelab itself (deployment, sync, orchestration, et
 ## Projects
 
 - [AdGuardHome sync](./adguardhome-sync/README.md)
+- [Docker MQTT Control](./docker-mqtt-control/README.md)
 - [Authelia](./authelia/README.md) #TODO
 - [Dockge](./dockge/README.md) #TODO
 - [Homer](./homer/README.md) #TODO

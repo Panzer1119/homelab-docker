@@ -1,0 +1,15 @@
+---
+services:
+  docker-mqtt-control:
+    build: .
+    container_name: docker-mqtt-control
+    hostname: docker-mqtt-control
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...
