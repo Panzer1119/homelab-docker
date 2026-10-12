@@ -54,7 +54,7 @@ services:
     # https://github.com/ArchiveBox/ArchiveBox/wiki/Chromium-Install#docker-vnc-setup
 
   novnc:
-    image: theasp/novnc:TODO
+    image: theasp/novnc:latest
     environment:
       - DISPLAY_WIDTH=1920
       - DISPLAY_HEIGHT=1080
@@ -67,7 +67,7 @@ services:
     ports:
       # to view/control ArchiveBox's browser, visit: http://127.0.0.1:8080/vnc.html
       # restricted to access from localhost by default because it has no authentication
-      - 127.0.0.1:8080:8080
+      - "127.0.0.1:8080:8080"
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
