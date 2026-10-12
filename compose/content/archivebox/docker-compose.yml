@@ -54,7 +54,7 @@ services:
     # https://github.com/ArchiveBox/ArchiveBox/wiki/Chromium-Install#docker-vnc-setup
 
   novnc:
-    image: theasp/novnc:latest
+    image: theasp/novnc:latest@sha256:f2d05e35c8d2550d39bb2e01db36c46f35bf72159666596855e5660c017d847e
     environment:
       - DISPLAY_WIDTH=1920
       - DISPLAY_HEIGHT=1080
