@@ -15,11 +15,6 @@ services:
       - archive:/data/archive
       # Recommended: lets one-off `docker compose run` commands reuse main server's runners
       - tmp:/tmp/archivebox
-    labels:
-      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/ArchiveBox/CIFS/Host"
-      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/ArchiveBox/CIFS/Username"
-      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/ArchiveBox/CIFS/Password"
-      - "de.panzer1119.docker.volume.archivebox_archive.cifs.share=op://Docker/ArchiveBox/CIFS/Share_Archive"
     ports:
       - "5797:5797"
     dns:
@@ -124,34 +119,40 @@ services:
 
   ### Example: Run PYWB in parallel and auto-import WARCs from ArchiveBox
 
-  pywb:
-    image: webrecorder/pywb:2.10.0@sha256:d88b8fad21cf63023a881c9cb08ee014c98a800448cc88220a0baed3f401f707
-    container_name: archivebox_pywb
-    #    entrypoint: /bin/sh -c '(wb-manager init default || test $$? -eq 2) && wb-manager add default /archivebox/archive/*/warc/*.warc.gz; wayback;'
-    #    environment:
-    #      - INIT_COLLECTION=archivebox
-    volumes:
-      - webarchive:/webarchive:ro
-    labels:
-      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/ArchiveBox/CIFS/Host"
-      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/ArchiveBox/CIFS/Username"
-      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/ArchiveBox/CIFS/Password"
-      - "de.panzer1119.docker.volume.archivebox_webarchive.cifs.share=op://Docker/ArchiveBox/CIFS/Share_Webarchive"
-    ports:
-      - "8025:8080"
-    restart: unless-stopped
-    extends:
-      file: ../../common/docker-compose.yml
-      service: logging-gelf
+#  pywb:
+#    image: webrecorder/pywb:2.10.0@sha256:d88b8fad21cf63023a881c9cb08ee014c98a800448cc88220a0baed3f401f707
+#    container_name: archivebox_pywb
+#    #    entrypoint: /bin/sh -c '(wb-manager init default || test $$? -eq 2) && wb-manager add default /archivebox/archive/*/warc/*.warc.gz; wayback;'
+#    #    environment:
+#    #      - INIT_COLLECTION=archivebox
+#    volumes:
+#      - webarchive:/webarchive:ro
+#    labels:
+#      - "de.panzer1119.docker.volume.default.cifs.host=op://Docker/ArchiveBox/CIFS/Host"
+#      - "de.panzer1119.docker.volume.default.cifs.username=op://Docker/ArchiveBox/CIFS/Username"
+#      - "de.panzer1119.docker.volume.default.cifs.password=op://Docker/ArchiveBox/CIFS/Password"
+#      - "de.panzer1119.docker.volume.archivebox_webarchive.cifs.share=op://Docker/ArchiveBox/CIFS/Share_Webarchive"
+#    ports:
+#      - "8025:8080"
+#    restart: unless-stopped
+#    extends:
+#      file: ../../common/docker-compose.yml
+#      service: logging-gelf
 
 volumes:
   tmp:
   archive:
-    name: archivebox_archive
-    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
-    external: true
-  webarchive:
-    name: archivebox_webarchive
-    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
-    external: true
+    driver: local
+    driver_opts:
+      type: cifs
+      device: "//{{op://Docker/ArchiveBox/CIFS/Host}}/{{op://Docker/ArchiveBox/CIFS/Share_Archive}}"
+      o: "addr={{op://Docker/ArchiveBox/CIFS/Host}},username={{op://Docker/ArchiveBox/CIFS/Username}},password={{op://Docker/ArchiveBox/CIFS/Password}},uid=1000,gid=1000,forceuid,forcegid,noperm,file_mode=0644,dir_mode=0755,iocharset=utf8,vers=3.0"
+#  archive:
+#    name: archivebox_archive
+#    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+#    external: true
+#  webarchive:
+#    name: archivebox_webarchive
+#    # Because this is a cifs volume, and it needs credentials, it is created outside of this file
+#    external: true
 ...
