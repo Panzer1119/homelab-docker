@@ -6,6 +6,7 @@
 
 # Ignore injected ref files
 compose/common/docker-compose.yml
+compose/content/archivebox/docker-compose.yml
 compose/content/paperless-ngx/scripts/post-consumption-paperparrot.sh
 compose/content/paperless-ngx/scripts/post-consumption-pushover.sh
 compose/content/paperless-ngx/scripts/send_pushover_message.sh
