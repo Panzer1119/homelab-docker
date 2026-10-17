@@ -13,20 +13,12 @@ SKIP_FETCH="${SKIP_FETCH:-false}"
 command -v yq >/dev/null || { echo "yq is required but not installed." >&2; exit 1; }
 command -v jq >/dev/null || { echo "jq is required but not installed." >&2; exit 1; }
 
-TMP_DIR=""
+TMP_DIR="$(mktemp -d)"
 declare -a TMP_FILES=()
 
-ensure_tmp_dir() {
-  [ -n "${TMP_DIR}" ] && return
-  TMP_DIR=$(mktemp -d)
-}
-
 new_tmp_file() {
-  ensure_tmp_dir
   local tmp_file
-  if ! tmp_file=$(mktemp -p "${TMP_DIR}" tmp.XXXXXX 2>/dev/null); then
-    tmp_file=$(TMPDIR="${TMP_DIR}" mktemp tmp.XXXXXX)
-  fi
+  tmp_file=$(mktemp -p "${TMP_DIR}" tmp.XXXXXX 2>/dev/null)
   TMP_FILES+=("${tmp_file}")
   printf '%s\n' "${tmp_file}"
 }
