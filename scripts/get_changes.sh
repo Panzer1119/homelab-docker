@@ -13,6 +13,26 @@ SKIP_FETCH="${SKIP_FETCH:-false}"
 command -v yq >/dev/null || { echo "yq is required but not installed." >&2; exit 1; }
 command -v jq >/dev/null || { echo "jq is required but not installed." >&2; exit 1; }
 
+declare -a TMP_FILES=()
+
+new_tmp_file() {
+  local tmp_file
+  tmp_file=$(mktemp)
+  TMP_FILES+=("${tmp_file}")
+  printf '%s\n' "${tmp_file}"
+}
+
+cleanup_tmp_files() {
+  local exit_code=$?
+  local tmp_file
+  for tmp_file in "${TMP_FILES[@]:-}"; do
+    [ -n "${tmp_file}" ] && [ -e "${tmp_file}" ] && rm -f "${tmp_file}"
+  done
+  return "${exit_code}"
+}
+
+trap cleanup_tmp_files EXIT INT TERM
+
 #TODO How do we handle different containers in the same stack that all gets the same update (like Radarr and Sonarr)?
 # Should it create multiple ZFS Snapshots that contain identical data?
 
@@ -43,7 +63,7 @@ main() {
   echo "Newest: ${REMOTE_HEAD}" >&2
 
   local commits_tmp
-  commits_tmp=$(mktemp)
+  commits_tmp=$(new_tmp_file)
   for REVISION in ${REVISIONS}; do
     commit_output=$(process_commit "${REVISION}" || echo "")
     if [ -n "${commit_output}" ]; then
@@ -52,13 +72,11 @@ main() {
   done
 
   if [ ! -s "${commits_tmp}" ]; then
-    rm -f "${commits_tmp}"
     echo '[]'
     return
   fi
 
   jq -s . "${commits_tmp}"
-  rm -f "${commits_tmp}"
 }
 
 process_commit() {
@@ -73,7 +91,7 @@ process_commit() {
   echo "Matched ${file_count} docker compose file(s)" >&2
 
   local project_tmp
-  project_tmp=$(mktemp)
+  project_tmp=$(new_tmp_file)
   while read -r STATUS FILEPATH; do
     [ -z "${FILEPATH}" ] && continue
     result=$(process_project_file_change "${REVISION}" "${STATUS}" "${FILEPATH}" || echo "")
@@ -84,11 +102,10 @@ process_commit() {
     fi
   done <<< "${FILES}"
 
-  [ ! -s "${project_tmp}" ] && { rm -f "${project_tmp}"; return; }
+  [ ! -s "${project_tmp}" ] && return
 
   local project_changes
   project_changes=$(jq -s . "${project_tmp}")
-  rm -f "${project_tmp}"
 
   local COMMITTED_AT_EPOCH_SECONDS
   COMMITTED_AT_EPOCH_SECONDS=$(git show -s --format=%ct "${REVISION}")
@@ -220,7 +237,7 @@ compare_images() {
   mapfile -t unique_keys < <(printf "%s\n" "${all_keys[@]}" | sed '/^$/d' | sort -u)
 
   local containers_tmp
-  containers_tmp=$(mktemp)
+  containers_tmp=$(new_tmp_file)
   for container in "${unique_keys[@]}"; do
     [ -z "${container}" ] && continue
 
@@ -273,11 +290,10 @@ compare_images() {
       '$ARGS.named | {containerName: .name, image: {changedParts: .changedParts, old: .oldImage, new: .newImage}}' >> "${containers_tmp}"
   done
 
-  [ ! -s "${containers_tmp}" ] && { rm -f "${containers_tmp}"; return; }
+  [ ! -s "${containers_tmp}" ] && return
 
   local containers_json
   containers_json=$(jq -s . "${containers_tmp}")
-  rm -f "${containers_tmp}"
 
   local count
   count=$(echo "${containers_json}" | jq 'length')
