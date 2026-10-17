@@ -151,6 +151,10 @@ process_project_file_change() {
       CHANGE_TYPE="deleted"
       OLD_CONTENT=$(git show "${REVISION}^:${FILEPATH}" || true)
       ;;
+    R*)
+      # Renames have old/new paths in diff output; skip as requested.
+      return
+      ;;
     M|*)
       CHANGE_TYPE="updated"
       OLD_CONTENT=$(git show "${REVISION}^:${FILEPATH}" || true)
