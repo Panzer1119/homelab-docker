@@ -42,18 +42,23 @@ main() {
   echo "Oldest: ${LAST_REVISION}" >&2
   echo "Newest: ${REMOTE_HEAD}" >&2
 
-  local full_output="[]"
+  local commits_tmp
+  commits_tmp=$(mktemp)
   for REVISION in ${REVISIONS}; do
     commit_output=$(process_commit "${REVISION}" || echo "")
     if [ -n "${commit_output}" ]; then
-      full_output=$(jq -n \
-        --argjson existing "${full_output}" \
-        --argjson new "${commit_output}" \
-        '$existing + [$new]')
+      printf '%s\n' "${commit_output}" >> "${commits_tmp}"
     fi
   done
 
-  echo "${full_output}" | jq .
+  if [ ! -s "${commits_tmp}" ]; then
+    rm -f "${commits_tmp}"
+    echo '[]'
+    return
+  fi
+
+  jq -s . "${commits_tmp}"
+  rm -f "${commits_tmp}"
 }
 
 process_commit() {
@@ -67,21 +72,23 @@ process_commit() {
   file_count=$(echo "${FILES}" | wc -l)
   echo "Matched ${file_count} docker compose file(s)" >&2
 
-  local project_changes="[]"
+  local project_tmp
+  project_tmp=$(mktemp)
   while read -r STATUS FILEPATH; do
     [ -z "${FILEPATH}" ] && continue
     result=$(process_project_file_change "${REVISION}" "${STATUS}" "${FILEPATH}" || echo "")
     if [ -n "${result}" ]; then
-      project_changes=$(jq -n \
-        --argjson existing "${project_changes}" \
-        --argjson new "${result}" \
-        '$existing + [$new]')
+      printf '%s\n' "${result}" >> "${project_tmp}"
     else
       echo "Commit ${REVISION} has no docker image updates" >&2
     fi
   done <<< "${FILES}"
 
-  [ "$(echo "${project_changes}" | jq length)" -eq 0 ] && return
+  [ ! -s "${project_tmp}" ] && { rm -f "${project_tmp}"; return; }
+
+  local project_changes
+  project_changes=$(jq -s . "${project_tmp}")
+  rm -f "${project_tmp}"
 
   local COMMITTED_AT_EPOCH_SECONDS
   COMMITTED_AT_EPOCH_SECONDS=$(git show -s --format=%ct "${REVISION}")
@@ -212,7 +219,8 @@ compare_images() {
   local unique_keys
   mapfile -t unique_keys < <(printf "%s\n" "${all_keys[@]}" | sed '/^$/d' | sort -u)
 
-  local containers_json="[]"
+  local containers_tmp
+  containers_tmp=$(mktemp)
   for container in "${unique_keys[@]}"; do
     [ -z "${container}" ] && continue
 
@@ -255,16 +263,21 @@ compare_images() {
       --arg tag "${new_tag}" \
       --arg digest "${new_digest}" \
       '{registry: $registry, namespace: $namespace, repository: $repository, tag: $tag, digest: $digest}')
-    containers_json=$(jq -n \
+    jq -n \
       --arg name "${container}" \
       --arg old "${old}" \
       --arg new "${new}" \
       --argjson changedParts "${updates_json}" \
       --argjson oldImage "${old_image_json}" \
       --argjson newImage "${new_image_json}" \
-      '$ARGS.named | {containerName: .name, image: {changedParts: .changedParts, old: .oldImage, new: .newImage}}' | \
-      jq --argjson existing "${containers_json}" '$existing + [.]')
+      '$ARGS.named | {containerName: .name, image: {changedParts: .changedParts, old: .oldImage, new: .newImage}}' >> "${containers_tmp}"
   done
+
+  [ ! -s "${containers_tmp}" ] && { rm -f "${containers_tmp}"; return; }
+
+  local containers_json
+  containers_json=$(jq -s . "${containers_tmp}")
+  rm -f "${containers_tmp}"
 
   local count
   count=$(echo "${containers_json}" | jq 'length')
