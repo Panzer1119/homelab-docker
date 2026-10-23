@@ -1,7 +1,7 @@
 ---
 services:
   web:
-    image: ghcr.io/hoarder-app/hoarder:0.34.1@sha256:69ae5315c618b7c14c1af3e34c6e211acdb231793af424ecd1cab0b70691d987
+    image: ghcr.io/karakeep-app/karakeep:0.34.1
     container_name: hoarder
     hostname: hoarder
     env_file:
@@ -22,16 +22,17 @@ services:
       service: logging-gelf
 
   chrome:
-    image: gcr.io/zenika-hub/alpine-chrome:124@sha256:1a0046448e0bb6c275c88f86e01faf0de62b02ec8572901256ada0a8c08be23f
+    image: ghcr.io/karakeep-app/karakeep-chrome:156.0.8078.47-r1
+    init: true
     command:
-      - --no-sandbox
       - --disable-gpu
       - --disable-dev-shm-usage
-      - --remote-debugging-address=0.0.0.0
-      - --remote-debugging-port=9222
       - --hide-scrollbars
+      - --disable-blink-features=AutomationControlled
+      - --window-size=1440,900
     dns:
-      - 192.168.6.4
+      - 10.44.20.4
+      - 10.44.20.72
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
@@ -53,3 +54,4 @@ volumes:
     name: hoarder_assets
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
+...
