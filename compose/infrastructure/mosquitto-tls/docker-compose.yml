@@ -1,7 +1,7 @@
 ---
 services:
   broker:
-    image: eclipse-mosquitto:2.1.2-alpine@sha256:38c0da4f2ef84284d47b3b3eeea1cb3bdeabe81ee10caf0cd5c5ff61ee3ea408
+    image: eclipse-mosquitto:2.1.2-alpine@sha256:af2da74b42274e53e90f907800887ca9ac7930ad9979003d757ebd79af043ded
     container_name: mosquitto-tls
     hostname: mosquitto-tls
     volumes:
