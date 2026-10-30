@@ -1,0 +1,21 @@
+---
+services:
+  youtube-liked-sync:
+    build:
+      context: ../../..
+      dockerfile: compose/tools/youtube-liked-sync/Dockerfile
+    container_name: youtube-liked-sync
+    hostname: youtube-liked-sync
+    environment:
+      - TZ=Europe/Berlin
+      - SYNC_INTERVAL_SECONDS=900
+    working_dir: /data
+    volumes:
+      - ./client_secret.json:/data/client_secret.json:ro
+      - ./token.json:/data/token.json
+      - /docker/data/youtube-liked-sync/youtube.db:/data/youtube.db
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...

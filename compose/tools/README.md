@@ -13,3 +13,4 @@ Tools that support other services or are useful in general
 - [MCPJungle](./mcpjungle/README.md)
 - [FlareSolverr](./flaresolverr/README.md)
 - [Open WebUI](./open-webui/README.md)
+- [YouTube Liked Sync](./youtube-liked-sync/README.md)

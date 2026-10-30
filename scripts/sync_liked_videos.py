@@ -18,7 +18,7 @@ PLAYLIST_ID = "LL"
 def authenticate():
     credentials = None
 
-    if os.path.exists(TOKEN_FILE):
+    if os.path.exists(TOKEN_FILE) and os.path.getsize(TOKEN_FILE) > 0:
         credentials = Credentials.from_authorized_user_file(
             TOKEN_FILE, SCOPES
         )

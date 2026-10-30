@@ -23,8 +23,13 @@ compose/monitoring/apprise/config/pushover.yml
 compose/monitoring/prometheus/config/prometheus.yml
 compose/monitoring/scrutiny/collector.yml
 compose/monitoring/scrutiny/scrutiny.yml
+compose/tools/youtube-liked-sync/client_secret.json
+compose/tools/youtube-liked-sync/token.json
 
 .venv
+
+client_secret.json
+token.json
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
