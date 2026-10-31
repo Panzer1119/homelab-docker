@@ -1,7 +1,7 @@
 ---
 services:
   sandbox-certs:
-    image: ghcr.io/n8n-io/n8n-sandbox-service-api:1.13.0
+    image: ghcr.io/n8n-io/n8n-sandbox-service-api:1.13.0@sha256:fc4912f9023ac46ec58fd6cc30d5dae8bddd3b4589cf8d5d6d58db7417a12385
     user: "0:0"
     entrypoint: [ "sh", "-c" ]
     command:
@@ -18,7 +18,7 @@ services:
       service: logging-gelf
 
   sandbox-api:
-    image: ghcr.io/n8n-io/n8n-sandbox-service-api:1.13.0
+    image: ghcr.io/n8n-io/n8n-sandbox-service-api:1.13.0@sha256:fc4912f9023ac46ec58fd6cc30d5dae8bddd3b4589cf8d5d6d58db7417a12385
     depends_on:
       sandbox-certs:
         condition: service_completed_successfully
@@ -47,7 +47,7 @@ services:
       service: logging-gelf
 
   sandbox-runner-1:
-    image: ghcr.io/n8n-io/n8n-sandbox-service-runner-dind:1.13.0
+    image: ghcr.io/n8n-io/n8n-sandbox-service-runner-dind:1.13.0@sha256:c3f06048fe1df2a0eb879fc8391dea2bcb068a63b99e9156ff32ed932df39ee0
     privileged: true
     depends_on:
       sandbox-api:
@@ -76,7 +76,7 @@ services:
       service: logging-gelf
 
   n8n:
-    image: ghcr.io/n8n-io/n8n:2.45.7
+    image: ghcr.io/n8n-io/n8n:2.45.7@sha256:9a8d8dcea75667496695d7810d7e1fe018a65efb36cc499d347f3931b3957b5d
     environment:
       # ...your existing N8N_ENABLED_MODULES, N8N_INSTANCE_AI_* settings stay as they are
       DB_TYPE: postgresdb
@@ -101,7 +101,7 @@ services:
       service: logging-gelf
 
   runners:
-    image: ghcr.io/n8n-io/runners:2.45.7
+    image: ghcr.io/n8n-io/runners:2.45.7@sha256:2f07088829b6a1df2b6a84746bb8b32c1eaef270315fb5466aa01b1045e9b300
     depends_on:
       - n8n
     environment:
@@ -116,7 +116,7 @@ services:
       service: logging-gelf
 
   searxng:
-    image: ghcr.io/searxng/searxng:2026.10.30-1cd13d98d
+    image: ghcr.io/searxng/searxng:2026.10.30-1cd13d98d@sha256:f1bbc31c7bef7a7d8dd2b105c8397eb7dea1eeb7eceebdd45c0c29aef38c0c91
     environment:
       SEARXNG_SECRET: ${SEARXNG_SECRET}
     volumes:
@@ -128,7 +128,7 @@ services:
       service: logging-gelf
 
   postgres:
-    image: postgres:18
+    image: postgres:18@sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
