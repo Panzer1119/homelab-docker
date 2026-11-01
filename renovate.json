@@ -26,6 +26,21 @@
   "minor": {
     "automerge": false
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Docker images in lines marked with '# renovate: image'",
+      "managerFilePatterns": [
+        "/(^|/)(?:ref\\.)?(?:docker-)?compose[^/]*\\.ya?ml$/",
+        "/(^|/)(?:ref\\.)?[^/]+\\.env[^/]*$/",
+        "/(^|/)(?:ref)?\\.env[^/]*$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*image\\s*\\n[^\\n]*?(?<depName>[^\\s\"'=@]+?):(?<currentValue>\\w[\\w.-]*)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?[\"']?\\r?\\n"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
   "packageRules": [
     {
       "groupName": "devDependencies (non-major)",
