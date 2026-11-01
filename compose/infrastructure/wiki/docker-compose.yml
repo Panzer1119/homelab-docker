@@ -1,12 +1,11 @@
 ---
 services:
   wiki:
-    image: requarks/wiki:3.0@sha256:6e9987cc7f0f583f73591fbdf318fe94c6ba76616913e6c8f833b7a1960cd31d
+    image: ghcr.io/requarks/wiki:3.0@sha256:6e9987cc7f0f583f73591fbdf318fe94c6ba76616913e6c8f833b7a1960cd31d
     container_name: wiki
     hostname: wiki
     depends_on:
       - db
-      - search
     env_file:
       - wiki.env
     volumes:
@@ -23,46 +22,20 @@ services:
       file: ../../common/docker-compose.yml
       service: logging-gelf
 
-  search:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.29@sha256:3f55a7f6f29b95345dc33808d6e914f81d125d4ca90a414e26c81a3521400980
-    environment:
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - /docker/data/wiki/elasticsearch:/usr/share/elasticsearch/data
-    restart: unless-stopped
-    extends:
-      file: ../../common/docker-compose.yml
-      service: logging-gelf
-
   db:
-    #TODO Upgrade postgres 11 to postgres 15
-    image: postgres:11-alpine@sha256:ea50b9fd617b66c9135816a4536cf6e0697d4eea7014a7194479c95f6edd5ef9
+    image: postgres:18
     env_file:
       - db.env
-    environment:
-      - PUID=1000
-      - PGID=1000
     volumes:
-      - /docker/data/wiki/postgres:/var/lib/postgresql/data
+      - /docker/data/wiki/postgres:/var/lib/postgresql
     restart: unless-stopped
     extends:
       file: ../../common/docker-compose.yml
       service: logging-gelf
-
-#  adminer:
-#    image: adminer
-#    ports:
-#      - "8685:8080"
-#    restart: unless-stopped
 
 volumes:
   wiki:
     name: wiki_storage
     # Because this is a cifs volume, and it needs credentials, it is created outside of this file
     external: true
+...

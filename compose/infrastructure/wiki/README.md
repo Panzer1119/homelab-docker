@@ -1,3 +1,3 @@
 [Up](../README.md)
 
-# Wiki.js
+# [Wiki.js](https://github.com/Requarks/wiki)
