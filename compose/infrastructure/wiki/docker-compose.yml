@@ -1,7 +1,7 @@
 ---
 services:
   wiki:
-    image: ghcr.io/requarks/wiki:3.0@sha256:75a548ae3308c6761c3914699a1fc5932e8005531747a84ae3caff3843e057eb
+    image: ghcr.io/requarks/wiki:3.0.2
     container_name: wiki
     hostname: wiki
     depends_on:
