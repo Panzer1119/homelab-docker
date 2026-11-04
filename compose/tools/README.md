@@ -6,6 +6,7 @@ Tools that support other services or are useful in general
 
 ## Projects
 
+- [arr-mcp](./arr-mcp/README.md)
 - [BetterBahn](./betterbahn/README.md)
 - [Databasus](./databasus/README.md)
 - [DevDocs](./devdocs/README.md)

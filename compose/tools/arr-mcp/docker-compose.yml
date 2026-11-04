@@ -1,0 +1,22 @@
+---
+services:
+  arr-mcp:
+    image: ghcr.io/bardesss/arr-mcp:1.56.0
+    container_name: arr-mcp
+    hostname: arr-mcp
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - /docker/config/arr-mcp:/config
+    network_mode: bridge
+    ports:
+      - "6060:6060"
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:6060/healthz']
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...
