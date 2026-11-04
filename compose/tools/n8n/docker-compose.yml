@@ -102,7 +102,7 @@ services:
       service: logging-gelf
 
   runners:
-    image: ghcr.io/n8n-io/runners:2.45.7@sha256:2f07088829b6a1df2b6a84746bb8b32c1eaef270315fb5466aa01b1045e9b300
+    image: ghcr.io/n8n-io/runners:2.47.2@sha256:bf20c4b51e6d957ce9a6b306e398255705046835b3f472dc52cd01cc087b1922
     depends_on:
       - n8n
     environment:
