@@ -8,8 +8,20 @@ import time
 import paho.mqtt.client as mqtt
 from smbmc import Client
 
+
+def env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+DEBUG_MODE = env_bool("DEBUG", False)
+LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG" if DEBUG_MODE else "INFO").upper()
+LOG_LEVEL_NUM = getattr(logging, LOG_LEVEL, logging.INFO)
+
 logging.basicConfig(
-    level=logging.INFO,
+    level=LOG_LEVEL_NUM,
     format="%(asctime)s %(levelname)s %(message)s",
 )
 log = logging.getLogger("supermicro-jbod")
@@ -79,6 +91,7 @@ def plain(value):
 
 def publish_discovery(client, key, name, unit=None, device_class=None):
     if key in discovered:
+        log.debug("Discovery already published for key=%s", key)
         return
 
     config = {
@@ -104,13 +117,19 @@ def publish_discovery(client, key, name, unit=None, device_class=None):
     info.wait_for_publish()
     discovered.add(key)
     log.info("Discovered entity: %s", name)
+    log.debug("Discovery topic=%s payload=%s", topic, config)
 
 
 def collect(client, bmc):
     values = {}
+    sensor_count = 0
+    pmbus_count = 0
+
+    log.debug("Starting metric collection")
 
     # Standard IPMI sensor readings
     for sensor in bmc.get_sensor_metrics():
+        sensor_count += 1
         name = slug(sensor.name)
         state = plain(sensor.state)
 
@@ -121,15 +140,26 @@ def collect(client, bmc):
         )
 
         if state != "PRESENT":
+            log.debug("Skipping sensor %s because state is %s", sensor.name, state)
             continue
 
         reading = plain(sensor.reading)
         if reading is None:
+            log.debug("Skipping sensor %s because reading is empty", sensor.name)
             continue
 
         key = f"sensor_{name}"
         unit_name = getattr(sensor.unit, "name", "")
         unit, device_class = UNIT_NAMES.get(unit_name, (None, None))
+        log.debug(
+            "Sensor metric name=%s key=%s value=%r unit_name=%s mapped_unit=%s mapped_class=%s",
+            sensor.name,
+            key,
+            reading,
+            unit_name,
+            unit,
+            device_class,
+        )
 
         values[key] = reading
         publish_discovery(
@@ -138,6 +168,7 @@ def collect(client, bmc):
 
     # PSU PMBus telemetry
     for psu in bmc.get_pmbus_metrics():
+        pmbus_count += 1
         psu_id = int(psu.id) + 1
         prefix = f"psu_{psu_id}"
 
@@ -151,6 +182,15 @@ def collect(client, bmc):
 
             key = f"{prefix}_{slug(field)}"
             unit, device_class = UNITS.get(field, (None, None))
+            log.debug(
+                "PMBus metric psu_id=%s field=%s key=%s value=%r mapped_unit=%s mapped_class=%s",
+                psu_id,
+                field,
+                key,
+                value,
+                unit,
+                device_class,
+            )
 
             values[key] = value
             publish_discovery(
@@ -161,10 +201,27 @@ def collect(client, bmc):
                 device_class,
             )
 
+    log.debug(
+        "Finished metric collection: %d metrics from %d sensors and %d PMBus devices",
+        len(values),
+        sensor_count,
+        pmbus_count,
+    )
+
     return values
 
 
 def main():
+    log.info("Starting exporter (log_level=%s, interval=%ss)", LOG_LEVEL, INTERVAL)
+    log.debug(
+        "Configuration: bmc_host=%s mqtt_host=%s mqtt_port=%s device_id=%s base=%s",
+        BMC_HOST,
+        MQTT_HOST,
+        MQTT_PORT,
+        DEVICE_ID,
+        BASE,
+    )
+
     bmc = Client(
         BMC_HOST,
         BMC_USER,
@@ -173,6 +230,7 @@ def main():
         request_timeout=15,
     )
     bmc.login()
+    log.debug("Connected to BMC")
 
     client = mqtt.Client(
         mqtt.CallbackAPIVersion.VERSION2,
@@ -183,10 +241,12 @@ def main():
 
     client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
     client.loop_start()
+    log.debug("Connected to MQTT and started network loop")
 
     try:
         while True:
             try:
+                started = time.monotonic()
                 values = collect(client, bmc)
 
                 if values:
@@ -205,10 +265,16 @@ def main():
                     ).wait_for_publish()
 
                     log.info("Published %d metrics", len(values))
+                else:
+                    log.debug("No metrics collected in this poll")
+
+                duration = time.monotonic() - started
+                log.debug("Poll completed in %.3fs", duration)
 
             except Exception:
                 log.exception("Polling failed")
 
+            log.debug("Sleeping for %ss before next poll", INTERVAL)
             time.sleep(INTERVAL)
 
     finally:
