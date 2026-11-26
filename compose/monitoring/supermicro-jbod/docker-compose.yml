@@ -1,0 +1,23 @@
+---
+services:
+  expansion-shelf-1:
+    build: .
+    container_name: expansion-shelf-1
+    hostname: expansion-shelf-1
+    init: true
+    env_file:
+      - .env
+    environment:
+      TZ: Europe/Berlin
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+    extends:
+      file: ../../common/docker-compose.yml
+      service: logging-gelf
+...

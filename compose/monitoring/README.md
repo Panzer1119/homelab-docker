@@ -17,5 +17,6 @@ Tracking performance, logging, usage, health, etc.
 - [Prometheus](./prometheus/README.md)
 - [Tautulli](./tautulli/README.md)
 - [Speedtest Tracker](./speedtest-tracker/README.md)
+- [Supermicro JBOD](./supermicro-jbod/README.md)
 - [Uptime Kuma](./uptime-kuma/README.md) #TODO
 - [Prometheus](./prometheus/README.md) #TODO (do I even need this?)
