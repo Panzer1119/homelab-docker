@@ -1,7 +1,7 @@
 ---
 services:
   wiki:
-    image: ghcr.io/requarks/wiki:3.0.2
+    image: ghcr.io/requarks/wiki:3.0.2@sha256:75a548ae3308c6761c3914699a1fc5932e8005531747a84ae3caff3843e057eb
     container_name: wiki
     hostname: wiki
     depends_on:
@@ -23,7 +23,7 @@ services:
       service: logging-gelf
 
   db:
-    image: postgres:18
+    image: postgres:18@sha256:64c8b0d31e4ab6ea665e8426ea406a94bf52de3c05b3a4a8bf713704eefa9328
     env_file:
       - db.env
     volumes:

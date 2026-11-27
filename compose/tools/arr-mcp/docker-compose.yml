@@ -1,7 +1,7 @@
 ---
 services:
   arr-mcp:
-    image: ghcr.io/bardesss/arr-mcp:1.56.0
+    image: ghcr.io/bardesss/arr-mcp:1.56.0@sha256:97bcba8e07078301139cdf79bc00c4ad024148da5abec41369991e846016ea47
     container_name: arr-mcp
     hostname: arr-mcp
     environment:
