@@ -1,7 +1,7 @@
 ---
 services:
   kometa:
-    image: kometateam/kometa@sha256:93b0909d1a34d75985c2258f451aac4ece4216d02f0c4914a0a4fa4be39a88c0
+    image: kometateam/kometa@sha256:4e45d12ca8cb21b5a47a25917542dbb305fc0c76a366bc692ae9490da35d168d
     container_name: kometa
     hostname: kometa
     env_file:
