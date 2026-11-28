@@ -71,7 +71,7 @@ services:
       service: logging-gelf
 
   tika:
-    image: apache/tika:2.9.2.1@sha256:2be134745fcb59826c54041489946c66218b948ea0c0be3a37cb7919ecc845ba
+    image: apache/tika:3.4.0.0@sha256:9f3e5bb9da4229a971a4839416b3204499f20668ee834fa741a6a7504bbea7bf
 #    image: apache/tika:2.9.2.1-full
     restart: unless-stopped
     extends:
