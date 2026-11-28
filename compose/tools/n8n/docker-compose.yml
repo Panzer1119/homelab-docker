@@ -77,7 +77,7 @@ services:
       service: logging-gelf
 
   n8n:
-    image: ghcr.io/n8n-io/n8n:2.45.7@sha256:9a8d8dcea75667496695d7810d7e1fe018a65efb36cc499d347f3931b3957b5d
+    image: ghcr.io/n8n-io/n8n:2.50.3@sha256:6dc48a8dbdfe070b3babacd128995635e61cd19da9172b9aa0d5546792bd4a23
     environment:
       # ...your existing N8N_ENABLED_MODULES, N8N_INSTANCE_AI_* settings stay as they are
       DB_TYPE: postgresdb
