@@ -25,7 +25,7 @@ services:
       service: logging-gelf
 
   cache:
-    image: redis:7.4-alpine@sha256:8da19c7399dca900c6822a1cf30f9d2285585e2c4b457ff4095b0f4500054d3f
+    image: redis:8.12-alpine@sha256:5af80107c1eeecb484a2269b80a26d12bfa6521787da4663bd9f19f60a163483
     command: redis-server --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}
     env_file:
       - cache.env
