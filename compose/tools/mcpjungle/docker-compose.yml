@@ -4,7 +4,7 @@
 # The mcpjungle server runs in development mode.
 services:
   db:
-    image: postgres:17@sha256:3b0cda93be7c8dba2ed484d19393d93845dc3dafb88973e248ba8e6d99d784e1
+    image: postgres:17@sha256:97fb53376be3e4fb1a8a61421daa69dcc3bf2fa39bda3259f5245f9a455af1a9
     container_name: mcpjungle-db
     env_file: db.env
     volumes:
